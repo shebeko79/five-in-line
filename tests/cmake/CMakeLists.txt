@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 4.2)
 
 if( WIN32)
     link_directories($ENV{BOOST}/stage/lib)
@@ -49,7 +49,7 @@ SOURCE_GROUP(gtest FILES ${SRC_GTEST_FILES} )
 
 
 add_executable(five_in_line_tests ${SRC_ALGO_FILES} ${SRC_DB_FILES} ${SRC_EXTERN_FILES} ${SRC_TESTS_FILES} ${SRC_GTEST_FILES})
-
+target_compile_features(five_in_line_tests PRIVATE cxx_std_17)
 
 if(MSVC)
     TARGET_LINK_LIBRARIES(five_in_line_tests libmysql)

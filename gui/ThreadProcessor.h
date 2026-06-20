@@ -43,7 +43,7 @@ public:
 
 	void start();
 	void stop();
-	bool is_started() const{return thrd;}
+	bool is_started() const{return thrd.operator bool();}
 	void start_job();
 	void cancel_job();
     bool is_job_in_progress() const;

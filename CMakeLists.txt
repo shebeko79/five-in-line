@@ -1,6 +1,8 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 4.2)
 
 project(five_in_line)
+
+set(ENV{BOOST} C:/src/boost_1_91_0)
 
 add_subdirectory (db/cmake)
 add_subdirectory (solver/cmake)

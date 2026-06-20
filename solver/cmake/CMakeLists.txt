@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 4.2)
 
 if( WIN32)
     link_directories($ENV{BOOST}/stage/lib)
@@ -41,6 +41,7 @@ SOURCE_GROUP(extern FILES ${SRC_EXTERN_FILES} )
 add_executable(solver ${SRC_ALGO_FILES} ${SRC_SOLVER_FILES} ${SRC_DB_FILES} ${SRC_EXTERN_FILES})
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+target_compile_features(solver PRIVATE cxx_std_17)
 
 if(NOT WIN32)
       TARGET_LINK_LIBRARIES(solver boost_filesystem.a boost_signals.a boost_system.a)

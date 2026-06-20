@@ -1,10 +1,5 @@
 #include "bin_index_utils.h"
 #include <stdexcept>
-#include <boost/lexical_cast.hpp>
-
-#  include <boost/filesystem/operations.hpp>
-namespace fs=boost::filesystem;
-
 
 namespace Gomoku
 {
@@ -67,12 +62,12 @@ namespace Gomoku
 			throw std::runtime_error(file_name+": write error");
 	}
 
-	void load_file(const boost::filesystem::path& file_name,data_t& res)
+	void load_file(const std::filesystem::path& file_name,data_t& res)
 	{
 		load_file(file_name.string(),res);
 	}
 
-	void save_file(const boost::filesystem::path& file_name,const data_t& res)
+	void save_file(const std::filesystem::path& file_name,const data_t& res)
 	{
 		save_file(file_name.string(),res);
 	}

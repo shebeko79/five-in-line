@@ -21,7 +21,6 @@
 
 
 #include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/convenience.hpp>
 namespace fs=boost::filesystem;
 
 #include "../algo/check_player.h"
@@ -364,7 +363,7 @@ void CgomokuDlg::start()
     if(game.is_game_over())
         return;
 
-	hld_step=game.OnNextStep.connect(boost::bind(&CgomokuDlg::gameNextStep,this,_1,_2) );
+	hld_step=game.OnNextStep.connect(boost::bind(&CgomokuDlg::gameNextStep,this,boost::placeholders::_1,boost::placeholders::_2) );
 	game.init_players();
 	game.delegate_next_step();
 }

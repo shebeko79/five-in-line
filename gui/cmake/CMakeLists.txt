@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 4.2)
 set(CMAKE_MFC_FLAG 1)
 
 link_directories($ENV{BOOST}/stage/lib)
@@ -41,6 +41,7 @@ add_executable(five_in_line WIN32 ${SRC_ALGO_FILES} ${SRC_GUI_FILES} ${SRC_DB_FI
 
 add_definitions(-D_AFXDLL -D_CRT_SECURE_NO_WARNINGS)
 include_directories($ENV{BOOST})
+target_compile_features(five_in_line PRIVATE cxx_std_17)
 
 if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")

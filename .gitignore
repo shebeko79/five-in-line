@@ -13,3 +13,4 @@ CMakeFiles
 *.ncb
 *.suo
 cmake_install.cmake
+.vs

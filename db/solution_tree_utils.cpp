@@ -1,7 +1,7 @@
 #include "solution_tree_utils.h"
 #include <stdexcept>
 #include <numeric>
-#include <boost/lexical_cast.hpp>
+#include <string>
 
 namespace Gomoku
 {
@@ -13,8 +13,7 @@ namespace Gomoku
 			const point& p=pts[i];
 			if(p.x<=-128||p.x>127||p.y<=-128||p.y>127)
 				throw std::runtime_error("points2bin(): invalid point: ("+
-				boost::lexical_cast<std::string>(p.x)+","
-				+boost::lexical_cast<std::string>(p.y)+")");
+				std::to_string(p.x)+","+std::to_string(p.y)+")");
 
 			char x=p.x;
 			char y=p.y;
@@ -51,8 +50,8 @@ namespace Gomoku
 			const step_t& p=pts[i];
 			if(p.x<=-128||p.x>127||p.y<=-128||p.y>127)
 				throw std::runtime_error("points2bin(): invalid point: ("+
-				boost::lexical_cast<std::string>(p.x)+","
-				+boost::lexical_cast<std::string>(p.y)+")");
+				std::to_string(p.x)+","
+				+std::to_string(p.y)+")");
 
 			char x=p.x;
 			char y=p.y;
@@ -91,10 +90,10 @@ namespace Gomoku
 			const npoint& p=pts[i];
 			if(p.x<=-128||p.x>127||p.y<=-128||p.y>127)
 				throw std::runtime_error("points2bin(): invalid point: ("+
-				boost::lexical_cast<std::string>(p.x)+","
-				+boost::lexical_cast<std::string>(p.y)+")");
-			if(p.n>255)throw std::runtime_error("points2bin(npoints_t): n>255 n="+
-				boost::lexical_cast<std::string>(p.n));
+					std::to_string(p.x)+","+std::to_string(p.y)+")");
+
+			if(p.n>255)
+				throw std::runtime_error("points2bin(npoints_t): n>255 n="+std::to_string(p.n));
 
 			char x=p.x;
 			char y=p.y;

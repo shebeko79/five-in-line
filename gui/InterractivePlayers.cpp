@@ -55,14 +55,14 @@ void mfcPlayer::fieldMouseMove(point pos)
 
 void mfcPlayer::fieldLMouseDown(point pos)
 {
-	hld_mouse_up=fd->OnLMouseUp.connect(boost::bind(&mfcPlayer::fieldLMouseUp,this,_1) );
+	hld_mouse_up=fd->OnLMouseUp.connect(boost::bind(&mfcPlayer::fieldLMouseUp,this,boost::placeholders::_1) );
 }
 
 void mfcPlayer::delegate_step()
 {
-	hld_mouse_down=fd->OnLMouseDown.connect(boost::bind(&mfcPlayer::fieldLMouseDown,this,_1) );
-	hld_mouse_move=fd->on_mouse_move.connect(boost::bind(&mfcPlayer::fieldMouseMove,this,_1) );
-	hld_after_draw=fd->on_after_paint.connect(boost::bind(&mfcPlayer::afterDraw,this,_1) );
+	hld_mouse_down=fd->OnLMouseDown.connect(boost::bind(&mfcPlayer::fieldLMouseDown,this,boost::placeholders::_1) );
+	hld_mouse_move=fd->on_mouse_move.connect(boost::bind(&mfcPlayer::fieldMouseMove,this,boost::placeholders::_1) );
+	hld_after_draw=fd->on_after_paint.connect(boost::bind(&mfcPlayer::afterDraw,this,boost::placeholders::_1) );
 }
 
 void mfcPlayer::request_cancel(bool val)
@@ -113,9 +113,9 @@ void ThreadPlayer::init(game_t& _gm,Step _cl)
 
 	hld_execute=processor.OnExecute.connect(boost::bind(&ThreadPlayer::MirrorExecute,this) );
 	hld_complete=processor.OnComplete.connect(boost::bind(&ThreadPlayer::TaskComplete,this) );
-	hld_errors=processor.OnErrors.connect(boost::bind(&ThreadPlayer::TaskErrors,this,_1) );
+	hld_errors=processor.OnErrors.connect(boost::bind(&ThreadPlayer::TaskErrors,this,boost::placeholders::_1) );
 
-    hld_mirror_next_step=mirror_gm.OnNextStep.connect(boost::bind(&ThreadPlayer::mirrorNextStep,this,_1,_2) );
+    hld_mirror_next_step=mirror_gm.OnNextStep.connect(boost::bind(&ThreadPlayer::mirrorNextStep,this,boost::placeholders::_1,boost::placeholders::_2) );
 
 	processor.start();
 }
