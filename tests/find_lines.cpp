@@ -7,8 +7,8 @@ class find_lines : public testing::Test
  protected:
     std::string get_ctx(const Gomoku::field_t& fl,unsigned i,unsigned j)
     {
-	    return "i="+boost::lexical_cast<std::string>(i)+
-		     " j="+boost::lexical_cast<std::string>(j)+
+	    return "i="+std::to_string(i)+
+		     " j="+std::to_string(j)+
 		     " fl:"+Gomoku::print_field(fl.get_steps());;
     }
 };

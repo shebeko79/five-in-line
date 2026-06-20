@@ -5,7 +5,6 @@
 #endif
 
 #include "object_progress.hpp"
-#include <boost/bind.hpp>
 #include <iostream>
 
 namespace ObjectProgress
@@ -82,7 +81,7 @@ namespace ObjectProgress
 
     void ilogout::open()
     {
-        hld=get_log_handler().connect(boost::bind(&ilogout::on_message,this,boost::placeholders::_1) );
+        hld = get_log_handler().connect([this](const std::string& str) {this->on_message(str);});
     }
         
     std::string ilogout::current_timestamp()

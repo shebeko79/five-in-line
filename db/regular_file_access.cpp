@@ -61,13 +61,13 @@ void regular_file_t::load(file_offset_t offset,data_t& res)
 #else
 	if(fseeko(fd,offset,SEEK_SET)!=0)
 #endif
-		throw std::runtime_error("load(): seek error at "+boost::lexical_cast<std::string>(offset)+
+		throw std::runtime_error("load(): seek error at "+std::to_string(offset)+
 			": "+file_name);
 
 	if(fread(&res.front(),1,res.size(),fd)!=res.size())
 		throw std::runtime_error(
-			"load(): read error at "+boost::lexical_cast<std::string>(offset)+
-			" size="+boost::lexical_cast<std::string>(res.size())+
+			"load(): read error at "+std::to_string(offset)+
+			" size="+std::to_string(res.size())+
 			": "+file_name);
 }
 
@@ -82,13 +82,13 @@ void regular_file_t::save(file_offset_t offset,const data_t& res)
 #else
 	if(fseeko(fd,offset,SEEK_SET)!=0)
 #endif
-		throw std::runtime_error("save(): seek error at "+boost::lexical_cast<std::string>(offset)+
+		throw std::runtime_error("save(): seek error at "+std::to_string(offset)+
 			": "+file_name);
 
 	if(fwrite(&res.front(),1,res.size(),fd)!=res.size())
 		throw std::runtime_error(
-			"save(): write error at "+boost::lexical_cast<std::string>(offset)+
-			" size="+boost::lexical_cast<std::string>(res.size())+
+			"save(): write error at "+std::to_string(offset)+
+			" size="+std::to_string(res.size())+
 			": "+file_name);
 }
 
@@ -117,7 +117,7 @@ file_offset_t regular_file_t::append(const data_t& res)
 
 	if(fwrite(&res.front(),1,res.size(),fd)!=res.size())
 		throw std::runtime_error(
-			"append_data(): write error size="+boost::lexical_cast<std::string>(res.size())+
+			"append_data(): write error size="+std::to_string(res.size())+
 			": "+file_name);
 
 	return ret;

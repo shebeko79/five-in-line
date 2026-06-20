@@ -4,8 +4,7 @@
 #include <time.h>
 #include <iostream>
 #include <fstream>
-#include <boost/lexical_cast.hpp>
-#include <boost/shared_ptr.hpp>
+#include <sstream>
 #include <boost/signals2.hpp>
 
 namespace ObjectProgress

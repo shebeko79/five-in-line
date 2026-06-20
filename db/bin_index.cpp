@@ -813,7 +813,7 @@ namespace Gomoku
 		indexes_t::const_iterator it=indexes.find(steps_count);
 		if(it!=indexes.end())return *it->second;
 
-		fs::path dir_name=fs::path(base_dir)/("S"+boost::lexical_cast<std::string>(steps_count));
+		fs::path dir_name=fs::path(base_dir)/("S"+std::to_string(steps_count));
 		if(!fs::exists(dir_name))
 			fs::create_directory(dir_name);
 
@@ -827,7 +827,7 @@ namespace Gomoku
 		indexes_t::const_iterator it=indexes.find(steps_count);
 		if(it!=indexes.end())return &*it->second;
 
-		fs::path dir_name=fs::path(base_dir)/("S"+boost::lexical_cast<std::string>(steps_count));
+		fs::path dir_name=fs::path(base_dir)/("S"+std::to_string(steps_count));
 		if(!fs::exists(dir_name))
             return 0;
 
@@ -840,7 +840,7 @@ namespace Gomoku
 	{
 		for(unsigned i=1;i<100;i++)
 		{
-			fs::path dir_name=fs::path(base_dir)/("S"+boost::lexical_cast<std::string>(i));
+			fs::path dir_name=fs::path(base_dir)/("S"+std::to_string(i));
 			if(fs::exists(dir_name))return i;
 		}
 		return 0;

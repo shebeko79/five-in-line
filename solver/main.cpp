@@ -33,7 +33,7 @@ std::string print_state(const WsPlayer::wide_item_t& r,const steps_t& key,unsign
 	std::string str;
 	data_t bin;
 
-	std::string slevel=boost::lexical_cast<std::string>(cnt);
+	std::string slevel=std::to_string(cnt);
 	cnt++;
 
 	std::string ret;

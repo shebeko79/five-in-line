@@ -107,7 +107,7 @@ void get_query_t::init(MYSQL* conn,size_t key_len)
 	st.set(stmt);
 
 	std::string query="select wins_count,fails_count,neitrals,solved_wins,solved_fails,tree_wins,tree_fails from s"
-		+boost::lexical_cast<std::string>(key_len)+" where k=?";
+		+std::to_string(key_len)+" where k=?";
 
 	int query_ret = mysql_stmt_prepare(stmt, query.c_str(), query.size());
 	if(query_ret!=0)
@@ -247,7 +247,7 @@ void set_query_t::init(MYSQL* conn,size_t key_len)
 
 	st.set(stmt);
 
-	std::string query="insert into s"+boost::lexical_cast<std::string>(key_len)
+	std::string query="insert into s"+std::to_string(key_len)
 		+"(k,wins_count,fails_count,neitrals,solved_wins,solved_fails,tree_wins,tree_fails) values(?,?,?,?,?,?,?,?)"
 		 " ON DUPLICATE KEY UPDATE wins_count=?,fails_count=?,neitrals=?,solved_wins=?,solved_fails=?,tree_wins=?,tree_fails=?";
 
@@ -404,7 +404,7 @@ void first_query_t::init(MYSQL* conn,size_t key_len)
 	st.set(stmt);
 
 	std::string query="select k from s"
-		+boost::lexical_cast<std::string>(key_len)+" order by k limit 1";
+		+std::to_string(key_len)+" order by k limit 1";
 
 	int query_ret = mysql_stmt_prepare(stmt, query.c_str(), query.size());
 	if(query_ret!=0)
@@ -463,7 +463,7 @@ void next_query_t::init(MYSQL* conn,size_t key_len)
 	st.set(stmt);
 
 	std::string query="select k from s"
-		+boost::lexical_cast<std::string>(key_len)+" where k>? order by k limit 1";
+		+std::to_string(key_len)+" where k>? order by k limit 1";
 
 	int query_ret = mysql_stmt_prepare(stmt, query.c_str(), query.size());
 	if(query_ret!=0)

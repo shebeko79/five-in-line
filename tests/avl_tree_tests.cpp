@@ -347,7 +347,7 @@ TEST_F(avl_tree, DISABLED_generate_index_data)
 
 		if(key_size!=key.size())
 		{
-			file_name=std::string(index_dir)+"/"+boost::lexical_cast<std::string>(key.size());
+			file_name=std::string(index_dir)+"/"+std::to_string(key.size());
 			fi=file_access_ptr(new paged_file_t(file_name+".idx") );
 			fd=file_access_ptr(new paged_file_t(file_name+".data") );
 			key_size=key.size();

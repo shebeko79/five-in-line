@@ -7,12 +7,12 @@ namespace Gomoku
 
 e_invalid_step::e_invalid_step(unsigned val)
 {
-	mess="Invalid step "+boost::lexical_cast<std::string>(val);
+	mess="Invalid step "+std::to_string(val);
 }
 
 e_point_busy::e_point_busy(int x,int y)
 {
-	mess="Point ("+boost::lexical_cast<std::string>(x)+";"+boost::lexical_cast<std::string>(y)+")";
+	mess="Point ("+std::to_string(x)+";"+std::to_string(y)+")";
 }
 
 }//namespace Gomoku

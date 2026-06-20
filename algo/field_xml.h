@@ -38,7 +38,7 @@ void save(Archive & ar,const  Gomoku::Step& v, const unsigned int version)
     case ::Gomoku::st_krestik: s = "krestik";break;
     case ::Gomoku::st_nolik: s = "nolik";break;
     default:
-        throw std::runtime_error("save<Step>(): invalid value: "+boost::lexical_cast<std::string>(v));
+        throw std::runtime_error("save<Step>(): invalid value: "+std::to_string(v));
     }
 
     ar & s;
