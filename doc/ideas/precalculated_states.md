@@ -52,7 +52,7 @@ struct states5
   unsigned krestik_score = 20;
   unsigned nolik_score = 20;
   state5 h[5];
-  state5 h[5];
+  state5 v[5];
   state5 tb[5];
   state5 bt[5];
 };
