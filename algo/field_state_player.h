@@ -3,7 +3,7 @@
 #include "game.h"
 #include "field_state.h"
 
-namespace Gomoku
+namespace Gomoku { namespace State5
 {
 	class field_state_player_t : public iplayer_t
 	{
@@ -30,7 +30,7 @@ namespace Gomoku
 	};
 
 
-}//namespace Gomoku
+} }//namespace Gomoku
 
 #endif
 

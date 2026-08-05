@@ -6,7 +6,7 @@
 #include "../extern/object_progress.hpp"
 #include "algo_utils.h"
 
-namespace Gomoku
+namespace Gomoku { namespace State5
 {
 
 
@@ -48,4 +48,4 @@ void field_state_player_t::delegate_step()
 }
 
 
-}//namespace Gomoku
+} }//namespace Gomoku
