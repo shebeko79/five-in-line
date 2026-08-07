@@ -15,16 +15,15 @@ void field_state_player_t::delegate_step()
     incer_t<int> hld_thinking(thinking);
 
 	field=game().field();
-#if 0
-	root=item_ptr(new item_t(*this,field.back()));
+	field5.set_steps(field.get_steps());
+
+	node_t root(*this, field.back());
 
 	ObjectProgress::log_generator lg(true);
 
-	init_states();
-
 	try
 	{
-		root->process_deep_common();
+		root.process();
 	}
 	catch(e_cancel&)
 	{
@@ -33,18 +32,44 @@ void field_state_player_t::delegate_step()
         throw;
 	}
 
-	if(!root->get_wins().empty())
+	if(!root.get_wins().empty())
 	{
-		unsigned int depth=root->get_chain_depth()-1;
-		std::string chain=print_chain(root->get_wins().get_best());
-		lg<<"field_state_player_t::delegate_step(): find win chain_depth="<<depth<<": "<<chain;
+		//unsigned int depth=root->get_chain_depth()-1;
+		//std::string chain=print_chain(root->get_wins().get_best());
+		//lg<<"field_state_player_t::delegate_step(): find win chain_depth="<<depth<<": "<<chain;
+		lg<<"field_state_player_t::delegate_step(): win";
 	}
-	if(!root->get_fails().empty() && root->get_neitrals().empty())lg<<"field_state_player_t::delegate_step(): find fail chain_depth="<<(root->get_chain_depth()-1)
-		<<": "<<print_chain(root->get_fails().get_best());
+	else if (!root.get_fails().empty() && root.get_neitrals().empty())
+	{
+		lg << "field_state_player_t::delegate_step(): fail";
 
-	point p=*root->get_next_step();
-    game().OnNextStep(*this,p);
-#endif
+		//lg << "field_state_player_t::delegate_step(): find fail chain_depth=" << (root->get_chain_depth() - 1)
+		//	<< ": " << print_chain(root->get_fails().get_best());
+	}
+
+	point p=root.get_next_step();
+	game().OnNextStep(*this,p);
+}
+
+//
+// node_t
+//
+node_t::node_t(field_state_player_t& _player, const step_t& st) :
+	step_t(st),
+	player(_player)
+{
+}
+
+void node_t::process()
+{
+}
+
+point node_t::get_next_step() const
+{
+	if(!wins.empty())return wins.front();
+	if(!neitrals.empty())return neitrals.front();
+	if(fails.empty())throw std::runtime_error("node_t::get_next_step(): invalid state");
+	return fails.front();
 }
 
 

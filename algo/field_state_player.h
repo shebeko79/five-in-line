@@ -5,14 +5,17 @@
 
 namespace Gomoku { namespace State5
 {
+	class node_t;
+
 	class field_state_player_t : public iplayer_t
 	{
 	private:
 		field_t field;
-		field5_t states;
+		field5_t field5;
 
         int thinking = 0;
 
+		friend class node_t;
 	public:
 		void delegate_step() override;
         bool is_thinking() const override{return thinking>0;}
@@ -27,6 +30,27 @@ namespace Gomoku { namespace State5
         }
 
         POLIMVAR_IMPLEMENT_CLONE(field_state_player_t )
+	};
+
+
+	class node_t : public step_t
+	{
+	public:
+		node_t(field_state_player_t& _player, const step_t& st);
+
+		void process();
+
+		point get_next_step() const;
+
+		inline const points_t& get_neitrals() const {return neitrals;};
+		inline const points_t& get_wins() const {return wins;};
+		inline const points_t& get_fails() const {return fails;};
+	private:
+		field_state_player_t& player;
+
+		points_t neitrals; 
+		points_t wins;
+		points_t fails;
 	};
 
 

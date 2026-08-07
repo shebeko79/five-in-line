@@ -78,6 +78,7 @@ namespace Gomoku { namespace State5
 		void apply_shapshot(const snapshot_t& snapshot) {snapshot.apply(lines_field, scores_field);}
 		
 		void change_state(const field_t& field);
+		void set_steps(const field_t::steps_t& steps);
 	private:
 		matrix<lines5_t> lines_field;
 		matrix<score_t> scores_field;

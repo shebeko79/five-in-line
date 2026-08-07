@@ -125,6 +125,20 @@ namespace Gomoku { namespace State5
 		change_state(field,1,-1);
 	}
 	
+
+	void field5_t::set_steps(const field_t::steps_t& steps)
+	{
+		lines_field.clear();
+		scores_field.clear();
+
+		field_t field;
+		for (const auto& st : steps)
+		{
+			field.add(st, st.step);
+			change_state(field);
+		}
+	}
+
 	void field5_t::change_state(const field_t& field, int dx, int dy)
 	{
 		const step_t& st = field.back();
@@ -164,6 +178,5 @@ namespace Gomoku { namespace State5
 		
 		scores_field.set(pt, scr);
 	}
-
 
 } }

@@ -120,7 +120,7 @@ namespace Gomoku
 		{
 			if(max_bound&pt)
 				return fld[(pt.y-max_bound.y1)*width+pt.x-max_bound.x1];
-			typename point2val::const_iterator it=outbound.find(pt);
+			auto it=outbound.find(pt);
 			if(it==outbound.end())return Value();
 			return it->second;
 		}
