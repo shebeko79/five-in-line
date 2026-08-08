@@ -98,13 +98,13 @@ namespace Gomoku { namespace State5
 	void snapshot_t::fill(const matrix<lines5_t>& lines_field, line_t& line, int dx, int dy)
 	{
 		for (int i = -2; i <= 2; i++)
-			line[i] = lines_field.get(point(st.x + i * dx, st.y + i * dy));
+			line[i+2] = lines_field.get(point(st.x + i * dx, st.y + i * dy));
 	}
 
 	void snapshot_t::apply(matrix<lines5_t>& lines_field, const line_t& line, int dx, int dy) const
 	{
 		for (int i = -2; i <= 2; i++)
-			lines_field.set(point(st.x + i * dx, st.y + i * dy), line[i]);
+			lines_field.set(point(st.x + i * dx, st.y + i * dy), line[i+2]);
 	}
 		
 	void snapshot_t::fill(const matrix<score_t>& scores_field)
@@ -154,8 +154,8 @@ namespace Gomoku { namespace State5
 
 		if(old_step == new_step)
 			return;
-
-
+		remove(pt, old_step);
+		add(pt, new_step);
 	}
 	
 	void sorted_scores::add(const point& pt, unsigned step)
@@ -199,6 +199,8 @@ namespace Gomoku { namespace State5
 
 	void field5_t::change_state(const field_t& field)
 	{
+		set_score(field.back(), score_t(0,0));
+
 		change_state(field,1,0);
 		change_state(field,0,1);
 		change_state(field,1,1);
@@ -210,6 +212,8 @@ namespace Gomoku { namespace State5
 	{
 		lines_field.clear();
 		scores_field.clear();
+		sorted_krestik = sorted_scores();
+		sorted_nolik = sorted_scores();
 
 		field_t field;
 		for (const auto& st : steps)
@@ -223,24 +227,24 @@ namespace Gomoku { namespace State5
 	{
 		const step_t& st = field.back();
 		for (int i = -2; i <= 2; i++)
-			change_line(field, st, point(st.x + i * dx, st.y + i * dy), dx, dy);
+			change_line(field, st.step, point(st.x + i * dx, st.y + i * dy), dx, dy);
 	}
 
-	void field5_t::change_line(const field_t& field, const step_t& st, const point& line_point, int dx, int dy)
+	void field5_t::change_line(const field_t& field, Step color, const point& line_point, int dx, int dy)
 	{
 		lines5_t sts = lines_field.get(line_point);
 		auto& line = sts.get_line(dx,dy);
 		auto old_line = line;
 
-		if (!line.adjust(st.step))
+		if (!line.adjust(color))
 			return;
 
 		lines_field.set(line_point, sts);
 
-		change_score(field,old_line,line,point(st.x + (-2) * dx, st.y + (-2) * dy));
-		change_score(field,old_line,line,point(st.x + (-1) * dx, st.y + (-1) * dy));
-		change_score(field,old_line,line,point(st.x + (1) * dx, st.y + (1) * dy));
-		change_score(field,old_line,line,point(st.x + (2) * dx, st.y + (2) * dy));
+		change_score(field,old_line,line,point(line_point.x + (-2) * dx, line_point.y + (-2) * dy));
+		change_score(field,old_line,line,point(line_point.x + (-1) * dx, line_point.y + (-1) * dy));
+		change_score(field,old_line,line,point(line_point.x + (1) * dx, line_point.y + (1) * dy));
+		change_score(field,old_line,line,point(line_point.x + (2) * dx, line_point.y + (2) * dy));
 	}
 	
 	void field5_t::change_score(const field_t& field, const line5_t& old_line, const line5_t& new_line, const point& pt)
@@ -271,6 +275,17 @@ namespace Gomoku { namespace State5
 	void field5_t::apply_shapshot(const snapshot_t& snapshot)
 	{
 		snapshot.apply(lines_field, [this](const point& pt,const score_t& scr) {set_score(pt,scr);});
+	}
+
+	
+	void sort(points_t& arr, const matrix<score_t>& scores_field, Step move_color)
+	{
+		std::sort(arr.begin(), arr.end(), [&scores_field, move_color](const point& pa, const point& pb)
+		{
+			score_t sa = scores_field.get(pa);
+			score_t sb = scores_field.get(pb);
+			return sa.total(move_color) > sb.total(move_color);
+		});
 	}
 
 } }

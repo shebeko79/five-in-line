@@ -331,4 +331,15 @@ std::string print_field(const steps_t& val)
 		if(it != pts.end())
 			pts.erase(it);
 	}
+
+	points_t set_to_point(const points_set_t& points_set)
+	{
+		if(points_set.empty())
+			return points_t();
+
+		points_t ret(points_set.size());
+		std::copy(points_set.begin(),points_set.end(),ret.begin());
+		return std::move(ret);
+	}
+
 }

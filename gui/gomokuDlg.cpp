@@ -16,7 +16,6 @@
 #include "../db/solution_tree_utils.h"
 
 #include "gomokuDlg.h"
-#include ".\gomokudlg.h"
 
 
 
@@ -29,6 +28,7 @@ namespace fs=boost::filesystem;
 
 BOOST_CLASS_EXPORT(Gomoku::check_player_t)
 BOOST_CLASS_EXPORT(Gomoku::WsPlayer::wsplayer_t)
+BOOST_CLASS_EXPORT(Gomoku::State5::field_state_player_t)
 BOOST_CLASS_EXPORT(Gomoku::ThreadPlayer)
 BOOST_CLASS_EXPORT(Gomoku::mfcPlayer)
 BOOST_CLASS_EXPORT(Gomoku::NullPlayer)
@@ -184,9 +184,15 @@ Gomoku::player_ptr CgomokuDlg::create_player(const CComboBox& cb,Gomoku::Step st
 	switch(cb.GetCurSel())
 	{
     case 0:ret=Gomoku::player_ptr(new Gomoku::mfcPlayer);break;
-	default:
+    case 1:
 	{
 		Gomoku::player_ptr sub(new Gomoku::WsPlayer::wsplayer_t);
+		ret=Gomoku::player_ptr(new Gomoku::ThreadPlayer(sub));
+		break;
+	}
+	default:
+	{
+		Gomoku::player_ptr sub(new Gomoku::State5::field_state_player_t);
 		ret=Gomoku::player_ptr(new Gomoku::ThreadPlayer(sub));
 		break;
 	}
@@ -206,6 +212,7 @@ int CgomokuDlg::player2index(Gomoku::iplayer_t& pl)
 	if(!sub)return -1;
 
 	if(dynamic_cast<Gomoku::WsPlayer::wsplayer_t*>(&*sub)!=0) return 1;
+    if(dynamic_cast<Gomoku::State5::field_state_player_t*>(&*sub)!=0) return 2;
 	return -1;
 }
 

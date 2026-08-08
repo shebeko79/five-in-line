@@ -2,6 +2,7 @@
 
 #include "../algo/game.h"
 #include "../algo/wsplayer.h"
+#include "../algo/field_state_player.h"
 #include "ThreadProcessor.h"
 #include <boost/signals2/connection.hpp>
 #include "../extern/object_progress.hpp"

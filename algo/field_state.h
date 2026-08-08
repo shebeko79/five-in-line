@@ -4,6 +4,7 @@
 #include <functional>
 #include "field.h"
 #include <array>
+#include "../extern/binary_find.h"
 
 namespace Gomoku { namespace State5
 {
@@ -26,6 +27,14 @@ namespace Gomoku { namespace State5
 	{
 		unsigned krestik_score = 20;
 		unsigned nolik_score = 20;
+		
+		score_t() = default;
+		score_t(unsigned k, unsigned n) : krestik_score(k), nolik_score(n) {}
+		
+		inline unsigned total(Step move_color) const 
+		{
+			return move_color == st_krestik? krestik_score*2+nolik_score : nolik_score*2 + krestik_score;
+		}
 	};
 
 	unsigned max_steps(unsigned score);
@@ -90,6 +99,12 @@ namespace Gomoku { namespace State5
 		sorted_scores();
 		
 		void update(const point& pt, unsigned old_scr, unsigned new_scr);
+
+		bool p5_exists(const point& p) const {return std::find(p5.begin(),p5.end(),p)!=p5.end();}
+		bool p4_exists(const point& p) const {return binary_find(p4.begin(),p4.end(),p,less_point_pr())!=p4.end();}
+		bool p3_exists(const point& p) const {return p3.find(p) != p3.end();}
+		bool p2_exists(const point& p) const {return p2.find(p) != p2.end();}
+	
 	private:
 		void add(const point& pt, unsigned step);
 		void remove(const point& pt, unsigned step);
@@ -104,6 +119,8 @@ namespace Gomoku { namespace State5
 		
 		void change_state(const field_t& field);
 		void set_steps(const field_t::steps_t& steps);
+		inline const sorted_scores& get_sorted(Step st) const {return st==st_krestik? sorted_krestik: sorted_nolik;};
+		inline const matrix<score_t>& get_scores_field() const {return scores_field;}
 	private:
 		matrix<lines5_t> lines_field;
 		matrix<score_t> scores_field;
@@ -112,11 +129,14 @@ namespace Gomoku { namespace State5
 
 
 		void change_state(const field_t& field, int dx, int dy);
-		void change_line(const field_t& field,const step_t& st, const point& line_point, int dx, int dy);
+		void change_line(const field_t& field,Step color, const point& line_point, int dx, int dy);
 		void change_score(const field_t& field,const line5_t& old_line, const line5_t& new_line, const point& pt);
 
 		void set_score(const point& pt, const score_t& new_scr);
 	};
+
+	
+	void sort(points_t& arr, const matrix<score_t>& scores_field, Step move_color);
 
 } }//namespace gomoku
 

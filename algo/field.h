@@ -55,6 +55,14 @@ namespace Gomoku
 		}
 	};
 
+	struct less_n_pr
+	{
+		inline bool operator()(const npoint& a,const npoint& b) const
+		{
+			return a.n<b.n;
+		}
+	};
+
 	typedef std::set<point, less_point_pr> points_set_t;
 
 	struct near_point_pr : public less_point_pr
@@ -234,6 +242,8 @@ namespace Gomoku
 	void erase(points_t& pts, const point& pt);
 	void sorted_insert(points_t& pts, const point& pt);
 	void sorted_erase(points_t& pts, const point& pt);
+
+	points_t set_to_point(const points_set_t& points_set);
 }//namespace gomoku
 
 namespace std

@@ -64,18 +64,26 @@ END
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\gomoku.ico"
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
 //
 
 IDB_EMPTY               BITMAP                  "res\\empty.bmp"
+
 IDB_KRESTIK             BITMAP                  "res\\krestik.bmp"
+
 IDB_NOLIK               BITMAP                  "res\\nolik.bmp"
+
 IDB_NOLIK_HI            BITMAP                  "res\\nolik_hi.bmp"
+
 IDB_KRESTIK_HI          BITMAP                  "res\\krestik_hi.bmp"
+
 IDB_NOLIK_LAST          BITMAP                  "res\\nolik_last.bmp"
+
 IDB_KRESTIK_LAST        BITMAP                  "res\\krestik_last.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -121,6 +129,7 @@ LANGUAGE LANG_UKRAINIAN, SUBLANG_DEFAULT
 
 IDR_TOOLBAR1            BITMAP                  "res\\toolbar1.bmp"
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Toolbar
@@ -142,7 +151,9 @@ END
 //
 
 IDB_TB                  PNG                     "res\\tb.png"
+
 IDB_TB_DIS              PNG                     "res\\tb_dis.png"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -255,11 +266,26 @@ BEGIN
     IDC_PLAYER1, 0x403, 6, 0
 0x7568, 0x616d, 0x006e, 
     IDC_PLAYER1, 0x403, 9, 0
-0x6f63, 0x706d, 0x7475, 0x7265, "\000" 
+0x7377, 0x6c70, 0x7961, 0x7265, "\000" 
+    IDC_PLAYER1, 0x403, 7, 0
+0x7473, 0x7461, 0x3565, "\000" 
     IDC_PLAYER2, 0x403, 6, 0
 0x7568, 0x616d, 0x006e, 
     IDC_PLAYER2, 0x403, 9, 0
-0x6f63, 0x706d, 0x7475, 0x7265, "\000" 
+0x7377, 0x6c70, 0x7961, 0x7265, "\000" 
+    IDC_PLAYER2, 0x403, 7, 0
+0x7473, 0x7461, 0x3565, "\000" 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_GOMOKU_DIALOG AFX_DIALOG_LAYOUT
+BEGIN
     0
 END
 
