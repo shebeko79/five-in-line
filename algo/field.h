@@ -7,6 +7,7 @@
 #include "primitives.h"
 #include <algorithm>
 #include <map>
+#include <set>
 
 namespace Gomoku
 {
@@ -53,6 +54,8 @@ namespace Gomoku
 			return a.step<b.step;
 		}
 	};
+
+	typedef std::set<point, less_point_pr> points_set_t;
 
 	struct near_point_pr : public less_point_pr
 	{
@@ -226,6 +229,11 @@ namespace Gomoku
 
 	void make_unique(npoints_t& pts);
 	void make_unique(points_t& pts);
+
+	void insert(points_t& pts, const point& pt);
+	void erase(points_t& pts, const point& pt);
+	void sorted_insert(points_t& pts, const point& pt);
+	void sorted_erase(points_t& pts, const point& pt);
 }//namespace gomoku
 
 namespace std

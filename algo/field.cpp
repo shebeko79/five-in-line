@@ -301,4 +301,34 @@ std::string print_field(const steps_t& val)
 		    std::unique(pts.begin(),pts.end()),
 		    pts.end());
     }
+
+	void insert(points_t& pts, const point& pt)
+	{
+		auto it = std::find(pts.begin(),pts.end(),pt);
+		if(it == pts.end())
+			pts.push_back(pt);
+	}
+
+	void erase(points_t& pts, const point& pt)
+	{
+		auto it = std::find(pts.begin(),pts.end(),pt);
+		if(it != pts.end())
+			pts.erase(it);
+	}
+
+	void sorted_insert(points_t& pts, const point& pt)
+	{
+		auto it = std::lower_bound(pts.begin(),pts.end(),pt, less_point_pr());
+		if(it != pts.end() && *it == pt)
+			return;
+		
+		pts.insert(it, pt);
+	}
+	
+	void sorted_erase(points_t& pts, const point& pt)
+	{
+		auto it = binary_find(pts.begin(),pts.end(),pt, less_point_pr());
+		if(it != pts.end())
+			pts.erase(it);
+	}
 }
