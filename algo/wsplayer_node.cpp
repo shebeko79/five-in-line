@@ -20,7 +20,7 @@ item_t::item_t(wsplayer_t& _player,const step_t& s) :
 	++nodes_count;
 	deep_wins_count=0;
 	deep_fails_count=0;
-	neitrals_min_deep=0;
+	neutrals_min_deep=0;
 }
 
 item_t::item_t(wsplayer_t& _player,const Gomoku::point& p,Step s) : 
@@ -30,7 +30,7 @@ item_t::item_t(wsplayer_t& _player,const Gomoku::point& p,Step s) :
 	++nodes_count;
 	deep_wins_count=0;
 	deep_fails_count=0;
-	neitrals_min_deep=0;
+	neutrals_min_deep=0;
 }
 
 void item_t::process_deep_common()
@@ -42,14 +42,14 @@ void item_t::process_deep_common()
 
 	process_deep_stored();
 
-	if(!is_completed() && neitrals.size()>1)
+	if(!is_completed() && neutrals.size()>1)
 		process_deep_ant();
 
 	point pt=*get_next_step();
 
 	lg<<"process_deep_common():"
 		<<" step #"<<(player.field.size()+1)<<"=("<<pt.x<<","<<pt.y<<")"
-		<<" neitrals="<<neitrals.size()
+		<<" neutrals="<<neutrals.size()
 		<<" processed="<<player.predict_processed
 		<<" perf="<<perf;
 }
@@ -65,10 +65,10 @@ void item_t::process_deep_ant()
 			return;
 	}
 
-	if(!neitrals.empty())
+	if(!neutrals.empty())
 	{
-		items_t::iterator it=std::min_element(neitrals.begin(),neitrals.end(),win_rate_cmp_pr());
-		std::iter_swap(neitrals.begin(),it);
+		items_t::iterator it=std::min_element(neutrals.begin(),neutrals.end(),win_rate_cmp_pr());
+		std::iter_swap(neutrals.begin(),it);
 	}
 }
 
@@ -78,25 +78,25 @@ void item_t::process_deep_stored()
 	{
 		process(i+1<stored_deep||stored_deep==1);
 
-		if(is_completed() || neitrals.size() == 1)
+		if(is_completed() || neutrals.size() == 1)
 			return;
 	}
 }
 
 void item_t::clear()
 {
-	neitrals.clear();
+	neutrals.clear();
 	wins.clear();
 	fails.clear();
 	deep_wins_count=0;
 	deep_fails_count=0;
-	neitrals_min_deep=0;
+	neutrals_min_deep=0;
 }
 
 item_ptr item_t::get_next_step() const
 {
 	if(!wins.empty())return wins.get_best();
-	if(!neitrals.empty())return neitrals.front();
+	if(!neutrals.empty())return neutrals.front();
 	if(fails.empty())throw std::runtime_error("item_t::get_next_step(): invalid state");
 	return fails.get_best();
 }
@@ -109,20 +109,20 @@ item_ptr item_t::get_win_fail_step() const
 }
 
 
-void item_t::process(bool need_fill_neitrals,const item_t* parent_node)
+void item_t::process(bool need_fill_neutrals,const item_t* parent_node)
 {
 	if(is_completed())
 		return;
 
-	if(neitrals.empty())
-		process_predict_treat_sequence(need_fill_neitrals);
+	if(neutrals.empty())
+		process_predict_treat_sequence(need_fill_neutrals);
 	else
-		process_neitrals(need_fill_neitrals,0,parent_node);
+		process_neutrals(need_fill_neutrals,0,parent_node);
 
-	calculate_neitrals_min_deep();
+	calculate_neutrals_min_deep();
 }
 
-void item_t::process_predict_treat_sequence(bool need_fill_neitrals)
+void item_t::process_predict_treat_sequence(bool need_fill_neutrals)
 {
 	unsigned_restore_t hld(player.lookup_deep);
 	player.lookup_deep=0;
@@ -138,10 +138,10 @@ void item_t::process_predict_treat_sequence(bool need_fill_neitrals)
 	if(is_completed())
 		return;
 
-	process_predictable_move(need_fill_neitrals);
+	process_predictable_move(need_fill_neutrals);
 }
 
-void item_t::process_predictable_move(bool need_fill_neitrals)
+void item_t::process_predictable_move(bool need_fill_neutrals)
 {
 	unsigned& recursive_deep=player.predict_deep;
 	inc_t r(recursive_deep);
@@ -174,8 +174,8 @@ void item_t::process_predictable_move(bool need_fill_neitrals)
 			return;
 		}
 
-		neitrals.push_back(create_neitral_item(d5_pts.front(),other_color(step)) );
-		neitrals_min_deep=1;
+		neutrals.push_back(create_neitral_item(d5_pts.front(),other_color(step)) );
+		neutrals_min_deep=1;
 
 		if(!player.is_lookup_deep_available())
 			return;
@@ -186,7 +186,7 @@ void item_t::process_predictable_move(bool need_fill_neitrals)
 			<<"\r\n"<<print_field(player.field.get_steps());
 #endif
 
-		process_neitrals(need_fill_neitrals);
+		process_neutrals(need_fill_neutrals);
 		return;
 	}
 
@@ -257,7 +257,7 @@ void item_t::process_predictable_move(bool need_fill_neitrals)
 		add(do4_pts,ac4_open_pts);
 
 
-		add_neitrals(do4_pts);
+		add_neutrals(do4_pts);
 
 		if(!player.is_lookup_deep_available())
 			return;
@@ -268,10 +268,10 @@ void item_t::process_predictable_move(bool need_fill_neitrals)
 			<<"\r\n"<<print_field(player.field.get_steps());
 #endif
 
-		return process_neitrals(false);
+		return process_neutrals(false);
 	}
 
-	if(!need_fill_neitrals&&!player.is_lookup_deep_available())
+	if(!need_fill_neutrals&&!player.is_lookup_deep_available())
 		return;
 
 	if(!ac4_pts.empty())
@@ -288,7 +288,7 @@ void item_t::process_predictable_move(bool need_fill_neitrals)
 				<<" pts="<<print_points(pts)
 				<<"\r\n"<<print_field(player.field.get_steps());
 #endif
-		add_and_process_neitrals(pts,2);
+		add_and_process_neutrals(pts,2);
 		if(is_win())
 			return;
 	}
@@ -309,7 +309,7 @@ void item_t::process_predictable_move(bool need_fill_neitrals)
 				<<" pts="<<print_points(pts)
 				<<"\r\n"<<print_field(player.field.get_steps());
 #endif
-		add_and_process_neitrals(pts,1);
+		add_and_process_neutrals(pts,1);
 		if(is_win())
 			return;
 	}
@@ -327,7 +327,7 @@ void item_t::process_predictable_move(bool need_fill_neitrals)
 				<<" pts="<<print_points(pts)
 				<<"\r\n"<<print_field(player.field.get_steps());
 #endif
-		add_and_process_neitrals(pts,1);
+		add_and_process_neutrals(pts,1);
 		if(is_win())
 			return;
 	}
@@ -360,26 +360,26 @@ void item_t::process_predictable_move(bool need_fill_neitrals)
 	add(do3_pts,do3_open_pts);
 	add(do3_pts,empty_points);
 
-	add_neitrals(do3_pts);
+	add_neutrals(do3_pts);
 }
 
-void item_t::process_neitrals(bool need_fill_neitrals,unsigned from,const item_t* parent_node)
+void item_t::process_neutrals(bool need_fill_neutrals,unsigned from,const item_t* parent_node)
 {
 	unsigned_restore_t hld(player.lookup_deep);
 
-	for(unsigned i=from;i<neitrals.size();i++)
+	for(unsigned i=from;i<neutrals.size();i++)
 	{
 		player.check_cancel();
-		item_ptr& pch=neitrals[i];
+		item_ptr& pch=neutrals[i];
 		item_t& ch=*pch;
 
-		if(ch.neitrals_min_deep>=neitrals_min_deep)
+		if(ch.neutrals_min_deep>=neutrals_min_deep)
 			continue;
 
 		bool b=player.is_lookup_deep_available();
 
 		temporary_state ts(player,ch);
-		ch.process(need_fill_neitrals,this);
+		ch.process(need_fill_neutrals,this);
 
 		if(ch.is_fail())
 		{
@@ -397,18 +397,18 @@ void item_t::process_neitrals(bool need_fill_neitrals,unsigned from,const item_t
 		}
 	}
 
-	neitrals.erase(std::remove(neitrals.begin(),neitrals.end(),item_ptr()),neitrals.end());
+	neutrals.erase(std::remove(neutrals.begin(),neutrals.end(),item_ptr()),neutrals.end());
 }
 
-void item_t::add_and_process_neitrals(const npoints_t& pts,unsigned drop_generation)
+void item_t::add_and_process_neutrals(const npoints_t& pts,unsigned drop_generation)
 {
-	unsigned from=neitrals.size();
-	add_neitrals(pts);
+	unsigned from=neutrals.size();
+	add_neutrals(pts);
 
 	if(!player.is_lookup_deep_available())
 		return;
 	
-	process_neitrals(false,from);
+	process_neutrals(false,from);
 }
 
 void item_t::process_treat_sequence()
@@ -537,17 +537,17 @@ bool item_t::is_defence_five_exists() const
 }
 
 template<class Points>
-void item_t::add_neitrals(const Points& pts)
+void item_t::add_neutrals(const Points& pts)
 {
 	step_t s;
 	s.step=other_color(step);
 
-	size_t exist_count=neitrals.size();
+	size_t exist_count=neutrals.size();
 
-	neitrals.resize(exist_count+pts.size());
+	neutrals.resize(exist_count+pts.size());
 
 	typename Points::const_iterator i=pts.begin(),ei=pts.end();
-	items_t::iterator j=neitrals.begin()+exist_count;
+	items_t::iterator j=neutrals.begin()+exist_count;
     
 	for(;i!=ei;++i,++j)
 	{
@@ -555,8 +555,8 @@ void item_t::add_neitrals(const Points& pts)
 		*j=create_neitral_item(s);
 	}
 
-	if(neitrals_min_deep==0 && !neitrals.empty())
-		neitrals_min_deep=1;
+	if(neutrals_min_deep==0 && !neutrals.empty())
+		neutrals_min_deep=1;
 
 }
 
@@ -571,9 +571,9 @@ void item_t::calculate_deep_wins_fails()
 	deep_wins_count=wins.size();
 	deep_fails_count=fails.size();
 	
-	for(size_t i=0;i<neitrals.size();i++)
+	for(size_t i=0;i<neutrals.size();i++)
 	{
-		item_t& v=*neitrals[i];
+		item_t& v=*neutrals[i];
 		v.calculate_deep_wins_fails();
 		deep_wins_count+=v.deep_fails_count/2;
 		deep_fails_count+=v.deep_wins_count/2;
@@ -585,7 +585,7 @@ void item_t::solve_ant(const item_t* parent_node)
 	if(is_completed())
 		return;
 	
-	if(neitrals.empty())
+	if(neutrals.empty())
 	{
 		unsigned_restore_t hld(player.lookup_deep);
 		player.lookup_deep=0;
@@ -600,7 +600,7 @@ void item_t::solve_ant(const item_t* parent_node)
 	}
 
 	size_t shift=select_ant_neitral(parent_node);
-	item_ptr pch=neitrals[shift];
+	item_ptr pch=neutrals[shift];
 	item_t& ch=*pch;
 
 	long long dw=ch.deep_wins_count/2;
@@ -619,7 +619,7 @@ void item_t::solve_ant(const item_t* parent_node)
 		return;
 	}
 
-	neitrals.erase(neitrals.begin()+shift);
+	neutrals.erase(neutrals.begin()+shift);
 
 	if(ch.is_fail())
 	{
@@ -634,11 +634,11 @@ void item_t::solve_ant(const item_t* parent_node)
 
 size_t item_t::select_ant_neitral(const item_t* parent_node)
 {
-    std::vector<double> marks(neitrals.size());
+    std::vector<double> marks(neutrals.size());
 
     for(size_t i=0;i<marks.size();i++)
     {
-		const item_t& v=*neitrals[i];
+		const item_t& v=*neutrals[i];
         marks[i]=1.0/v.get_win_rate();
 		marks[i]*=(marks.size()-i);
     }
@@ -648,7 +648,7 @@ size_t item_t::select_ant_neitral(const item_t* parent_node)
 		const npoints_t& wins_hint=parent_node->get_fails().get_win_hins();
 		for(size_t i=0;i<marks.size();i++)
 		{
-			const item_t& v=*neitrals[i];
+			const item_t& v=*neutrals[i];
 
 			npoints_t::const_iterator it=binary_find(wins_hint.begin(),wins_hint.end(),v,less_point_pr());
 			if(it!=wins_hint.end())
@@ -662,21 +662,21 @@ size_t item_t::select_ant_neitral(const item_t* parent_node)
     return shift;
 }
 
-void item_t::calculate_neitrals_min_deep()
+void item_t::calculate_neutrals_min_deep()
 {
-	if(neitrals.empty())
+	if(neutrals.empty())
 	{
-		neitrals_min_deep=0;
+		neutrals_min_deep=0;
 		return;
 	}
 
-	neitrals_min_deep=neitrals.front()->neitrals_min_deep+1;
+	neutrals_min_deep=neutrals.front()->neutrals_min_deep+1;
 
-	for(unsigned i=1;i<neitrals.size();i++)
+	for(unsigned i=1;i<neutrals.size();i++)
 	{
-		unsigned v=neitrals[i]->neitrals_min_deep+1;
-		if(v<neitrals_min_deep)
-			neitrals_min_deep=v;
+		unsigned v=neutrals[i]->neutrals_min_deep+1;
+		if(v<neutrals_min_deep)
+			neutrals_min_deep=v;
 	}
 }
 
@@ -686,7 +686,7 @@ void wide_item_t::process_deep_common()
 {
 	process_deep_stored();
 	
-	if(wins.empty() && !neitrals.empty())
+	if(wins.empty() && !neutrals.empty())
 		process_deep_ant();
 }
 
@@ -695,16 +695,16 @@ void wide_item_t::process_deep_stored()
 	for(unsigned i=0;i<stored_deep;i++)
 	{
 		process(i+1<stored_deep||stored_deep==1);
-		if(neitrals.empty())break;
+		if(neutrals.empty())break;
 	}
 }
 
-void wide_item_t::process(bool need_fill_neitrals)
+void wide_item_t::process(bool need_fill_neutrals)
 {
-	if(!neitrals.empty()||!wins.empty()||!fails.empty())
+	if(!neutrals.empty()||!wins.empty()||!fails.empty())
 	{
-		process_neitrals(need_fill_neitrals);
-		calculate_neitrals_min_deep();
+		process_neutrals(need_fill_neutrals);
+		calculate_neutrals_min_deep();
 		return;
 	}
 
@@ -722,23 +722,23 @@ void wide_item_t::process(bool need_fill_neitrals)
 	if(is_completed())
 		return;
 
-	process_predictable_move(need_fill_neitrals);
-	calculate_neitrals_min_deep();
+	process_predictable_move(need_fill_neutrals);
+	calculate_neutrals_min_deep();
 }
 
-void wide_item_t::process_neitrals(bool need_fill_neitrals,unsigned from,const item_t* parent_node)
+void wide_item_t::process_neutrals(bool need_fill_neutrals,unsigned from,const item_t* parent_node)
 {
-	for(unsigned i=from;i<neitrals.size();i++)
+	for(unsigned i=from;i<neutrals.size();i++)
 	{
 		player.check_cancel();
-		item_ptr& pch=neitrals[i];
+		item_ptr& pch=neutrals[i];
 		item_t& ch=*pch;
 
-		if(ch.neitrals_min_deep>=neitrals_min_deep)
+		if(ch.neutrals_min_deep>=neutrals_min_deep)
 			continue;
 
 		temporary_state ts(player,ch);
-		ch.process(need_fill_neitrals);
+		ch.process(need_fill_neutrals);
 		
 		if(!ch.is_completed())
 			continue;
@@ -748,7 +748,7 @@ void wide_item_t::process_neitrals(bool need_fill_neitrals,unsigned from,const i
 		pch.reset();
 	}
 
-	neitrals.erase(std::remove(neitrals.begin(),neitrals.end(),item_ptr()),neitrals.end());
+	neutrals.erase(std::remove(neutrals.begin(),neutrals.end(),item_ptr()),neutrals.end());
 }
 
 item_ptr wide_item_t::create_neitral_item(const step_t& s)

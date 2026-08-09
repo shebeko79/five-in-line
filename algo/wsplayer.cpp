@@ -49,7 +49,7 @@ void wsplayer_t::delegate_step()
 		std::string chain=print_chain(root->get_wins().get_best());
 		lg<<"wsplayer_t::delegate_step(): find win chain_depth="<<depth<<": "<<chain;
 	}
-	if(!root->get_fails().empty() && root->get_neitrals().empty())lg<<"wsplayer_t::delegate_step(): find fail chain_depth="<<(root->get_chain_depth()-1)
+	if(!root->get_fails().empty() && root->get_neutrals().empty())lg<<"wsplayer_t::delegate_step(): find fail chain_depth="<<(root->get_chain_depth()-1)
 		<<": "<<print_chain(root->get_fails().get_best());
 
 	point p=*root->get_next_step();

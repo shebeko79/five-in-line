@@ -39,7 +39,7 @@ void field_state_player_t::delegate_step()
 		//lg<<"field_state_player_t::delegate_step(): find win chain_depth="<<depth<<": "<<chain;
 		lg<<"field_state_player_t::delegate_step(): win";
 	}
-	else if (!root.get_fails().empty() && root.get_neitrals().empty())
+	else if (!root.get_fails().empty() && root.get_neutrals().empty())
 	{
 		lg << "field_state_player_t::delegate_step(): fail";
 
@@ -174,7 +174,7 @@ bool node_t::mark_unchecked_make_move(points_t& pts, const matrix<score_t>& scor
 bool node_t::mark_limit_reached()
 {
 	deep_limit_reached = true;
-	return !neitrals.empty();
+	return !neutrals.empty();
 }
 
 bool node_t::make_move_find_win(const points_t& pts)
@@ -207,9 +207,9 @@ void node_t::make_move(const point& p)
 	{
 		fails.emplace_back(npoint(new_step,win->n+1));
 	}
-	else if (!sub.neitrals.empty())
+	else if (!sub.neutrals.empty())
 	{
-		neitrals.push_back(new_step);
+		neutrals.push_back(new_step);
 	}
 	else
 	{
@@ -217,7 +217,7 @@ void node_t::make_move(const point& p)
 		if(fail) wins.emplace_back(npoint(new_step,fail->n+1));
 		else
 		{
-			if(sub.unchecked_exists)neitrals.push_back(new_step);
+			if(sub.unchecked_exists)neutrals.push_back(new_step);
 			else throw std::runtime_error("node_t::make_move(): invalid state");
 		}
 		
@@ -233,9 +233,9 @@ const point& node_t::get_next_step() const
 	auto* win = get_min_win();
 	if (win)return *win;
 
-	if (!neitrals.empty())
+	if (!neutrals.empty())
 	{
-		return *std::min_element(neitrals.begin(),neitrals.end(), near_point_pr(point(0,0)));
+		return *std::min_element(neutrals.begin(),neutrals.end(), near_point_pr(point(0,0)));
 	}
 
 	auto* fail = get_max_fail();

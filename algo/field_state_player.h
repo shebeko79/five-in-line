@@ -49,7 +49,7 @@ namespace Gomoku { namespace State5
 
 		const point& get_next_step() const;
 
-		inline const points_t& get_neitrals() const {return neitrals;};
+		inline const points_t& get_neutrals() const {return neutrals;};
 		inline const npoints_t& get_wins() const {return wins;};
 		inline const npoints_t& get_fails() const {return fails;};
 
@@ -58,7 +58,7 @@ namespace Gomoku { namespace State5
 	private:
 		field_state_player_t& player;
 
-		points_t neitrals; 
+		points_t neutrals; 
 		npoints_t wins;
 		npoints_t fails;
 		
