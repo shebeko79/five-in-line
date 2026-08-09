@@ -62,6 +62,7 @@ namespace Gomoku { namespace State5
 		line_t tbl;
 		line_t btl;
 
+		score_t  central_s;
 		scores_t hs;
 		scores_t vs;
 		scores_t tbs;
@@ -69,7 +70,8 @@ namespace Gomoku { namespace State5
 
 		snapshot_t() = default;
 		snapshot_t(const step_t& _st, const matrix<lines5_t>& lines_field, const matrix<score_t>& scores_field) : 
-			st(_st)
+			st(_st),
+			central_s(scores_field.get(_st))
 		{
 			fill(lines_field); 
 			fill(scores_field); 

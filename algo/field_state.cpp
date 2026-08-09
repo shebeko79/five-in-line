@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdexcept>
 #include "field_state.h"
 
 
@@ -85,6 +86,7 @@ namespace Gomoku { namespace State5
 	{
 		apply(lines_field);
 		apply(scr_set);
+		scr_set(st, central_s);
 	}
 
 	void snapshot_t::apply(matrix<lines5_t>& lines_field) const
@@ -243,6 +245,7 @@ namespace Gomoku { namespace State5
 
 		change_score(field,old_line,line,point(line_point.x + (-2) * dx, line_point.y + (-2) * dy));
 		change_score(field,old_line,line,point(line_point.x + (-1) * dx, line_point.y + (-1) * dy));
+		change_score(field,old_line,line,point(line_point.x            , line_point.y            ));
 		change_score(field,old_line,line,point(line_point.x + (1) * dx, line_point.y + (1) * dy));
 		change_score(field,old_line,line,point(line_point.x + (2) * dx, line_point.y + (2) * dy));
 	}
@@ -253,6 +256,16 @@ namespace Gomoku { namespace State5
 			return;
 
 		score_t scr = scores_field.get(pt);
+
+		if (scr.krestik_score + new_line.get_score(st_krestik) < old_line.get_score(st_krestik))
+		{
+			throw std::runtime_error("field5_t::change_score(st_krestik): <0");
+		}
+
+		if (scr.nolik_score + new_line.get_score(st_nolik) < old_line.get_score(st_nolik))
+		{
+			throw std::runtime_error("field5_t::change_score(st_nolik): <0");
+		}
 
 		scr.krestik_score -= old_line.get_score(st_krestik);
 		scr.krestik_score += new_line.get_score(st_krestik);

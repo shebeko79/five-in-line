@@ -87,7 +87,7 @@ void node_t::process()
 			return;
 	}
 
-	if(deep>=threat_deep)
+	if(deep>=threat_deep && mark_limit_reached())
 		return;
 
 	auto& scores_field = player.field5.get_scores_field();
@@ -99,8 +99,7 @@ void node_t::process()
 			return other_srt.p5_exists(p);
 		}
 	), pts.end());
-	sort(pts, scores_field, move_color);
-	if(make_move_find_win(pts))
+	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
 	pts = other_srt.p4;
@@ -110,11 +109,10 @@ void node_t::process()
 			return move_srt.p5_exists(p) ||  move_srt.p4_exists(p);
 		}
 	), pts.end());
-	sort(pts, scores_field, move_color);
-	if(make_move_find_win(pts))
+	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
-	if(deep>=common_deep)
+	if(deep>=common_deep && mark_limit_reached())
 		return;
 
 	pts = set_to_point(move_srt.p3);
@@ -124,8 +122,7 @@ void node_t::process()
 			return other_srt.p5_exists(p) || other_srt.p4_exists(p);
 		}
 	), pts.end());
-	sort(pts, scores_field, move_color);
-	if(make_move_find_win(pts))
+	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
 	pts = set_to_point(other_srt.p3);
@@ -136,7 +133,7 @@ void node_t::process()
 		}
 	), pts.end());
 	sort(pts, scores_field, move_color);
-	if(make_move_find_win(pts))
+	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
 	pts = set_to_point(move_srt.p2);
@@ -147,7 +144,7 @@ void node_t::process()
 		}
 	), pts.end());
 	sort(pts, scores_field, move_color);
-	if(make_move_find_win(pts))
+	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
 	pts = set_to_point(other_srt.p2);
@@ -158,8 +155,26 @@ void node_t::process()
 		}
 	), pts.end());
 	sort(pts, scores_field, move_color);
-	if(make_move_find_win(pts))
+	if(mark_unchecked_make_move(pts, scores_field))
 		return;
+}
+
+bool node_t::mark_unchecked_make_move(points_t& pts, const matrix<score_t>& scores_field)
+{
+	if (deep_limit_reached)
+	{
+		unchecked_exists = !pts.empty();
+		return unchecked_exists;
+	}
+
+	sort(pts, scores_field, move_color);
+	return make_move_find_win(pts);
+}
+
+bool node_t::mark_limit_reached()
+{
+	deep_limit_reached = true;
+	return !neitrals.empty();
 }
 
 bool node_t::make_move_find_win(const points_t& pts)
@@ -199,8 +214,13 @@ void node_t::make_move(const point& p)
 	else
 	{
 		auto* fail = sub.get_max_fail();
-		if(!fail)throw std::runtime_error("node_t::make_move(): invalid state");
-		wins.emplace_back(npoint(new_step,fail->n+1));
+		if(fail) wins.emplace_back(npoint(new_step,fail->n+1));
+		else
+		{
+			if(sub.unchecked_exists)neitrals.push_back(new_step);
+			else throw std::runtime_error("node_t::make_move(): invalid state");
+		}
+		
 	}
 	
 	player.field5.apply_shapshot(snapshot);
@@ -213,7 +233,10 @@ const point& node_t::get_next_step() const
 	auto* win = get_min_win();
 	if (win)return *win;
 
-	if(!neitrals.empty())return neitrals.front();
+	if (!neitrals.empty())
+	{
+		return *std::min_element(neitrals.begin(),neitrals.end(), near_point_pr(point(0,0)));
+	}
 
 	auto* fail = get_max_fail();
 

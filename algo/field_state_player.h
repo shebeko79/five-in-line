@@ -61,9 +61,15 @@ namespace Gomoku { namespace State5
 		points_t neitrals; 
 		npoints_t wins;
 		npoints_t fails;
+		
+		bool unchecked_exists = false;
+		bool deep_limit_reached = false;
 
+		bool mark_unchecked_make_move(points_t& pts,const matrix<score_t>& scores_field);
 		bool make_move_find_win(const points_t& pts);
 		void make_move(const point& p);
+
+		bool mark_limit_reached();
 	};
 
 

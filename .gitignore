@@ -14,3 +14,4 @@ CMakeFiles
 *.suo
 cmake_install.cmake
 .vs
+*.aps
