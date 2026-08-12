@@ -35,6 +35,8 @@ namespace Gomoku { namespace State5
 		{
 			return move_color == st_krestik? krestik_score*2+nolik_score : nolik_score*2 + krestik_score;
 		}
+
+		inline unsigned score(Step color) const {return color == st_krestik? krestik_score : nolik_score;} 
 	};
 
 	unsigned max_steps(unsigned score);
@@ -106,7 +108,6 @@ namespace Gomoku { namespace State5
 		bool p4_exists(const point& p) const {return binary_find(p4.begin(),p4.end(),p,less_point_pr())!=p4.end();}
 		bool p3_exists(const point& p) const {return p3.find(p) != p3.end();}
 		bool p2_exists(const point& p) const {return p2.find(p) != p2.end();}
-	
 	private:
 		void add(const point& pt, unsigned step);
 		void remove(const point& pt, unsigned step);
@@ -116,6 +117,8 @@ namespace Gomoku { namespace State5
 	class field5_t
 	{
 	public:
+		using line_visitor = std::function<void (const point& line_point,const line5_t& line, int dx, int dy)>;
+
 		snapshot_t make_snapshot(const step_t& st) const { return snapshot_t(st, lines_field, scores_field); }
 		void apply_shapshot(const snapshot_t& snapshot);
 		
@@ -123,6 +126,8 @@ namespace Gomoku { namespace State5
 		void set_steps(const field_t::steps_t& steps);
 		inline const sorted_scores& get_sorted(Step st) const {return st==st_krestik? sorted_krestik: sorted_nolik;};
 		inline const matrix<score_t>& get_scores_field() const {return scores_field;}
+
+		void iterate_involved_lines(const point& pt, const line_visitor& visitor);
 	private:
 		matrix<lines5_t> lines_field;
 		matrix<score_t> scores_field;
@@ -135,6 +140,8 @@ namespace Gomoku { namespace State5
 		void change_score(const field_t& field,const line5_t& old_line, const line5_t& new_line, const point& pt);
 
 		void set_score(const point& pt, const score_t& new_scr);
+		
+		void iterate_involved_lines(const point& pt, const line_visitor& visitor, int dx, int dy);
 	};
 
 	

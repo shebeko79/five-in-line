@@ -290,6 +290,26 @@ namespace Gomoku { namespace State5
 		snapshot.apply(lines_field, [this](const point& pt,const score_t& scr) {set_score(pt,scr);});
 	}
 
+	void field5_t::iterate_involved_lines(const point& pt, const line_visitor& visitor)
+	{
+		iterate_involved_lines(pt,visitor,1,0);
+		iterate_involved_lines(pt,visitor,0,1);
+		iterate_involved_lines(pt,visitor,1,1);
+		iterate_involved_lines(pt,visitor,1,-1);
+	}
+
+	void field5_t::iterate_involved_lines(const point& pt, const line_visitor& visitor, int dx, int dy)
+	{
+		for (int i = -2; i <= 2; i++)
+		{
+			point line_point(pt.x + i * dx, pt.y + i * dy);
+			lines5_t sts = lines_field.get(line_point);
+			auto& line = sts.get_line(dx,dy);
+			visitor(line_point,line,dx,dy);
+		}
+	}
+
+
 	
 	void sort(points_t& arr, const matrix<score_t>& scores_field, Step move_color)
 	{

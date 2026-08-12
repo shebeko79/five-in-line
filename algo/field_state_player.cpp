@@ -102,6 +102,8 @@ void node_t::process()
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
+	limit_to_p4_fork(other_srt);
+
 	pts = other_srt.p4;
 	pts.erase(std::remove_if(pts.begin(), pts.end(), 
 		[&](const point& p)
@@ -132,7 +134,6 @@ void node_t::process()
 			return move_srt.p5_exists(p) ||  move_srt.p4_exists(p) || move_srt.p3_exists(p);
 		}
 	), pts.end());
-	sort(pts, scores_field, move_color);
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
@@ -143,7 +144,6 @@ void node_t::process()
 			return other_srt.p5_exists(p) || other_srt.p4_exists(p) || other_srt.p3_exists(p);
 		}
 	), pts.end());
-	sort(pts, scores_field, move_color);
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
@@ -154,18 +154,34 @@ void node_t::process()
 			return move_srt.p5_exists(p) ||  move_srt.p4_exists(p) || move_srt.p3_exists(p) || move_srt.p2_exists(p);
 		}
 	), pts.end());
-	sort(pts, scores_field, move_color);
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 }
 
 bool node_t::mark_unchecked_make_move(points_t& pts, const matrix<score_t>& scores_field)
 {
+	unsigned inside_count = 0;
+	if (oposite_fork.is_active())
+	{
+		for (const point& p : pts)
+		{
+			if (oposite_fork.inside(p))
+				++inside_count;
+			else
+			{
+				fails.emplace_back(npoint(p,4));
+			}
+		}
+	}
+
 	if (deep_limit_reached)
 	{
-		unchecked_exists = !pts.empty();
+		unchecked_exists = oposite_fork.is_active()? inside_count>0 : !pts.empty();
 		return unchecked_exists;
 	}
+
+	if (oposite_fork.is_active())
+		pts.erase(std::remove_if(pts.begin(),pts.end(),[this](const point& p){return !oposite_fork.inside(p);}), pts.end());
 
 	sort(pts, scores_field, move_color);
 	return make_move_find_win(pts);
@@ -227,6 +243,44 @@ void node_t::make_move(const point& p)
 	player.field.pop(old_bound);
 }
 
+void node_t::limit_to_p4_fork(const sorted_scores& other_srt)
+{
+	if(other_srt.p4.empty())
+		return;
+
+	const matrix<score_t>& scores_field = player.field5.get_scores_field();
+
+	for (const point& p : other_srt.p4)
+	{
+		auto count4 = scores_field.get(p).score(prev_step.step)/kScore4;
+		if(count4<2)
+			continue;
+
+		fork_t f(p);
+		if(count4 == 2) 
+		{
+			player.field5.iterate_involved_lines(p, [&](const point& line_point, const line5_t& line, int dx, int dy)
+				{
+					if(line.steps != 4 || line.color != prev_step.step)
+						return;
+
+					for (int i = -2; i <= 2; i++)
+					{
+						point p_empty(line_point.x + i * dx, line_point.y + i * dy);
+						if(player.field.at(p_empty) == st_empty)
+							f.add(p_empty);
+					}
+				});
+
+		}
+		
+		oposite_fork.merge(f);
+		if(oposite_fork.is_empty_set())
+			return;
+	}
+}
+
+
 
 const point& node_t::get_next_step() const
 {
@@ -259,7 +313,6 @@ const npoint* node_t::get_max_fail() const
 
 	return &*std::max_element(fails.begin(), fails.end(), less_n_pr());
 }
-
 
 
 } }//namespace Gomoku
