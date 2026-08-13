@@ -4,35 +4,16 @@
 #include "stdafx.h"
 #include "gomoku.h"
 
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/nvp.hpp>
 #include "../db/solution_tree_utils.h"
 
 #include "gomokuDlg.h"
-
-
 
 #include <boost/filesystem/operations.hpp>
 namespace fs=boost::filesystem;
 
 #include "../algo/check_player.h"
-#include "../algo/game_xml.h"
+#include "../algo/game.h"
 #include "../algo/env_variables.h"
-
-BOOST_CLASS_EXPORT(Gomoku::check_player_t)
-BOOST_CLASS_EXPORT(Gomoku::WsPlayer::wsplayer_t)
-BOOST_CLASS_EXPORT(Gomoku::State5::field_state_player_t)
-BOOST_CLASS_EXPORT(Gomoku::ThreadPlayer)
-BOOST_CLASS_EXPORT(Gomoku::mfcPlayer)
-BOOST_CLASS_EXPORT(Gomoku::NullPlayer)
-
 
 // CgomokuDlg dialog
 
@@ -66,10 +47,6 @@ BEGIN_MESSAGE_MAP(CgomokuDlg, CDialog)
 	ON_WM_SIZE()
 	ON_CBN_SELCHANGE(IDC_PLAYER1, OnCbnSelchangePlayer1)
 	ON_CBN_SELCHANGE(IDC_PLAYER2, OnCbnSelchangePlayer2)
-	ON_COMMAND(ID_OPERATION_LOADGAME, OnLoadGame)
-	ON_COMMAND(ID_OPERATION_SAVEGAME, OnSaveGame)
-    ON_COMMAND(ID_OPERATION_LOADSTRINGFIELD, OnLoadStringField)
-	ON_COMMAND(ID_OPERATION_SAVESTRINGFIELD, OnSaveStringField)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_SHOWMOVENUMBER, OnUpdateEditShowmovenumber)
 	ON_COMMAND(ID_EDIT_SHOWMOVENUMBER, OnEditShowmovenumber)
 	ON_WM_INITMENUPOPUP()
@@ -421,93 +398,6 @@ void CgomokuDlg::OnCbnSelchangePlayer2()
     restart_if_next_player_human();
 	check_state();
 }
-
-void CgomokuDlg::OnLoadGame()
-{
-    try
-    {
-	    CFileDialog dlg(TRUE,0,0,OFN_FILEMUSTEXIST,"Games (*.gm)|*.gm||");
-	    if(dlg.DoModal()!=IDOK)return;
-        
-        pause();
-        redo_steps.clear();
-
-        std::ifstream ifs;
-        ifs.exceptions( std::ifstream::failbit | std::ifstream::badbit );
-        ifs.open(dlg.GetPathName().GetString());
-        boost::archive::xml_iarchive ia(ifs);
-
-        ia >> BOOST_SERIALIZATION_NVP(game);
-        
-        restart_if_next_player_human();
-        invalidate_field_check_state();
-    }
-    catch(std::exception& e)
-    {
-        AfxMessageBox(e.what());
-    }
-}
-
-void CgomokuDlg::OnSaveGame()
-{
-	CFileDialog dlg(FALSE,".gm",0,OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT,"Games (*.gm)|*.gm||");
-	if(dlg.DoModal()!=IDOK)return;
-
-    std::ofstream ofs;
-
-    ofs.open(dlg.GetPathName().GetString());
-    ofs.exceptions( std::ifstream::failbit | std::ifstream::badbit );
-
-    boost::archive::xml_oarchive oa(ofs);
-    oa << BOOST_SERIALIZATION_NVP(game);
-}
-
-void CgomokuDlg::OnLoadStringField()
-{
-    try
-    {
-	    CFileDialog dlg(TRUE,0,0,OFN_FILEMUSTEXIST,"Strings (*.txt)|*.txt||");
-	    if(dlg.DoModal()!=IDOK)return;
-        
-        std::ifstream ifs;
-        ifs.exceptions( std::ifstream::failbit | std::ifstream::badbit );
-        ifs.open(dlg.GetPathName().GetString());
-
-        std::string str;
-        ifs>>str;
-
-        Gomoku::steps_t steps=Gomoku::scan_steps(str);
-
-        reorder_state_to_game_order(steps);
-
-        pause();
-        redo_steps.clear();
-        game.field().set_steps(steps);
-
-        restart_if_next_player_human();
-        invalidate_field_check_state();
-    }
-    catch(std::exception& e)
-    {
-        AfxMessageBox(e.what());
-    }
-}
-
-void CgomokuDlg::OnSaveStringField()
-{
-	CFileDialog dlg(FALSE,".txt",0,OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT,"Strings (*.txt)|*.txt||");
-	if(dlg.DoModal()!=IDOK)return;
-
-	Gomoku::steps_t steps=game.field().get_steps();
-	std::string str=print_steps(steps);
-
-    std::ofstream ofs;
-
-    ofs.open(dlg.GetPathName().GetString());
-    ofs.exceptions( std::ifstream::failbit | std::ifstream::badbit );
-    ofs<<str;
-}
-
 
 void CgomokuDlg::OnEditCopystate()
 {

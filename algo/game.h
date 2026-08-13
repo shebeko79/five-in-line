@@ -50,11 +50,6 @@ namespace Gomoku
 
         virtual bool is_thinking() const=0;
         
-        template<class Archive>
-        void serialize(Archive &ar, const unsigned int version)
-        {
-        }
-
         POLIMVAR_DECLARE_CLONE(iplayer_t )
 	};
 

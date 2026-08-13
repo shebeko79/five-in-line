@@ -38,14 +38,6 @@ public:
     virtual void request_cancel(bool val);
     virtual bool is_thinking() const;
 
-    template<class Archive>
-    void serialize(Archive &ar, const unsigned int version)
-    {
-#ifdef BOOST_SERIALIZATION_NVP
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(iplayer_t);
-#endif
-    }
-
 	POLIMVAR_IMPLEMENT_CLONE(mfcPlayer )
 };
 
@@ -87,15 +79,6 @@ public:
 
     player_ptr get_player() const{return pl;}
 
-    template<class Archive>
-    void serialize(Archive &ar, const unsigned int version)
-    {
-#ifdef BOOST_SERIALIZATION_NVP
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(iplayer_t);
-        ar & BOOST_SERIALIZATION_NVP(pl);
-#endif
-    }
-
 	POLIMVAR_IMPLEMENT_CLONE(ThreadPlayer)
 };
 
@@ -108,14 +91,6 @@ public:
 	void init(game_t& _gm,Step _cl){}
 	void delegate_step(){}
     bool is_thinking() const{return false;}
-
-    template<class Archive>
-    void serialize(Archive &ar, const unsigned int version)
-    {
-#ifdef BOOST_SERIALIZATION_NVP
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(iplayer_t);
-#endif
-    }
 
 	POLIMVAR_IMPLEMENT_CLONE(NullPlayer)
 };

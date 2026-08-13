@@ -67,10 +67,6 @@ public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnCbnSelchangePlayer1();
 	afx_msg void OnCbnSelchangePlayer2();
-	afx_msg void OnLoadGame();
-	afx_msg void OnSaveGame();
-	afx_msg void OnLoadStringField();
-	afx_msg void OnSaveStringField();
 	afx_msg void OnUpdateEditShowmovenumber(CCmdUI *pCmdUI);
 	afx_msg void OnEditShowmovenumber();
 	afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);

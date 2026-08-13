@@ -24,14 +24,6 @@ namespace Gomoku { namespace State5
         bool is_thinking() const override{return thinking>0;}
 
 
-		template<class Archive>
-        void serialize(Archive &ar, const unsigned int version)
-        {
-#ifdef BOOST_SERIALIZATION_NVP
-            ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(iplayer_t);
-#endif
-        }
-
         POLIMVAR_IMPLEMENT_CLONE(field_state_player_t )
 	};
 

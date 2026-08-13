@@ -1,5 +1,5 @@
 
-#include "game_xml.h"
+#include "game.h"
 #include "gomoku_exceptions.h"
 
 namespace Gomoku
