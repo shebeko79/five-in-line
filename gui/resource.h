@@ -26,6 +26,8 @@
 #define IDC_PLAYER2                     1005
 #define IDC_PLAYER1_LABEL               1006
 #define IDC_PLAYER2_LABEL               1007
+#define IDC_EDIT1                       1009
+#define IDC_LOG                         1009
 #define ID_BUILD_TREE                   32772
 #define ID_OPERATION_LOADGAME           32773
 #define ID_OPERATION_SAVEGAME           32774
@@ -47,7 +49,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        137
 #define _APS_NEXT_COMMAND_VALUE         32789
-#define _APS_NEXT_CONTROL_VALUE         1009
+#define _APS_NEXT_CONTROL_VALUE         1010
 #define _APS_NEXT_SYMED_VALUE           1109
 #endif
 #endif

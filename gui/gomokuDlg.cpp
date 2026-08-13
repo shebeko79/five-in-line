@@ -18,11 +18,14 @@ namespace fs=boost::filesystem;
 // CgomokuDlg dialog
 
 CgomokuDlg::CgomokuDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CgomokuDlg::IDD, pParent),m_field(new CMfcField)
+	: CDialog(CgomokuDlg::IDD, pParent),
+    m_field(new CMfcField),
+    log_wnd(*this)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
     log_dbg.open();
+    log_wnd.open();
     
     log_file.file_name="five_in_line.log";
     log_file.print_timestamp=true;
@@ -37,6 +40,7 @@ void CgomokuDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_PLAYER1, mPlayer1);
 	DDX_Control(pDX, IDC_PLAYER2, mPlayer2);
+    DDX_Control(pDX, IDC_LOG, mLog);
 }
 
 BEGIN_MESSAGE_MAP(CgomokuDlg, CDialog)
@@ -103,6 +107,7 @@ BOOL CgomokuDlg::OnInitDialog()
 	szr.Fix(IDC_PLAYER1_LABEL,szr.kWidthRight,szr.kHeightTop);
 	szr.Fix(IDC_PLAYER2,szr.kWidthRight,szr.kHeightTop);
 	szr.Fix(IDC_PLAYER2_LABEL,szr.kWidthRight,szr.kHeightTop);
+    szr.Fix(IDC_LOG,szr.kWidthRight,szr.kTopBottom);
 
 	mPlayer1.SetCurSel(2);game.set_krestik(create_player(mPlayer1,Gomoku::st_krestik));
 	mPlayer2.SetCurSel(0);game.set_nolik(create_player(mPlayer2,Gomoku::st_nolik));
@@ -560,4 +565,17 @@ void CgomokuDlg::OnCancel()
 void CgomokuDlg::OnClose()
 {
 	EndDialog(IDCLOSE);
+}
+
+void CgomokuDlg::log_wnd_t::on_message(const std::string& str)
+{
+    if(!m_parent.mLog.m_hWnd)
+        return;
+    CString msg;
+    m_parent.mLog.GetWindowText(msg);
+    
+    msg += str.c_str();
+    msg += "\r\n";
+    m_parent.mLog.SetWindowText(msg);
+
 }

@@ -20,6 +20,15 @@ public:
 
 // Dialog Data
 	enum { IDD = IDD_GOMOKU_DIALOG };
+private:
+	class log_wnd_t : public ObjectProgress::ilogout
+	{
+	public:
+		log_wnd_t(CgomokuDlg& parent) : m_parent(parent) {}
+	protected:
+		CgomokuDlg& m_parent;
+		void on_message(const std::string& str);
+	};
 
 private:
 	field_ptr m_field;
@@ -30,6 +39,7 @@ private:
 
     ObjectProgress::logout_debug log_dbg;
     ObjectProgress::logout_file log_file;
+	log_wnd_t log_wnd;
 	
 	
 	void gameNextStep(const Gomoku::iplayer_t& pl,const Gomoku::point& pt);
@@ -64,6 +74,7 @@ protected:
 public:
 	CComboBox mPlayer1;
 	CComboBox mPlayer2;
+	CEdit mLog;
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnCbnSelchangePlayer1();
 	afx_msg void OnCbnSelchangePlayer2();

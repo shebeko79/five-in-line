@@ -52,14 +52,14 @@ inline void scan_enviropment_variables()
 
 inline void print_used_enviropment_variables(ObjectProgress::log_generator& lg)
 {
-    lg
-        <<"stored_deep="<<WsPlayer::stored_deep
-        <<" lookup_deep="<<WsPlayer::def_lookup_deep
-        <<" treat_deep="<<WsPlayer::treat_deep
-        <<" max_treat_check="<<WsPlayer::max_treat_check
-        <<" max_treat_check_rebuild_tree="<<WsPlayer::max_treat_check_rebuild_tree
-        <<" ant_count="<<WsPlayer::ant_count
-        <<" wide_item_deep="<<WsPlayer::wide_item_deep;
+	lg <<"WsPlayer:";
+    lg <<"stored_deep="<<WsPlayer::stored_deep;
+    lg <<" lookup_deep="<<WsPlayer::def_lookup_deep;
+    lg <<" treat_deep="<<WsPlayer::treat_deep;
+    lg <<" max_treat_check="<<WsPlayer::max_treat_check;
+    lg <<" max_treat_check_rebuild_tree="<<WsPlayer::max_treat_check_rebuild_tree;
+    lg <<" ant_count="<<WsPlayer::ant_count;
+    lg <<" wide_item_deep="<<WsPlayer::wide_item_deep;
 }
 
 }
