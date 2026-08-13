@@ -7,8 +7,8 @@ namespace Gomoku { namespace State5
 {
 	class node_t;
 
-	constexpr unsigned common_deep = 2;
-	constexpr unsigned threat_deep = 5;
+	constexpr unsigned common_deep = 3;
+	constexpr unsigned threat_deep = 9;
 
 	class field_state_player_t : public iplayer_t
 	{
@@ -108,6 +108,7 @@ namespace Gomoku { namespace State5
 		
 		bool unchecked_exists = false;
 		bool deep_limit_reached = false;
+		unsigned forced_max_fail = 0;
 
 		fork_t oposite_fork;
 

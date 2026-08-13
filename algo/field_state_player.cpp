@@ -169,7 +169,10 @@ bool node_t::mark_unchecked_make_move(points_t& pts, const matrix<score_t>& scor
 				++inside_count;
 			else
 			{
-				fails.emplace_back(npoint(p,4));
+				if (deep > 0)
+					forced_max_fail = 4;
+				else
+					fails.emplace_back(npoint(p, 4));
 			}
 		}
 	}
@@ -223,20 +226,18 @@ void node_t::make_move(const point& p)
 	{
 		fails.emplace_back(npoint(new_step,win->n+1));
 	}
-	else if (!sub.neutrals.empty())
+	else if (!sub.neutrals.empty() || sub.unchecked_exists)
 	{
 		neutrals.push_back(new_step);
 	}
 	else
 	{
-		auto* fail = sub.get_max_fail();
-		if(fail) wins.emplace_back(npoint(new_step,fail->n+1));
+		if(auto* fail = sub.get_max_fail()) 
+			wins.emplace_back(npoint(new_step,std::max(fail->n,sub.forced_max_fail)+1));
+		else if(sub.forced_max_fail>0)
+			wins.emplace_back(npoint(new_step,sub.forced_max_fail+1));
 		else
-		{
-			if(sub.unchecked_exists)neutrals.push_back(new_step);
-			else throw std::runtime_error("node_t::make_move(): invalid state");
-		}
-		
+			throw std::runtime_error("node_t::make_move(): invalid state");
 	}
 	
 	player.field5.apply_shapshot(snapshot);
