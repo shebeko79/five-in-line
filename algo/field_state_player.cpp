@@ -13,6 +13,8 @@ namespace Gomoku { namespace State5
 void field_state_player_t::delegate_step()
 {
     incer_t<int> hld_thinking(thinking);
+	ObjectProgress::perfomance perf;
+	node_t::nodes_created=0;
 
 	field=game().field();
 	field5.set_steps(field.get_steps());
@@ -32,20 +34,10 @@ void field_state_player_t::delegate_step()
         throw;
 	}
 
-	if(!root.get_wins().empty())
-	{
-		//unsigned int depth=root->get_chain_depth()-1;
-		//std::string chain=print_chain(root->get_wins().get_best());
-		//lg<<"field_state_player_t::delegate_step(): find win chain_depth="<<depth<<": "<<chain;
-		lg<<"field_state_player_t::delegate_step(): win";
-	}
-	else if (!root.get_fails().empty() && root.get_neutrals().empty())
-	{
-		lg << "field_state_player_t::delegate_step(): fail";
-
-		//lg << "field_state_player_t::delegate_step(): find fail chain_depth=" << (root->get_chain_depth() - 1)
-		//	<< ": " << print_chain(root->get_fails().get_best());
-	}
+	lg<<"";
+	lg<<"delegate_step():  time="<<perf<<" nodes="<<node_t::nodes_created<<
+		" nps="<<node_t::nodes_created/(perf.delay()/1000000.0);
+	root.log_statistic();
 
 	point p=root.get_next_step();
 	game().OnNextStep(*this,p);
@@ -54,12 +46,15 @@ void field_state_player_t::delegate_step()
 //
 // node_t
 //
+size_t node_t::nodes_created=0;
+
 node_t::node_t(field_state_player_t& _player, const step_t& st, unsigned _deep) :
 	prev_step(st),
 	deep(_deep),
 	move_color(other_color(prev_step.step)),
 	player(_player)
 {
+	++nodes_created;
 }
 
 void node_t::process()
@@ -315,5 +310,35 @@ const npoint* node_t::get_max_fail() const
 	return &*std::max_element(fails.begin(), fails.end(), less_n_pr());
 }
 
+void node_t::log_statistic() const
+{
+	ObjectProgress::log_generator lg(true);
+
+	lg<<"Node stat:";
+	
+	if(!wins.empty())
+	{
+		npoints_t tmp = wins;
+		std::stable_sort(tmp.begin(),tmp.end(), less_n_pr());
+		lg<<"Wins: "<<print_points(tmp);
+	}
+
+	if (forced_max_fail > 0)
+		lg<<"forced_max_fail=" <<forced_max_fail;
+
+	if (!fails.empty())
+	{
+		npoints_t tmp = fails;
+		std::stable_sort(tmp.begin(),tmp.end(), less_n_pr());
+		std::reverse(tmp.begin(),tmp.end());
+		lg<<"Fails count: "<<tmp.size();
+		lg<<"Fails: "<<print_points(tmp);
+	}
+
+	lg<<"Neutrals count: "<<neutrals.size();
+	if(!neutrals.empty()&&neutrals.size()<10)
+		lg<<"Neutrals: "<<print_points(neutrals);
+
+}
 
 } }//namespace Gomoku

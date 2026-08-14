@@ -85,12 +85,16 @@ namespace Gomoku { namespace State5
 
 		const point& get_next_step() const;
 
+		void log_statistic() const;
+
 		inline const points_t& get_neutrals() const {return neutrals;};
 		inline const npoints_t& get_wins() const {return wins;};
 		inline const npoints_t& get_fails() const {return fails;};
 
 		const npoint* get_min_win() const;
 		const npoint* get_max_fail() const;
+
+		static size_t nodes_created;
 	private:
 		field_state_player_t& player;
 
