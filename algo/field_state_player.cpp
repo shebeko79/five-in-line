@@ -80,6 +80,8 @@ void node_t::process()
 
 		if(make_move_find_win(other_srt.p5))
 			return;
+
+		limit_to_p5_fork(other_srt.p5.front());
 	}
 
 	if(deep>=threat_deep && mark_limit_reached())
@@ -207,6 +209,11 @@ void node_t::make_move(const point& p)
 	
 	player.field5.apply_shapshot(snapshot);
 	player.field.pop(old_bound);
+}
+
+void node_t::limit_to_p5_fork(const point& p)
+{
+	oposite_fork.merge(fork_t(p));
 }
 
 void node_t::limit_to_p4_fork(const sorted_scores& other_srt)
