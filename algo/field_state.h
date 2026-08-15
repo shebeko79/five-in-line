@@ -108,6 +108,11 @@ namespace Gomoku { namespace State5
 		bool p4_exists(const point& p) const {return binary_find(p4.begin(),p4.end(),p,less_point_pr())!=p4.end();}
 		bool p3_exists(const point& p) const {return p3.find(p) != p3.end();}
 		bool p2_exists(const point& p) const {return p2.find(p) != p2.end();}
+
+		inline auto p5_pr() const { return [this] (const point& p){return p5_exists(p);}; }
+		inline auto p4_pr() const { return [this] (const point& p){return p5_exists(p) || p4_exists(p);}; }
+		inline auto p3_pr() const { return [this] (const point& p){return p5_exists(p) || p4_exists(p) || p3_exists(p);}; }
+		inline auto p2_pr() const { return [this] (const point& p){return p5_exists(p) || p4_exists(p) || p3_exists(p) || p2_exists(p);}; }
 	private:
 		void add(const point& pt, unsigned step);
 		void remove(const point& pt, unsigned step);

@@ -88,24 +88,14 @@ void node_t::process()
 	auto& scores_field = player.field5.get_scores_field();
 
 	points_t pts = move_srt.p4;
-	pts.erase(std::remove_if(pts.begin(), pts.end(), 
-		[&](const point& p)
-		{
-			return other_srt.p5_exists(p);
-		}
-	), pts.end());
+	remove_if(pts, other_srt.p5_pr());
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
 	limit_to_p4_fork(other_srt);
 
 	pts = other_srt.p4;
-	pts.erase(std::remove_if(pts.begin(), pts.end(), 
-		[&](const point& p)
-		{
-			return move_srt.p5_exists(p) ||  move_srt.p4_exists(p);
-		}
-	), pts.end());
+	remove_if(pts, move_srt.p4_pr());
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
@@ -113,42 +103,22 @@ void node_t::process()
 		return;
 
 	pts = set_to_point(move_srt.p3);
-	pts.erase(std::remove_if(pts.begin(), pts.end(), 
-		[&](const point& p)
-		{
-			return other_srt.p5_exists(p) || other_srt.p4_exists(p);
-		}
-	), pts.end());
+	remove_if(pts, other_srt.p4_pr());
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
 	pts = set_to_point(other_srt.p3);
-	pts.erase(std::remove_if(pts.begin(), pts.end(), 
-		[&](const point& p)
-		{
-			return move_srt.p5_exists(p) ||  move_srt.p4_exists(p) || move_srt.p3_exists(p);
-		}
-	), pts.end());
+	remove_if(pts, move_srt.p3_pr());
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
 	pts = set_to_point(move_srt.p2);
-	pts.erase(std::remove_if(pts.begin(), pts.end(), 
-		[&](const point& p)
-		{
-			return other_srt.p5_exists(p) || other_srt.p4_exists(p) || other_srt.p3_exists(p);
-		}
-	), pts.end());
+	remove_if(pts, other_srt.p3_pr());
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
 	pts = set_to_point(other_srt.p2);
-	pts.erase(std::remove_if(pts.begin(), pts.end(), 
-		[&](const point& p)
-		{
-			return move_srt.p5_exists(p) ||  move_srt.p4_exists(p) || move_srt.p3_exists(p) || move_srt.p2_exists(p);
-		}
-	), pts.end());
+	remove_if(pts, move_srt.p2_pr());
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 }
