@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdexcept>
 #include "field_state.h"
+#include "../extern/object_progress.hpp"
 
 
 namespace Gomoku { namespace State5
@@ -167,7 +168,7 @@ namespace Gomoku { namespace State5
 	sorted_scores::sorted_scores()
 	{
 		p5.reserve(4);
-		p4h.reserve(4);
+		p4h.reserve(8);
 		p4l.reserve(20);
 		p3h.reserve(20);
 	}
@@ -249,6 +250,16 @@ namespace Gomoku { namespace State5
 			p2.erase(pt);
 			break;
 		}
+	}
+
+	void sorted_scores::log_statistic() const
+	{
+		ObjectProgress::log_generator lg(true);
+		
+		lg<<"Capacity: p5="<<p5.capacity()
+			<<" p4h="<<p4h.capacity()
+			<<" p4l="<<p4l.capacity()
+			<<" p3h="<<p3h.capacity();
 	}
 
 

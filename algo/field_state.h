@@ -117,6 +117,8 @@ namespace Gomoku { namespace State5
 		inline auto p4_pr() const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p) || p4l_exists(p);}; }
 		inline auto p3_pr() const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p) || p4l_exists(p) || p3h_exists(p) || p3l_exists(p);}; }
 		inline auto p2_pr() const { return [this] (const point& p) {return p5_exists(p) || p4h_exists(p) || p4l_exists(p) || p3h_exists(p) || p3l_exists(p) || p2_exists(p);}; }
+
+		void log_statistic() const;
 	private:
 		void add(const point& pt, unsigned step, unsigned lines_count);
 		void remove(const point& pt, unsigned step, unsigned lines_count);
