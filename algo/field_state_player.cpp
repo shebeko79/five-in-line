@@ -89,14 +89,24 @@ void node_t::process()
 
 	auto& scores_field = player.field5.get_scores_field();
 
-	points_t pts = move_srt.p4;
+	points_t pts = move_srt.p4h;
+	remove_if(pts, other_srt.p5_pr());
+	if(mark_unchecked_make_move(pts, scores_field))
+		return;
+
+	pts = move_srt.p4l;
 	remove_if(pts, other_srt.p5_pr());
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
 	limit_to_p4_fork(other_srt);
 
-	pts = other_srt.p4;
+	pts = other_srt.p4h;
+	remove_if(pts, move_srt.p4_pr());
+	if(mark_unchecked_make_move(pts, scores_field))
+		return;
+
+	pts = other_srt.p4l;
 	remove_if(pts, move_srt.p4_pr());
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
@@ -104,12 +114,22 @@ void node_t::process()
 	if(deep>=common_deep && mark_limit_reached())
 		return;
 
-	pts = set_to_point(move_srt.p3);
+	pts = move_srt.p3h;
 	remove_if(pts, other_srt.p4_pr());
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
-	pts = set_to_point(other_srt.p3);
+	pts = set_to_point(move_srt.p3l);
+	remove_if(pts, other_srt.p4_pr());
+	if(mark_unchecked_make_move(pts, scores_field))
+		return;
+
+	pts = other_srt.p3h;
+	remove_if(pts, move_srt.p3_pr());
+	if(mark_unchecked_make_move(pts, scores_field))
+		return;
+
+	pts = set_to_point(other_srt.p3l);
 	remove_if(pts, move_srt.p3_pr());
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
@@ -218,16 +238,14 @@ void node_t::limit_to_p5_fork(const point& p)
 
 void node_t::limit_to_p4_fork(const sorted_scores& other_srt)
 {
-	if(other_srt.p4.empty())
+	if(other_srt.p4h.empty())
 		return;
 
 	const matrix<score_t>& scores_field = player.field5.get_scores_field();
 
-	for (const point& p : other_srt.p4)
+	for (const point& p : other_srt.p4h)
 	{
 		auto count4 = scores_field.get(p).score(prev_step.step)/kScore4;
-		if(count4<2)
-			continue;
 
 		fork_t f(p);
 		if(count4 == 2) 
@@ -244,7 +262,6 @@ void node_t::limit_to_p4_fork(const sorted_scores& other_srt)
 							f.add(p_empty);
 					}
 				});
-
 		}
 		
 		oposite_fork.merge(f);

@@ -54,24 +54,45 @@ namespace Gomoku { namespace State5
 		return bt;
 	}
 
-	unsigned max_steps(unsigned score)
+	void max_step(unsigned score, unsigned& step, unsigned& lines_count)
 	{
-		if(score == 0)
-			return 0;
+		if (score == 0)
+		{
+			step = 0;
+			lines_count = 0;
+			return;
+		}
 
-		if(score>=kScore5)
-			return 5;
+		if (score >= kScore5)
+		{
+			step = 5;
+			lines_count = score / kScore5;
+			return;
+		}
 
-		if(score>=kScore4)
-			return 4;
+		if (score >= kScore4)
+		{
+			step = 4;
+			lines_count = score / kScore4;
+			return;
+		}
 
-		if(score>=kScore3)
-			return 3;
+		if (score >= kScore3)
+		{
+			step = 3;
+			lines_count = score / kScore3;
+			return;
+		}
 
-		if(score>=kScore2)
-			return 2;
+		if (score >= kScore2)
+		{
+			step = 2;
+			lines_count = score / kScore2;
+			return;
+		}
 
-		return 1;
+		step = 0;
+		lines_count = score;
 	}
 
 	void snapshot_t::fill(const matrix<lines5_t>& lines_field)
@@ -146,21 +167,41 @@ namespace Gomoku { namespace State5
 	sorted_scores::sorted_scores()
 	{
 		p5.reserve(4);
-		p4.reserve(20);
+		p4h.reserve(4);
+		p4l.reserve(20);
+		p3h.reserve(20);
 	}
 
 	void sorted_scores::update(const point& pt, unsigned old_scr, unsigned new_scr)
 	{
-		unsigned old_step = max_steps(old_scr);
-		unsigned new_step = max_steps(new_scr);
+		unsigned old_step, old_count;
+		max_step(old_scr, old_step, old_count);
 
-		if(old_step == new_step)
-			return;
-		remove(pt, old_step);
-		add(pt, new_step);
+		unsigned new_step, new_count;
+		max_step(new_scr, new_step, new_count);
+
+		if (old_step == new_step)
+		{
+			switch (new_step)
+			{
+			case 4:
+				if( (old_count>=2) == (new_count>=2) )
+					return;
+				break;
+			case 3:
+				if( (old_count>=4) == (new_count>=4) )
+					return;
+				break;
+			default:
+				return;
+			}
+		}
+
+		remove(pt, old_step,old_count);
+		add(pt, new_step, new_count);
 	}
 	
-	void sorted_scores::add(const point& pt, unsigned step)
+	void sorted_scores::add(const point& pt, unsigned step, unsigned lines_count)
 	{
 		switch (step)
 		{
@@ -168,10 +209,16 @@ namespace Gomoku { namespace State5
 			insert(p5, pt);
 			break;
 		case 4:
-			sorted_insert(p4, pt);
+			if(lines_count>=2)
+				insert(p4h, pt);
+			else
+				sorted_insert(p4l, pt);
 			break;
 		case 3:
-			p3.insert(pt);
+			if(lines_count>=4)
+				sorted_insert(p3h, pt);
+			else
+				p3l.insert(pt);
 			break;
 		case 2:
 			p2.insert(pt);
@@ -179,7 +226,7 @@ namespace Gomoku { namespace State5
 		}
 	}
 
-	void sorted_scores::remove(const point& pt, unsigned step)
+	void sorted_scores::remove(const point& pt, unsigned step, unsigned lines_count)
 	{
 		switch (step)
 		{
@@ -187,10 +234,16 @@ namespace Gomoku { namespace State5
 			erase(p5, pt);
 			break;
 		case 4:
-			sorted_erase(p4, pt);
+			if(lines_count>=2)
+				erase(p4h, pt);
+			else
+				sorted_erase(p4l, pt);
 			break;
 		case 3:
-			p3.erase(pt);
+			if(lines_count>=4)
+				sorted_erase(p3h, pt);
+			else
+				p3l.erase(pt);
 			break;
 		case 2:
 			p2.erase(pt);
