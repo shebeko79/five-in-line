@@ -92,17 +92,18 @@ void node_t::process()
 
 	auto& scores_field = player.field5.get_scores_field();
 
-	points_t pts = move_srt.p4h;
+	if (!move_srt.p4h.empty())
+	{
+		wins.push_back(npoint(move_srt.p4h.front(),3));
+		return;
+	}
+
+	points_t pts = move_srt.p4l;
 	remove_if(pts, other_srt.p5_pr());
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
-	pts = move_srt.p4l;
-	remove_if(pts, other_srt.p5_pr());
-	if(mark_unchecked_make_move(pts, scores_field))
-		return;
-
-	merge_p4_fork(other_srt, oposite_fork);
+	merge_p4_fork(other_srt, prev_step.step, oposite_fork);
 
 	pts = other_srt.p4h;
 	remove_if(pts, move_srt.p4_pr());
@@ -234,7 +235,7 @@ void node_t::make_move(const point& p)
 	player.field.pop(old_bound);
 }
 
-void node_t::merge_p4_fork(const sorted_scores& srt, fork_t& ret) const
+void node_t::merge_p4_fork(const sorted_scores& srt, Step color, fork_t& ret) const
 {
 	if(srt.p4h.empty())
 		return;
@@ -243,14 +244,14 @@ void node_t::merge_p4_fork(const sorted_scores& srt, fork_t& ret) const
 
 	for (const point& p : srt.p4h)
 	{
-		auto count4 = scores_field.get(p).score(prev_step.step)/kScore4;
+		auto count4 = scores_field.get(p).score(color)/kScore4;
 
 		fork_t f(p);
 		if(count4 == 2) 
 		{
 			player.field5.iterate_involved_lines(p, [&](const point& line_point, const line5_t& line, int dx, int dy)
 				{
-					if(line.steps != 4 || line.color != prev_step.step)
+					if(line.steps != 4 || line.color != color)
 						return;
 
 					for (int i = -2; i <= 2; i++)
