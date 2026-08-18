@@ -106,10 +106,15 @@ BOOL CgomokuDlg::OnInitDialog()
 	szr.Fix(IDC_PLAYER2_LABEL,szr.kWidthRight,szr.kHeightTop);
     szr.Fix(IDC_LOG,szr.kWidthRight,szr.kTopBottom);
 
-	mPlayer1.SetCurSel(2);game.set_krestik(create_player(mPlayer1,Gomoku::st_krestik));
-	mPlayer2.SetCurSel(0);game.set_nolik(create_player(mPlayer2,Gomoku::st_nolik));
-	restart_if_next_player_human();
-    check_state();
+	mPlayer1.SetCurSel(1);
+    game.set_krestik(create_player(mPlayer1,Gomoku::st_krestik));
+    mfcKrestik.init(game,Gomoku::st_krestik);
+
+	mPlayer2.SetCurSel(1);
+    game.set_nolik(create_player(mPlayer2,Gomoku::st_nolik));
+    mfcNolik.init(game,Gomoku::st_nolik);
+
+    invalidate_field_check_state();
 
     return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -162,8 +167,7 @@ Gomoku::player_ptr CgomokuDlg::create_player(const CComboBox& cb,Gomoku::Step st
 	Gomoku::player_ptr ret;
 	switch(cb.GetCurSel())
 	{
-    case 0:ret=Gomoku::player_ptr(new Gomoku::mfcPlayer);break;
-    case 1:
+    case 0:
 	{
 		Gomoku::player_ptr sub(new Gomoku::WsPlayer::wsplayer_t);
 		ret=Gomoku::player_ptr(new Gomoku::ThreadPlayer(sub));
@@ -182,16 +186,14 @@ Gomoku::player_ptr CgomokuDlg::create_player(const CComboBox& cb,Gomoku::Step st
 
 int CgomokuDlg::player2index(Gomoku::iplayer_t& pl)
 {
-	if(dynamic_cast<Gomoku::mfcPlayer*>(&pl)!=0)return 0;
-
 	Gomoku::ThreadPlayer* tpl=dynamic_cast<Gomoku::ThreadPlayer*>(&pl);
 	if(!tpl)return -1;
 
 	Gomoku::player_ptr sub=tpl->get_player();
 	if(!sub)return -1;
 
-	if(dynamic_cast<Gomoku::WsPlayer::wsplayer_t*>(&*sub)!=0) return 1;
-    if(dynamic_cast<Gomoku::State5::field_state_player_t*>(&*sub)!=0) return 2;
+	if(dynamic_cast<Gomoku::WsPlayer::wsplayer_t*>(&*sub)!=0) return 0;
+    if(dynamic_cast<Gomoku::State5::field_state_player_t*>(&*sub)!=0) return 1;
 	return -1;
 }
 
@@ -203,19 +205,10 @@ void CgomokuDlg::gameNextStep(const Gomoku::iplayer_t& pl,const Gomoku::point& p
     invalidate_field_check_state();
 
     if(!game.is_game_over())
-    {
-        game.delegate_next_step();
         return;
-    }
 	
-    hld_step.disconnect();
 	if(Gomoku::last_color(game.field().size()) == Gomoku::st_krestik )MessageBox("krestik win",MB_OK);
 	else MessageBox("nolik win",MB_OK);
-}
-
-void CgomokuDlg::check_state()
-{
-    PostMessage(WM_CHECK_STATE,0,0);
 }
 
 LRESULT CgomokuDlg::OnPostCheck(WPARAM, LPARAM)
@@ -223,8 +216,7 @@ LRESULT CgomokuDlg::OnPostCheck(WPARAM, LPARAM)
 	mPlayer1.SetCurSel(player2index(*game.get_krestik()));
 	mPlayer2.SetCurSel(player2index(*game.get_nolik()));
 
-    bool started=game.is_somebody_thinking();
-    bool isStartEnabled=!started&&mPlayer1.GetCurSel()!=-1&&mPlayer2.GetCurSel()!=-1;
+    bool isStartEnabled=!game.is_somebody_thinking()&&mPlayer1.GetCurSel()!=-1&&mPlayer2.GetCurSel()!=-1;
 
     CMFCToolBarButton* bt=m_wndToolBar.GetButton(2);
     bt->SetImage(isStartEnabled? 2:5);
@@ -241,12 +233,43 @@ LRESULT CgomokuDlg::OnPostCheck(WPARAM, LPARAM)
     return 0;
 }
 
+void CgomokuDlg::connect_manual_players()
+{
+    if (game.is_game_over() || game.is_somebody_thinking())
+    {
+        mfcKrestik.request_cancel(true);
+        mfcNolik.request_cancel(true);
+    }
+    else
+    {
+        if (Gomoku::next_color(game.field().size()) == Gomoku::st_krestik)
+        {
+            mfcKrestik.delegate_step();
+            mfcNolik.request_cancel(true);
+        }
+        else
+        {
+            mfcKrestik.request_cancel(true);
+            mfcNolik.delegate_step();
+        }
+    }
+}
+
+
 void CgomokuDlg::invalidate_field_check_state()
 {
-	m_field->set_scroll_bars();
+    if (game.is_game_over())
+        hld_step.disconnect();
+    else
+        hld_step=game.OnNextStep.connect(boost::bind(&CgomokuDlg::gameNextStep,this,boost::placeholders::_1,boost::placeholders::_2) );
+    
+    connect_manual_players();
+
+    m_field->set_scroll_bars();
     m_field->Invalidate();
 	m_field->UpdateWindow();
-	check_state();
+	
+    PostMessage(WM_CHECK_STATE,0,0);
 }
 
 void CgomokuDlg::enable_button(int ButtonId,bool val)
@@ -272,7 +295,6 @@ void CgomokuDlg::OnTapeStart()
     st.resize(1);
 	game.field().set_steps(st);
 
-    restart_if_next_player_human();
     invalidate_field_check_state();
 }
 
@@ -290,7 +312,6 @@ void CgomokuDlg::OnTapeRewind()
     st.pop_back();
 	game.field().set_steps(st);
 
-    restart_if_next_player_human();
     invalidate_field_check_state();
 }
 
@@ -322,7 +343,6 @@ void CgomokuDlg::OnTapeForward()
 
     game.field().set_steps(st);
 
-    restart_if_next_player_human();
     invalidate_field_check_state();
 }
 
@@ -340,7 +360,6 @@ void CgomokuDlg::OnTapeEnd()
 
     game.field().set_steps(st);
 
-    restart_if_next_player_human();
     invalidate_field_check_state();
 }
 
@@ -349,7 +368,6 @@ void CgomokuDlg::start()
     if(game.is_game_over())
         return;
 
-	hld_step=game.OnNextStep.connect(boost::bind(&CgomokuDlg::gameNextStep,this,boost::placeholders::_1,boost::placeholders::_2) );
 	game.init_players();
 	game.delegate_next_step();
 }
@@ -371,34 +389,18 @@ void CgomokuDlg::pause()
     }
 }
 
-void CgomokuDlg::restart_if_next_player_human()
-{
-    Gomoku::player_ptr next_player;
-
-    if( Gomoku::next_color(game.field().size()) == Gomoku::st_krestik) next_player=game.get_krestik();
-    else  next_player=game.get_nolik();
-
-    if(!dynamic_cast<Gomoku::mfcPlayer*>(next_player.get()))
-        return;
-
-    start();
-}
-
-
 void CgomokuDlg::OnCbnSelchangePlayer1()
 {
     pause();
 	game.set_krestik(create_player(mPlayer1,Gomoku::st_krestik));
-    restart_if_next_player_human();
-	check_state();
+	invalidate_field_check_state();
 }
 
 void CgomokuDlg::OnCbnSelchangePlayer2()
 {
     pause();
 	game.set_nolik(create_player(mPlayer2,Gomoku::st_nolik));
-    restart_if_next_player_human();
-	check_state();
+	invalidate_field_check_state();
 }
 
 void CgomokuDlg::OnEditCopystate()
@@ -458,7 +460,6 @@ void CgomokuDlg::OnEditPastestate()
         redo_steps.clear();
         game.field().set_steps(steps);
 
-        restart_if_next_player_human();
         invalidate_field_check_state();
     }
     catch(std::exception& e)

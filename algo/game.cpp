@@ -33,8 +33,7 @@ void game_t::delegate_next_step()
 
 void game_t::make_step(const iplayer_t& pl,const point& pt)
 {
-	if(&pl!=krestik.get()&&&pl!=nolik.get())throw e_invalid_step(pl.color());
-	if( (next_color(field().size())==st_krestik) != (&pl==krestik.get()))throw e_invalid_step(pl.color());
+	if( (next_color(field().size())!=pl.color()) )throw e_invalid_step(pl.color());
 
 	field().add(pt,pl.color());
 }

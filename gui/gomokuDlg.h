@@ -36,6 +36,8 @@ private:
 	Gomoku::game_t game;
     Gomoku::steps_t redo_steps;
 	boost::signals2::scoped_connection hld_step;
+	Gomoku::mfcPlayer mfcKrestik;
+	Gomoku::mfcPlayer mfcNolik;
 
     ObjectProgress::logout_debug log_dbg;
     ObjectProgress::logout_file log_file;
@@ -44,7 +46,7 @@ private:
 	
 	void gameNextStep(const Gomoku::iplayer_t& pl,const Gomoku::point& pt);
 	void invalidate_field_check_state();
-    void check_state();
+	void connect_manual_players();
     void enable_button(int ButtonId,bool val);
 
 	Gomoku::player_ptr create_player(const CComboBox& cb,Gomoku::Step st);
@@ -52,7 +54,6 @@ private:
 
     void start();
     void pause();
-    void restart_if_next_player_human();
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
