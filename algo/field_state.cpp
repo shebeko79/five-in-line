@@ -347,16 +347,4 @@ namespace Gomoku { namespace State5
 		}
 	}
 
-
-	
-	void sort(points_t& arr, const matrix<score_t>& scores_field, Step move_color)
-	{
-		std::sort(arr.begin(), arr.end(), [&scores_field, move_color](const point& pa, const point& pb)
-		{
-			score_t sa = scores_field.get(pa);
-			score_t sb = scores_field.get(pb);
-			return sa.total(move_color) > sb.total(move_color);
-		});
-	}
-
 } }

@@ -157,7 +157,24 @@ namespace Gomoku { namespace State5
 	};
 
 	
-	void sort(points_t& arr, const matrix<score_t>& scores_field, Step move_color);
+	struct score_pr
+	{
+		const matrix<score_t>& scores_field;
+		const Step move_color;
+
+		score_pr(const matrix<score_t>& _scores_field, Step _move_color) :
+			scores_field(_scores_field),
+			move_color(_move_color)
+		{
+		}
+
+		inline bool operator()(const point& pa, const point& pb) const
+		{
+			score_t sa = scores_field.get(pa);
+			score_t sb = scores_field.get(pb);
+			return sa.total(move_color) > sb.total(move_color);
+		}
+	};
 
 } }//namespace gomoku
 

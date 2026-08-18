@@ -17,7 +17,8 @@ namespace Gomoku
 	{
 		Step step;
 		step_t(){step=st_empty;}
-		step_t(Step _st,int _x,int _y) : point(_x,_y) {step=_st;}
+		step_t(Step _st,int _x,int _y) : point(_x,_y),step(_st) {}
+		step_t(Step _st, const point& _p) : point(_p),step(_st) {}
 
 		inline bool operator==(const step_t& rhs) const
 		{
@@ -249,6 +250,12 @@ namespace Gomoku
 	inline void remove_if(std::vector<T>& arr, Pr& pr)
 	{
 		arr.erase(std::remove_if(arr.begin(),arr.end(),pr),arr.end());
+	}
+
+	template<typename Cont, typename Pr>
+	inline void sort(Cont& arr, Pr& pr)
+	{
+		std::sort(begin(arr),end(arr),pr);
 	}
 
 }//namespace gomoku

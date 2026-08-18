@@ -83,7 +83,7 @@ namespace Gomoku { namespace State5
 
 		void process();
 
-		const point& get_next_step() const;
+		point get_next_step() const;
 
 		void log_statistic() const;
 

@@ -34,9 +34,12 @@ void field_state_player_t::delegate_step()
         throw;
 	}
 
+	point p=root.get_next_step();
+
+	auto nps = node_t::nodes_created/(perf.delay()/1000000.0);
 	lg<<"";
-	lg<<"delegate_step():  time="<<perf<<" nodes="<<node_t::nodes_created<<
-		" nps="<<node_t::nodes_created/(perf.delay()/1000000.0);
+	lg << "#" << field.size() + 1 << " " << print_steps(steps_t({ {root.move_color, p} }))
+		<<": time="<<perf<<" nodes="<<node_t::nodes_created<<" nps="<<nps;
 	root.log_statistic();
 	lg<<"empty_count="<<(field5.get_sorted(st_krestik).size() + field5.get_sorted(st_krestik).size());
 	lg<<"Sorted krestik:";
@@ -45,7 +48,6 @@ void field_state_player_t::delegate_step()
 	field5.get_sorted(st_nolik).log_statistic();
 
 
-	point p=root.get_next_step();
 	game().OnNextStep(*this,p);
 }
 
@@ -168,7 +170,7 @@ bool node_t::mark_unchecked_make_move(points_t& pts, const matrix<score_t>& scor
 	if (oposite_fork.is_active())
 		pts.erase(std::remove_if(pts.begin(),pts.end(),[this](const point& p){return !oposite_fork.inside(p);}), pts.end());
 
-	sort(pts, scores_field, move_color);
+	sort(pts, score_pr(scores_field, move_color));
 	return make_move_find_win(pts);
 }
 
@@ -262,20 +264,17 @@ void node_t::limit_to_p4_fork(const sorted_scores& other_srt)
 
 
 
-const point& node_t::get_next_step() const
+point node_t::get_next_step() const
 {
 	auto* win = get_min_win();
-	if (win)return *win;
+	if (win)return static_cast<const point&>(*win);
 
 	if (!neutrals.empty())
-	{
-		return *std::min_element(neutrals.begin(),neutrals.end(), near_point_pr(point(0,0)));
-	}
+		return *std::min_element(neutrals.begin(),neutrals.end(), score_pr(player.field5.get_scores_field(), move_color) );
 
 	auto* fail = get_max_fail();
-
 	if(!fail)throw std::runtime_error("node_t::get_next_step(): invalid state");
-	return *fail;
+	return static_cast<const point&>(*fail);
 }
 
 const npoint* node_t::get_min_win() const
