@@ -38,10 +38,11 @@ void field_state_player_t::delegate_step()
 	lg<<"delegate_step():  time="<<perf<<" nodes="<<node_t::nodes_created<<
 		" nps="<<node_t::nodes_created/(perf.delay()/1000000.0);
 	root.log_statistic();
-	//lg<<"Sorted krestik:";
-	//field5.get_sorted(st_krestik).log_statistic();
-	//lg<<"Sorted nolik:";
-	//field5.get_sorted(st_nolik).log_statistic();
+	lg<<"empty_count="<<(field5.get_sorted(st_krestik).size() + field5.get_sorted(st_krestik).size());
+	lg<<"Sorted krestik:";
+	field5.get_sorted(st_krestik).log_statistic();
+	lg<<"Sorted nolik:";
+	field5.get_sorted(st_nolik).log_statistic();
 
 
 	point p=root.get_next_step();
@@ -103,7 +104,7 @@ void node_t::process()
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
-	merge_p4_fork(other_srt, prev_step.step, oposite_fork);
+	limit_to_p4_fork(other_srt);
 
 	pts = other_srt.p4h;
 	remove_if(pts, move_srt.p4_pr());
@@ -118,22 +119,12 @@ void node_t::process()
 	if(deep>=common_deep && mark_limit_reached())
 		return;
 
-	pts = move_srt.p3h;
+	pts = set_to_point(move_srt.p3);
 	remove_if(pts, other_srt.p4_pr());
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
-	pts = set_to_point(move_srt.p3l);
-	remove_if(pts, other_srt.p4_pr());
-	if(mark_unchecked_make_move(pts, scores_field))
-		return;
-
-	pts = other_srt.p3h;
-	remove_if(pts, move_srt.p3_pr());
-	if(mark_unchecked_make_move(pts, scores_field))
-		return;
-
-	pts = set_to_point(other_srt.p3l);
+	pts = set_to_point(other_srt.p3);
 	remove_if(pts, move_srt.p3_pr());
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
@@ -235,23 +226,23 @@ void node_t::make_move(const point& p)
 	player.field.pop(old_bound);
 }
 
-void node_t::merge_p4_fork(const sorted_scores& srt, Step color, fork_t& ret) const
+void node_t::limit_to_p4_fork(const sorted_scores& other_srt)
 {
-	if(srt.p4h.empty())
+	if(other_srt.p4h.empty())
 		return;
 
 	const matrix<score_t>& scores_field = player.field5.get_scores_field();
 
-	for (const point& p : srt.p4h)
+	for (const point& p : other_srt.p4h)
 	{
-		auto count4 = scores_field.get(p).score(color)/kScore4;
+		auto count4 = scores_field.get(p).score(prev_step.step)/kScore4;
 
 		fork_t f(p);
 		if(count4 == 2) 
 		{
 			player.field5.iterate_involved_lines(p, [&](const point& line_point, const line5_t& line, int dx, int dy)
 				{
-					if(line.steps != 4 || line.color != color)
+					if(line.steps != 4 || line.color != prev_step.step)
 						return;
 
 					for (int i = -2; i <= 2; i++)
@@ -263,8 +254,8 @@ void node_t::merge_p4_fork(const sorted_scores& srt, Step color, fork_t& ret) co
 				});
 		}
 		
-		ret.merge(f);
-		if(ret.is_empty_set())
+		oposite_fork.merge(f);
+		if(oposite_fork.is_empty_set())
 			return;
 	}
 }

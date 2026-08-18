@@ -33,13 +33,15 @@ namespace Gomoku { namespace State5
 		
 		inline unsigned total(Step move_color) const 
 		{
+			//this is probably wrong function. 
+			// *2 overlaps with with oposite color
 			return move_color == st_krestik? krestik_score*2+nolik_score : nolik_score*2 + krestik_score;
 		}
 
 		inline unsigned score(Step color) const {return color == st_krestik? krestik_score : nolik_score;} 
 	};
 
-	void max_step(unsigned score, unsigned& step, unsigned& lines_count);
+	unsigned max_step(unsigned score);
 
 	struct lines5_t
 	{
@@ -98,8 +100,7 @@ namespace Gomoku { namespace State5
 		points_t p5;
 		points_t p4h;
 		points_t p4l;
-		points_t p3h;
-		points_set_t p3l;
+		points_set_t p3;
 		points_set_t p2;
 
 		sorted_scores();
@@ -109,19 +110,19 @@ namespace Gomoku { namespace State5
 		bool p5_exists(const point& p) const {return std::find(p5.begin(),p5.end(),p)!=p5.end();}
 		bool p4h_exists(const point& p) const {return std::find(p4h.begin(),p4h.end(),p)!=p4h.end();}
 		bool p4l_exists(const point& p) const {return binary_find(p4l.begin(),p4l.end(),p,less_point_pr())!=p4l.end();}
-		bool p3h_exists(const point& p) const {return binary_find(p3h.begin(),p3h.end(),p,less_point_pr())!=p3h.end();}
-		bool p3l_exists(const point& p) const {return p3l.find(p) != p3l.end();}
+		bool p3_exists(const point& p) const {return p3.find(p) != p3.end();}
 		bool p2_exists(const point& p) const {return p2.find(p) != p2.end();}
 
-		inline auto p5_pr() const { return [this] (const point& p) {return p5_exists(p);}; }
+		inline auto p5_pr() const { return [this] (const point& p){return p5_exists(p);}; }
 		inline auto p4_pr() const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p) || p4l_exists(p);}; }
-		inline auto p3_pr() const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p) || p4l_exists(p) || p3h_exists(p) || p3l_exists(p);}; }
-		inline auto p2_pr() const { return [this] (const point& p) {return p5_exists(p) || p4h_exists(p) || p4l_exists(p) || p3h_exists(p) || p3l_exists(p) || p2_exists(p);}; }
+		inline auto p3_pr() const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p) || p4l_exists(p) || p3_exists(p);}; }
+		inline auto p2_pr() const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p) || p4l_exists(p) || p3_exists(p) || p2_exists(p);}; }
 
 		void log_statistic() const;
+		unsigned size() const {return p5.size() + p4h.size() + p4l.size() + p3.size() + p2.size();}
 	private:
-		void add(const point& pt, unsigned step, unsigned lines_count);
-		void remove(const point& pt, unsigned step, unsigned lines_count);
+		void add(const point& pt, unsigned step, unsigned scr);
+		void remove(const point& pt, unsigned step, unsigned scr);
 	};
 
 
