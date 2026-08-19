@@ -136,6 +136,14 @@ namespace Gomoku
 			if(it==outbound.end())return Value();
 			return it->second;
 		}
+		
+		Value& get_ref(const point& pt)
+		{
+			if(max_bound&pt)
+				return fld[(pt.y-max_bound.y1)*width+pt.x-max_bound.x1];
+			else
+				return outbound[pt];
+		}
 
 		void set(const point& pt,Value v)
 		{

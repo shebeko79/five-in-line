@@ -272,14 +272,12 @@ namespace Gomoku { namespace State5
 
 	void field5_t::change_line(const field_t& field, Step color, const point& line_point, int dx, int dy)
 	{
-		lines5_t sts = lines_field.get(line_point);
+		lines5_t& sts = lines_field.get_ref(line_point);
 		auto& line = sts.get_line(dx,dy);
 		auto old_line = line;
 
 		if (!line.adjust(color))
 			return;
-
-		lines_field.set(line_point, sts);
 
 		change_score(field,old_line,line,point(line_point.x + (-2) * dx, line_point.y + (-2) * dy));
 		change_score(field,old_line,line,point(line_point.x + (-1) * dx, line_point.y + (-1) * dy));
@@ -316,11 +314,12 @@ namespace Gomoku { namespace State5
 
 	void field5_t::set_score(const point& pt, const score_t& new_scr)
 	{
-		score_t old_scr = scores_field.get(pt);
-		scores_field.set(pt, new_scr);
+		score_t& old_scr = scores_field.get_ref(pt);
 
 		sorted_krestik.update(pt,old_scr.krestik_score, new_scr.krestik_score);
 		sorted_nolik  .update(pt,old_scr.nolik_score,   new_scr.nolik_score);
+
+		old_scr = new_scr;
 	}
 
 	void field5_t::apply_shapshot(const snapshot_t& snapshot)
