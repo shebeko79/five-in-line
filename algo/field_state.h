@@ -8,10 +8,10 @@
 
 namespace Gomoku { namespace State5
 {
-	constexpr unsigned kScore2 = 41;
-	constexpr unsigned kScore3 = 1681;
-	constexpr unsigned kScore4 = 68921;
-	constexpr unsigned kScore5 = 2825761;
+	constexpr unsigned kScore2 = (1u<<6);
+	constexpr unsigned kScore3 = (1u<<12);
+	constexpr unsigned kScore4 = (1u<<18);
+	constexpr unsigned kScore5 = (1u<<24);
 
 
 	struct line5_t
