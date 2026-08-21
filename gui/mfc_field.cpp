@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "gomoku.h"
 #include "mfc_field.h"
-#include ".\mfc_field.h"
 
 
 // CMfcField

@@ -4,10 +4,7 @@
 #include "stdafx.h"
 #include "ThreadProcessor.h"
 #include <boost/function.hpp>
-#include <boost/bind.hpp>
-//#include "extern/exception_catch.h"
 #include <stdexcept>
-#include ".\threadprocessor.h"
 
 // CThreadProcessor
 
