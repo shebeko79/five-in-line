@@ -284,6 +284,10 @@ namespace Gomoku { namespace State5
 		change_score(field,old_line,line,point(line_point.x            , line_point.y            ));
 		change_score(field,old_line,line,point(line_point.x + (1) * dx, line_point.y + (1) * dy));
 		change_score(field,old_line,line,point(line_point.x + (2) * dx, line_point.y + (2) * dy));
+
+
+		field_score+= line.get_score(st_krestik) - old_line.get_score(st_krestik);
+		field_score-= line.get_score(st_nolik) - old_line.get_score(st_nolik);
 	}
 	
 	void field5_t::change_score(const field_t& field, const line5_t& old_line, const line5_t& new_line, const point& pt)
@@ -325,6 +329,7 @@ namespace Gomoku { namespace State5
 	void field5_t::apply_shapshot(const snapshot_t& snapshot)
 	{
 		snapshot.apply(lines_field, [this](const point& pt,const score_t& scr) {set_score(pt,scr);});
+		field_score = snapshot.field_score;
 	}
 
 	void field5_t::iterate_involved_lines(const point& pt, const line_visitor& visitor)

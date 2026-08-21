@@ -25,7 +25,7 @@ void field_state_player_t::delegate_step()
 
 	try
 	{
-		root.process();
+		root.process_thread();
 	}
 	catch(e_cancel&)
 	{
@@ -40,6 +40,7 @@ void field_state_player_t::delegate_step()
 	lg<<"";
 	lg << "#" << field.size() + 1 << " " << print_steps(steps_t({ {root.move_color, p} }))
 		<<": time="<<perf<<" nodes="<<node_t::nodes_created<<" nps="<<nps;
+	lg<<"scores="<<field5.get_score();
 	root.log_statistic();
 	lg<<"empty_count="<<(field5.get_sorted(st_krestik).size() + field5.get_sorted(st_krestik).size());
 	lg<<"Sorted krestik:";
@@ -65,7 +66,7 @@ node_t::node_t(field_state_player_t& _player, const step_t& st, unsigned _deep) 
 	++nodes_created;
 }
 
-void node_t::process()
+void node_t::process_thread()
 {
 	const sorted_scores& move_srt = player.field5.get_sorted(move_color);
 	const sorted_scores& other_srt = player.field5.get_sorted(prev_step.step);
@@ -203,7 +204,7 @@ void node_t::make_move(const point& p)
 	player.field5.change_state(player.field);
 
 	node_t sub(player, new_step, deep+1);
-	sub.process();
+	sub.process_thread();
 
 	auto* win = sub.get_min_win();
 	if (win)
@@ -267,14 +268,14 @@ void node_t::limit_to_p4_fork(const sorted_scores& other_srt)
 point node_t::get_next_step() const
 {
 	auto* win = get_min_win();
-	if (win)return static_cast<const point&>(*win);
+	if (win)return *win;
 
 	if (!neutrals.empty())
 		return *std::min_element(neutrals.begin(),neutrals.end(), score_pr(player.field5.get_scores_field(), move_color) );
 
 	auto* fail = get_max_fail();
 	if(!fail)throw std::runtime_error("node_t::get_next_step(): invalid state");
-	return static_cast<const point&>(*fail);
+	return *fail;
 }
 
 const npoint* node_t::get_min_win() const

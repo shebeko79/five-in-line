@@ -81,7 +81,7 @@ namespace Gomoku { namespace State5
 
 		node_t(field_state_player_t& _player, const step_t& st, unsigned _deep = 0);
 
-		void process();
+		void process_thread();
 
 		point get_next_step() const;
 

@@ -31,14 +31,25 @@ namespace Gomoku
 
 	struct npoint : public point
 	{
-		unsigned n;
-		npoint(){n=1;}
+		unsigned n = 1;
+		npoint() = default;
 		npoint(const point& rhs,unsigned _n=1) : point(rhs){n=_n;}
 		inline void operator=(const point& rhs){static_cast<point&>(*this)=rhs;}
 		inline bool is_same_point(const point& p) const{return static_cast<const point&>(*this)==p;}
 	};
 
 	typedef std::vector<npoint> npoints_t;
+
+	struct ipoint : public point
+	{
+		unsigned i = 0;
+		ipoint() = default;
+		ipoint(const point& rhs,int _i=1) : point(rhs), i(_i){}
+		inline void operator=(const point& rhs){static_cast<point&>(*this)=rhs;}
+		inline bool is_same_point(const point& p) const{return static_cast<const point&>(*this)==p;}
+	};
+
+	typedef std::vector<ipoint> ipoints_t;
 
 	struct less_point_pr
 	{

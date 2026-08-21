@@ -8,10 +8,10 @@
 
 namespace Gomoku { namespace State5
 {
-	constexpr unsigned kScore2 = (1u<<6);
-	constexpr unsigned kScore3 = (1u<<12);
-	constexpr unsigned kScore4 = (1u<<18);
-	constexpr unsigned kScore5 = (1u<<24);
+	constexpr unsigned kScore2 = (1u<<10);
+	constexpr unsigned kScore3 = (1u<<18);
+	constexpr unsigned kScore4 = (1u<<23);
+	constexpr unsigned kScore5 = (1u<<27);
 
 
 	struct line5_t
@@ -33,9 +33,7 @@ namespace Gomoku { namespace State5
 		
 		inline unsigned total(Step move_color) const 
 		{
-			//this is probably wrong function. 
-			// *2 overlaps with with oposite color
-			return move_color == st_krestik? krestik_score*2+nolik_score : nolik_score*2 + krestik_score;
+			return krestik_score+nolik_score;
 		}
 
 		inline unsigned score(Step color) const {return color == st_krestik? krestik_score : nolik_score;} 
@@ -72,10 +70,13 @@ namespace Gomoku { namespace State5
 		scores_t tbs;
 		scores_t bts;
 
+		int field_score;
+
 		snapshot_t() = default;
-		snapshot_t(const step_t& _st, const matrix<lines5_t>& lines_field, const matrix<score_t>& scores_field) : 
+		snapshot_t(const step_t& _st, const matrix<lines5_t>& lines_field, const matrix<score_t>& scores_field, int _field_score) : 
 			st(_st),
-			central_s(scores_field.get(_st))
+			central_s(scores_field.get(_st)),
+			field_score(_field_score)
 		{
 			fill(lines_field); 
 			fill(scores_field); 
@@ -131,7 +132,7 @@ namespace Gomoku { namespace State5
 	public:
 		using line_visitor = std::function<void (const point& line_point,const line5_t& line, int dx, int dy)>;
 
-		snapshot_t make_snapshot(const step_t& st) const { return snapshot_t(st, lines_field, scores_field); }
+		snapshot_t make_snapshot(const step_t& st) const { return snapshot_t(st, lines_field, scores_field, field_score); }
 		void apply_shapshot(const snapshot_t& snapshot);
 		
 		void change_state(const field_t& field);
@@ -140,11 +141,14 @@ namespace Gomoku { namespace State5
 		inline const matrix<score_t>& get_scores_field() const {return scores_field;}
 
 		void iterate_involved_lines(const point& pt, const line_visitor& visitor);
+		
+		int get_score() const {return field_score;}
 	private:
 		matrix<lines5_t> lines_field;
 		matrix<score_t> scores_field;
 		sorted_scores sorted_krestik;
 		sorted_scores sorted_nolik;
+		int field_score = 0;
 
 
 		void change_state(const field_t& field, int dx, int dy);
