@@ -44,7 +44,7 @@ namespace Gomoku
 	{
 		unsigned i = 0;
 		ipoint() = default;
-		ipoint(const point& rhs,int _i=1) : point(rhs), i(_i){}
+		ipoint(const point& rhs,int _i) : point(rhs), i(_i){}
 		inline void operator=(const point& rhs){static_cast<point&>(*this)=rhs;}
 		inline bool is_same_point(const point& p) const{return static_cast<const point&>(*this)==p;}
 	};
@@ -249,6 +249,7 @@ namespace Gomoku
 	std::string print_point(const point& p);
 	std::string print_points(const points_t& vals);
 	std::string print_points(const npoints_t& vals);
+	std::string print_points(const ipoints_t& vals);
 
 	steps_t scan_steps(const std::string& str);
 
