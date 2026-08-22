@@ -358,8 +358,13 @@ void node_t::log_statistic() const
 	}
 
 	lg<<"Neutrals count: "<<neutrals.size();
-	if(!neutrals.empty()&&neutrals.size()<10)
-		lg<<"Neutrals: "<<print_points(neutrals);
+	if (!neutrals.empty())
+	{
+		ipoints_t tmp = neutrals;
+		std::stable_sort(tmp.begin(),tmp.end(), fscore_pr(move_color));
+
+		lg << "Neutrals: " << print_points(tmp);
+	}
 
 }
 

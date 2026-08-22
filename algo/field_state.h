@@ -15,13 +15,22 @@ namespace Gomoku { namespace State5
 	constexpr Score kScore4 = (1<<23);
 	constexpr Score kScore5 = (1<<27);
 
+	unsigned max_step(Score score);
+	Score prev_score(Score score);
+
+	inline Score best_fscore(Score a, Score b, Step move_color)
+	{
+		return (move_color == st_krestik) == (a>b)? a : b;
+	}
+
 	struct line5_t
 	{
 		Step color = st_empty;
 		unsigned steps = 1; //number of steps made if we move here
 		
 		bool adjust(Step new_color);
-		Score get_score(Step for_color) const;
+		Score next_score(Step for_color) const;
+		Score cur_score(Step for_color) const;
 	};
 
 	struct score_t
@@ -32,25 +41,16 @@ namespace Gomoku { namespace State5
 		score_t() = default;
 		score_t(Score k, Score n) : krestik_score(k), nolik_score(n) {}
 		
-		inline Score total() const 
+		inline Score total(Step move_color) const 
 		{
-			return krestik_score+nolik_score;
+			if(move_color == st_krestik)
+				return krestik_score-prev_score(krestik_score)+prev_score(nolik_score);
+			else
+				return -nolik_score+prev_score(nolik_score)-prev_score(krestik_score);
 		}
 
-		inline Score score(Step color) const {return color == st_krestik? krestik_score : nolik_score;} 
+		inline Score score(Step color) const {return color == st_krestik? krestik_score : nolik_score;}
 	};
-
-	unsigned max_step(Score score);
-
-	inline Score best_fscore(Score a, Score b, Step move_color)
-	{
-		return (move_color == st_krestik) == (a>b)? a : b;
-	}
-
-	inline Score add_move_score(Score move_score, Step move_color)
-	{
-		return move_color == st_krestik? move_score : -move_score;
-	}
 
 	struct lines5_t
 	{
@@ -154,7 +154,7 @@ namespace Gomoku { namespace State5
 		void iterate_involved_lines(const point& pt, const line_visitor& visitor);
 		
 		inline Score get_score() const {return field_score;}
-		inline Score get_score(const point& p, Step move_color) const {return field_score + add_move_score(scores_field.get(p).total(), move_color);}
+		inline Score get_score(const point& p, Step move_color) const {return field_score + scores_field.get(p).total(move_color);}
 
 		bool is_update_sorted=true;
 		bool is_update_empty_fields=true; 
@@ -180,10 +180,12 @@ namespace Gomoku { namespace State5
 	{
 		const matrix<score_t>& scores_field;
 		const Step move_color;
+		const int k;
 
 		score_pr(const matrix<score_t>& _scores_field, Step _move_color) :
 			scores_field(_scores_field),
-			move_color(_move_color)
+			move_color(_move_color),
+			k(move_color==st_krestik? 1:-1)
 		{
 		}
 
@@ -191,16 +193,22 @@ namespace Gomoku { namespace State5
 		{
 			score_t sa = scores_field.get(pa);
 			score_t sb = scores_field.get(pb);
-			return sa.total() > sb.total();
+			return k*sa.total(move_color) > k*sb.total(move_color);
 		}
 	};
 
-	struct fscore_pr
+	struct fscore_pr : near_point_pr
 	{
 		const int k;
 		
-		fscore_pr(Step move_color) : k(move_color==st_krestik? 1:-1){}
-		inline bool operator()(const ipoint& pa, const ipoint& pb) const{return pa.i*k > pb.i*k;}
+		fscore_pr(Step move_color) : near_point_pr(point(0,0)), k(move_color==st_krestik? 1:-1){}
+		inline bool operator()(const ipoint& pa, const ipoint& pb) const
+		{
+			if(pa.i != pb.i)
+				return pa.i*k > pb.i*k;
+
+			return near_point_pr::operator()(pa,pb);
+		}
 	};
 
 } }//namespace gomoku

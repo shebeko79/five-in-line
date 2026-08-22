@@ -24,7 +24,7 @@ namespace Gomoku { namespace State5
 		return true;
 	}
 
-	Score line5_t::get_score(Step for_color) const
+	Score line5_t::next_score(Step for_color) const
 	{
 		if (steps == 0)
 			return 0;
@@ -45,6 +45,29 @@ namespace Gomoku { namespace State5
 		}
 		
 		return 1;
+	}
+
+	Score line5_t::cur_score(Step for_color) const
+	{
+		if (steps == 0)
+			return 0;
+
+		if(color != st_empty && color != for_color)
+			return 0;
+
+		switch (steps)
+		{
+		case 2:
+			return 1;
+		case 3:
+			return kScore2;
+		case 4:
+			return kScore3;
+		case 5:
+			return kScore4;
+		}
+		
+		return 0;
 	}
 
 	line5_t& lines5_t::get_line(int dx, int dy)
@@ -73,6 +96,34 @@ namespace Gomoku { namespace State5
 			return 2;
 
 		return 1;
+	}
+
+	Score prev_score(Score score)
+	{
+		Score ret=0;
+
+		if (score >= kScore5)
+		{
+			ret += score / kScore5 * kScore4;
+			score %= kScore5;
+		}
+
+		if (score >= kScore4)
+		{
+			ret += score / kScore4 * kScore3;
+			score %= kScore4;
+		}
+
+		if (score >= kScore3)
+		{
+			ret += score / kScore3 * kScore2;
+			score %= kScore3;
+		}
+
+		if (score >= kScore2)
+			ret += score / kScore2;
+
+		return ret;
 	}
 
 	void snapshot_t::fill(const matrix<lines5_t>& lines_field)
@@ -293,8 +344,8 @@ namespace Gomoku { namespace State5
 		change_score(field,old_line,line,point(line_point.x + (2) * dx, line_point.y + (2) * dy));
 
 
-		field_score+= line.get_score(st_krestik) - old_line.get_score(st_krestik);
-		field_score-= line.get_score(st_nolik) - old_line.get_score(st_nolik);
+		field_score+= line.cur_score(st_krestik) - old_line.cur_score(st_krestik);
+		field_score-= line.cur_score(st_nolik) - old_line.cur_score(st_nolik);
 	}
 	
 	void field5_t::change_score(const field_t& field, const line5_t& old_line, const line5_t& new_line, const point& pt)
@@ -304,21 +355,21 @@ namespace Gomoku { namespace State5
 
 		score_t scr = scores_field.get(pt);
 
-		if (scr.krestik_score + new_line.get_score(st_krestik) < old_line.get_score(st_krestik))
+		if (scr.krestik_score + new_line.next_score(st_krestik) < old_line.next_score(st_krestik))
 		{
 			throw std::runtime_error("field5_t::change_score(st_krestik): <0");
 		}
 
-		if (scr.nolik_score + new_line.get_score(st_nolik) < old_line.get_score(st_nolik))
+		if (scr.nolik_score + new_line.next_score(st_nolik) < old_line.next_score(st_nolik))
 		{
 			throw std::runtime_error("field5_t::change_score(st_nolik): <0");
 		}
 
-		scr.krestik_score -= old_line.get_score(st_krestik);
-		scr.krestik_score += new_line.get_score(st_krestik);
+		scr.krestik_score -= old_line.next_score(st_krestik);
+		scr.krestik_score += new_line.next_score(st_krestik);
 
-		scr.nolik_score   -= old_line.get_score(st_nolik);
-		scr.nolik_score   += new_line.get_score(st_nolik);
+		scr.nolik_score   -= old_line.next_score(st_nolik);
+		scr.nolik_score   += new_line.next_score(st_nolik);
 		
 		set_score(pt, scr);
 

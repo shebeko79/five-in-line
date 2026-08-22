@@ -42,7 +42,7 @@ namespace Gomoku
 
 	struct ipoint : public point
 	{
-		unsigned i = 0;
+		int i = 0;
 		ipoint() = default;
 		ipoint(const point& rhs,int _i) : point(rhs), i(_i){}
 		inline void operator=(const point& rhs){static_cast<point&>(*this)=rhs;}
