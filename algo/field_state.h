@@ -8,11 +8,12 @@
 
 namespace Gomoku { namespace State5
 {
-	constexpr unsigned kScore2 = (1u<<10);
-	constexpr unsigned kScore3 = (1u<<18);
-	constexpr unsigned kScore4 = (1u<<23);
-	constexpr unsigned kScore5 = (1u<<27);
-
+	using Score = int;
+	
+	constexpr Score kScore2 = (1<<10);
+	constexpr Score kScore3 = (1<<18);
+	constexpr Score kScore4 = (1<<23);
+	constexpr Score kScore5 = (1<<27);
 
 	struct line5_t
 	{
@@ -20,26 +21,36 @@ namespace Gomoku { namespace State5
 		unsigned steps = 1; //number of steps made if we move here
 		
 		bool adjust(Step new_color);
-		unsigned get_score(Step for_color) const;
+		Score get_score(Step for_color) const;
 	};
 
 	struct score_t
 	{
-		unsigned krestik_score = 20;
-		unsigned nolik_score = 20;
+		Score krestik_score = 20;
+		Score nolik_score = 20;
 		
 		score_t() = default;
-		score_t(unsigned k, unsigned n) : krestik_score(k), nolik_score(n) {}
+		score_t(Score k, Score n) : krestik_score(k), nolik_score(n) {}
 		
-		inline unsigned total(Step move_color) const 
+		inline Score total() const 
 		{
 			return krestik_score+nolik_score;
 		}
 
-		inline unsigned score(Step color) const {return color == st_krestik? krestik_score : nolik_score;} 
+		inline Score score(Step color) const {return color == st_krestik? krestik_score : nolik_score;} 
 	};
 
-	unsigned max_step(unsigned score);
+	unsigned max_step(Score score);
+
+	inline Score best_fscore(Score a, Score b, Step move_color)
+	{
+		return (move_color == st_krestik) == (a>b)? a : b;
+	}
+
+	inline Score add_move_score(Score move_score, Step move_color)
+	{
+		return move_color == st_krestik? move_score : -move_score;
+	}
 
 	struct lines5_t
 	{
@@ -70,10 +81,10 @@ namespace Gomoku { namespace State5
 		scores_t tbs;
 		scores_t bts;
 
-		int field_score;
+		Score field_score;
 
 		snapshot_t() = default;
-		snapshot_t(const step_t& _st, const matrix<lines5_t>& lines_field, const matrix<score_t>& scores_field, int _field_score) : 
+		snapshot_t(const step_t& _st, const matrix<lines5_t>& lines_field, const matrix<score_t>& scores_field, Score _field_score) : 
 			st(_st),
 			central_s(scores_field.get(_st)),
 			field_score(_field_score)
@@ -106,7 +117,7 @@ namespace Gomoku { namespace State5
 
 		sorted_scores();
 		
-		void update(const point& pt, unsigned old_scr, unsigned new_scr);
+		void update(const point& pt, Score old_scr, Score new_scr);
 
 		bool p5_exists(const point& p) const {return std::find(p5.begin(),p5.end(),p)!=p5.end();}
 		bool p4h_exists(const point& p) const {return std::find(p4h.begin(),p4h.end(),p)!=p4h.end();}
@@ -122,11 +133,11 @@ namespace Gomoku { namespace State5
 		void log_statistic() const;
 		unsigned size() const {return p5.size() + p4h.size() + p4l.size() + p3.size() + p2.size();}
 	private:
-		void add(const point& pt, unsigned step, unsigned scr);
-		void remove(const point& pt, unsigned step, unsigned scr);
+		void add(const point& pt, unsigned step, Score scr);
+		void remove(const point& pt, unsigned step, Score scr);
 	};
 
-
+	
 	class field5_t
 	{
 	public:
@@ -142,15 +153,19 @@ namespace Gomoku { namespace State5
 
 		void iterate_involved_lines(const point& pt, const line_visitor& visitor);
 		
-		int get_score() const {return field_score;}
+		inline Score get_score() const {return field_score;}
+		inline Score get_score(const point& p, Step move_color) const {return field_score + add_move_score(scores_field.get(p).total(), move_color);}
+
+		bool is_update_sorted=true;
+		bool is_update_empty_fields=true; 
 	private:
 		matrix<lines5_t> lines_field;
 		matrix<score_t> scores_field;
 		sorted_scores sorted_krestik;
 		sorted_scores sorted_nolik;
-		int field_score = 0;
-
-
+		points_set_t empty_fields;
+		Score field_score = 0;
+		
 		void change_state(const field_t& field, int dx, int dy);
 		void change_line(const field_t& field,Step color, const point& line_point, int dx, int dy);
 		void change_score(const field_t& field,const line5_t& old_line, const line5_t& new_line, const point& pt);
@@ -176,8 +191,16 @@ namespace Gomoku { namespace State5
 		{
 			score_t sa = scores_field.get(pa);
 			score_t sb = scores_field.get(pb);
-			return sa.total(move_color) > sb.total(move_color);
+			return sa.total() > sb.total();
 		}
+	};
+
+	struct fscore_pr
+	{
+		const int k;
+		
+		fscore_pr(Step move_color) : k(move_color==st_krestik? 1:-1){}
+		inline bool operator()(const ipoint& pa, const ipoint& pb) const{return pa.i*k > pb.i*k;}
 	};
 
 } }//namespace gomoku

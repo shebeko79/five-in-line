@@ -24,7 +24,7 @@ namespace Gomoku { namespace State5
 		return true;
 	}
 
-	unsigned line5_t::get_score(Step for_color) const
+	Score line5_t::get_score(Step for_color) const
 	{
 		if (steps == 0)
 			return 0;
@@ -55,7 +55,7 @@ namespace Gomoku { namespace State5
 		return bt;
 	}
 
-	unsigned max_step(unsigned score)
+	unsigned max_step(Score score)
 	{
 		if(score == 0)
 			return 0;
@@ -151,7 +151,7 @@ namespace Gomoku { namespace State5
 		p4l.reserve(20);
 	}
 
-	void sorted_scores::update(const point& pt, unsigned old_scr, unsigned new_scr)
+	void sorted_scores::update(const point& pt, Score old_scr, Score new_scr)
 	{
 		unsigned old_step = max_step(old_scr);
 		unsigned new_step = max_step(new_scr);
@@ -177,7 +177,7 @@ namespace Gomoku { namespace State5
 		add(pt, new_step, new_scr);
 	}
 	
-	void sorted_scores::add(const point& pt, unsigned step, unsigned scr)
+	void sorted_scores::add(const point& pt, unsigned step, Score scr)
 	{
 		switch (step)
 		{
@@ -199,7 +199,7 @@ namespace Gomoku { namespace State5
 		}
 	}
 
-	void sorted_scores::remove(const point& pt, unsigned step, unsigned scr)
+	void sorted_scores::remove(const point& pt, unsigned step, Score scr)
 	{
 		switch (step)
 		{
@@ -241,6 +241,9 @@ namespace Gomoku { namespace State5
 	{
 		set_score(field.back(), score_t(0,0));
 
+		if (is_update_empty_fields)
+			empty_fields.erase(field.back());
+
 		change_state(field,1,0);
 		change_state(field,0,1);
 		change_state(field,1,1);
@@ -254,6 +257,10 @@ namespace Gomoku { namespace State5
 		scores_field.clear();
 		sorted_krestik = sorted_scores();
 		sorted_nolik = sorted_scores();
+		empty_fields.clear();
+		field_score = 0;
+		is_update_sorted=true;
+		is_update_empty_fields=true; 
 
 		field_t field;
 		for (const auto& st : steps)
@@ -314,14 +321,20 @@ namespace Gomoku { namespace State5
 		scr.nolik_score   += new_line.get_score(st_nolik);
 		
 		set_score(pt, scr);
+
+		if(is_update_empty_fields)
+			empty_fields.insert(pt);
 	}
 
 	void field5_t::set_score(const point& pt, const score_t& new_scr)
 	{
 		score_t& old_scr = scores_field.get_ref(pt);
 
-		sorted_krestik.update(pt,old_scr.krestik_score, new_scr.krestik_score);
-		sorted_nolik  .update(pt,old_scr.nolik_score,   new_scr.nolik_score);
+		if (is_update_sorted)
+		{
+			sorted_krestik.update(pt, old_scr.krestik_score, new_scr.krestik_score);
+			sorted_nolik.update(pt, old_scr.nolik_score, new_scr.nolik_score);
+		}
 
 		old_scr = new_scr;
 	}
@@ -330,6 +343,9 @@ namespace Gomoku { namespace State5
 	{
 		snapshot.apply(lines_field, [this](const point& pt,const score_t& scr) {set_score(pt,scr);});
 		field_score = snapshot.field_score;
+
+		if (is_update_empty_fields)
+			empty_fields.insert(snapshot.st);
 	}
 
 	void field5_t::iterate_involved_lines(const point& pt, const line_visitor& visitor)

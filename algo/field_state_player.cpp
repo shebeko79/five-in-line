@@ -25,7 +25,9 @@ void field_state_player_t::delegate_step()
 
 	try
 	{
-		root.process_thread();
+		field5.is_update_empty_fields = false;
+		root.process();
+		field5.is_update_empty_fields = true;
 	}
 	catch(e_cancel&)
 	{
@@ -40,7 +42,7 @@ void field_state_player_t::delegate_step()
 	lg<<"";
 	lg << "#" << field.size() + 1 << " " << print_steps(steps_t({ {root.move_color, p} }))
 		<<": time="<<perf<<" nodes="<<node_t::nodes_created<<" nps="<<nps;
-	lg<<"scores="<<field5.get_score();
+	lg<<"old_scores="<<field5.get_score()<<" new_scores="<<field5.get_score(p,root.move_color);
 	root.log_statistic();
 	lg<<"empty_count="<<(field5.get_sorted(st_krestik).size() + field5.get_sorted(st_krestik).size());
 	lg<<"Sorted krestik:";
@@ -66,7 +68,7 @@ node_t::node_t(field_state_player_t& _player, const step_t& st, unsigned _deep) 
 	++nodes_created;
 }
 
-void node_t::process_thread()
+void node_t::process()
 {
 	const sorted_scores& move_srt = player.field5.get_sorted(move_color);
 	const sorted_scores& other_srt = player.field5.get_sorted(prev_step.step);
@@ -145,13 +147,22 @@ void node_t::process_thread()
 
 bool node_t::mark_unchecked_make_move(points_t& pts, const matrix<score_t>& scores_field)
 {
-	unsigned inside_count = 0;
+	bool inside_exists = false;
+	Score inside_fscore = 0;
+
+
 	if (oposite_fork.is_active())
 	{
 		for (const point& p : pts)
 		{
 			if (oposite_fork.inside(p))
-				++inside_count;
+			{
+				Score s = player.field5.get_score(p, move_color);
+				if(!inside_exists)
+					inside_fscore = s;
+				else
+					inside_fscore = best_fscore(inside_fscore,s, move_color);
+			}
 			else
 			{
 				if (deep > 0)
@@ -164,7 +175,21 @@ bool node_t::mark_unchecked_make_move(points_t& pts, const matrix<score_t>& scor
 
 	if (deep_limit_reached)
 	{
-		unchecked_exists = oposite_fork.is_active()? inside_count>0 : !pts.empty();
+		if (oposite_fork.is_active())
+		{
+			unchecked_exists = inside_exists;
+			unchecked_score = inside_fscore;
+		}
+		else
+		{
+			unchecked_exists = !pts.empty();
+			if (unchecked_exists)
+			{
+				const point& bp = *std::min_element(pts.begin(), pts.end(), score_pr(scores_field, move_color));
+				unchecked_score = player.field5.get_score(bp, move_color);
+			}
+		}
+		
 		return unchecked_exists;
 	}
 
@@ -204,7 +229,7 @@ void node_t::make_move(const point& p)
 	player.field5.change_state(player.field);
 
 	node_t sub(player, new_step, deep+1);
-	sub.process_thread();
+	sub.process();
 
 	auto* win = sub.get_min_win();
 	if (win)
@@ -213,7 +238,7 @@ void node_t::make_move(const point& p)
 	}
 	else if (!sub.neutrals.empty() || sub.unchecked_exists)
 	{
-		neutrals.push_back(new_step);
+		neutrals.push_back(ipoint(new_step,sub.best_neutral_score()));
 	}
 	else
 	{
@@ -271,7 +296,7 @@ point node_t::get_next_step() const
 	if (win)return *win;
 
 	if (!neutrals.empty())
-		return *std::min_element(neutrals.begin(),neutrals.end(), score_pr(player.field5.get_scores_field(), move_color) );
+		return *std::min_element(neutrals.begin(),neutrals.end(), fscore_pr(move_color) );
 
 	auto* fail = get_max_fail();
 	if(!fail)throw std::runtime_error("node_t::get_next_step(): invalid state");
@@ -293,6 +318,19 @@ const npoint* node_t::get_max_fail() const
 
 	return &*std::max_element(fails.begin(), fails.end(), less_n_pr());
 }
+
+int node_t::best_neutral_score() const
+{
+	if(neutrals.empty())
+		return unchecked_score;
+
+	int ret = std::min_element(neutrals.begin(),neutrals.end(),fscore_pr(move_color))->i;
+	if(!unchecked_exists)
+		return ret;
+
+	return best_fscore(unchecked_score, ret, move_color);
+}
+
 
 void node_t::log_statistic() const
 {
