@@ -575,5 +575,6 @@ void CgomokuDlg::log_wnd_t::on_message(const std::string& str)
     msg += str.c_str();
     msg += "\r\n";
     m_parent.mLog.SetWindowText(msg);
-
+    
+    m_parent.mLog.LineScroll(m_parent.mLog.GetLineCount());
 }
