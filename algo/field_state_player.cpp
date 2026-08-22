@@ -173,28 +173,16 @@ bool node_t::mark_unchecked_make_move(points_t& pts, const matrix<score_t>& scor
 		}
 	}
 
-	if (deep_limit_reached)
-	{
-		if (oposite_fork.is_active())
-		{
-			unchecked_exists = inside_exists;
-			unchecked_score = inside_fscore;
-		}
-		else
-		{
-			unchecked_exists = !pts.empty();
-			if (unchecked_exists)
-			{
-				const point& bp = *std::min_element(pts.begin(), pts.end(), score_pr(scores_field, move_color));
-				unchecked_score = player.field5.get_score(bp, move_color);
-			}
-		}
-		
-		return unchecked_exists;
-	}
-
 	if (oposite_fork.is_active())
 		pts.erase(std::remove_if(pts.begin(),pts.end(),[this](const point& p){return !oposite_fork.inside(p);}), pts.end());
+
+	if (deep_limit_reached)
+	{
+		for(const point& p : pts)
+			neutrals.emplace_back(p, player.field5.get_score(p, move_color));
+		
+		return false;
+	}
 
 	sort(pts, score_pr(scores_field, move_color));
 	return make_move_find_win(pts);
@@ -236,7 +224,7 @@ void node_t::make_move(const point& p)
 	{
 		fails.emplace_back(npoint(new_step,win->n+1));
 	}
-	else if (!sub.neutrals.empty() || sub.unchecked_exists)
+	else if (!sub.neutrals.empty())
 	{
 		neutrals.push_back(ipoint(new_step,sub.best_neutral_score()));
 	}
@@ -321,14 +309,7 @@ const npoint* node_t::get_max_fail() const
 
 int node_t::best_neutral_score() const
 {
-	if(neutrals.empty())
-		return unchecked_score;
-
-	int ret = std::min_element(neutrals.begin(),neutrals.end(),fscore_pr(move_color))->i;
-	if(!unchecked_exists)
-		return ret;
-
-	return best_fscore(unchecked_score, ret, move_color);
+	return std::min_element(neutrals.begin(),neutrals.end(),fscore_pr(move_color))->i;
 }
 
 
@@ -362,8 +343,13 @@ void node_t::log_statistic() const
 	{
 		ipoints_t tmp = neutrals;
 		std::stable_sort(tmp.begin(),tmp.end(), fscore_pr(move_color));
-
-		lg << "Neutrals: " << print_points(tmp);
+		if (tmp.size() <= 10)
+			lg << "Neutrals: " << print_points(tmp);
+		else
+		{
+			tmp.resize(10);
+			lg << "Neutrals: " << print_points(tmp)<<"...";
+		}
 	}
 
 }
