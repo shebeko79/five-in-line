@@ -216,7 +216,7 @@ namespace Gomoku { namespace State5
 					return;
 				break;
 			case 3:
-				if ((old_scr/kScore3 >= 4) == (new_scr/kScore3 >= 4))
+				if ((old_scr/kScore3 >= 2) == (new_scr/kScore3 >= 2))
 					return;
 				break;
 			default:
@@ -242,7 +242,10 @@ namespace Gomoku { namespace State5
 				sorted_insert(p4l, pt);
 			break;
 		case 3:
-			p3.insert(pt);
+			if(scr/kScore3>=2)
+				p3h.insert(pt);
+			else
+				p3l.insert(pt);
 			break;
 		case 2:
 			p2.insert(pt);
@@ -264,7 +267,10 @@ namespace Gomoku { namespace State5
 				sorted_erase(p4l, pt);
 			break;
 		case 3:
-			p3.erase(pt);
+			if(scr/kScore3>=2)
+				p3h.erase(pt);
+			else
+				p3l.erase(pt);
 			break;
 		case 2:
 			p2.erase(pt);
@@ -279,7 +285,8 @@ namespace Gomoku { namespace State5
 		lg<<"Size: p5="<<p5.size()
 			<<" p4h="<<p4h.size()
 			<<" p4l="<<p4l.size()
-			<<" p3="<<p3.size()
+			<<" p3h="<<p3h.size()
+			<<" p3l="<<p3l.size()
 			<<" p2="<<p2.size();
 
 		//lg<<"Capacity: p5="<<p5.capacity()

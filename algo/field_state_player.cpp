@@ -121,15 +121,25 @@ void node_t::process()
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
-	if(deep>=common_deep && mark_limit_reached())
-		return;
-
-	pts = set_to_point(move_srt.p3);
+	pts = set_to_point(move_srt.p3h);
 	remove_if(pts, other_srt.p4_pr());
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
-	pts = set_to_point(other_srt.p3);
+	if(deep>=common_deep && mark_limit_reached())
+		return;
+
+	pts = set_to_point(move_srt.p3l);
+	remove_if(pts, other_srt.p4_pr());
+	if(mark_unchecked_make_move(pts, scores_field))
+		return;
+
+	pts = set_to_point(other_srt.p3h);
+	remove_if(pts, move_srt.p3_pr());
+	if(mark_unchecked_make_move(pts, scores_field))
+		return;
+
+	pts = set_to_point(other_srt.p3l);
 	remove_if(pts, move_srt.p3_pr());
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
