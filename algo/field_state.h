@@ -127,10 +127,12 @@ namespace Gomoku { namespace State5
 		bool p3l_exists(const point& p) const {return p3l.find(p) != p3l.end();}
 		bool p2_exists(const point& p) const {return p2.find(p) != p2.end();}
 
-		inline auto p5_pr() const { return [this] (const point& p){return p5_exists(p);}; }
-		inline auto p4_pr() const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p) || p4l_exists(p);}; }
-		inline auto p3_pr() const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p) || p4l_exists(p) || p3h_exists(p) || p3l_exists(p);}; }
-		inline auto p2_pr() const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p) || p4l_exists(p) || p3h_exists(p) || p3l_exists(p) || p2_exists(p);}; }
+		inline auto p5_pr()  const { return [this] (const point& p){return p5_exists(p);}; }
+		inline auto p4h_pr() const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p);}; }
+		inline auto p4_pr()  const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p) || p4l_exists(p);}; }
+		inline auto p3h_pr() const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p) || p4l_exists(p) || p3h_exists(p);}; }
+		inline auto p3_pr()  const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p) || p4l_exists(p) || p3h_exists(p) || p3l_exists(p);}; }
+		inline auto p2_pr()  const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p) || p4l_exists(p) || p3h_exists(p) || p3l_exists(p) || p2_exists(p);}; }
 
 		void log_statistic() const;
 		unsigned size() const {return p5.size() + p4h.size() + p4l.size() + p3h.size() + p3l.size() + p2.size();}

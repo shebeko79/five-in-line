@@ -93,8 +93,8 @@ void node_t::process()
 		return;
 	}
 
-	if(deep>=threat_deep && mark_limit_reached())
-		return;
+	if (deep >= threat_deep)
+		deep_limit_reached = true;
 
 	auto& scores_field = player.field5.get_scores_field();
 
@@ -116,17 +116,17 @@ void node_t::process()
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
-	pts = other_srt.p4l;
-	remove_if(pts, move_srt.p4_pr());
-	if(mark_unchecked_make_move(pts, scores_field))
-		return;
-
 	pts = set_to_point(move_srt.p3h);
-	remove_if(pts, other_srt.p4_pr());
+	remove_if(pts, other_srt.p4h_pr());
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
-	if(deep>=common_deep && mark_limit_reached())
+	if (deep >= common_deep)
+		deep_limit_reached = true;
+
+	pts = other_srt.p4l;
+	remove_if(pts, move_srt.p3h_pr());
+	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
 	pts = set_to_point(move_srt.p3l);
@@ -184,12 +184,6 @@ bool node_t::mark_unchecked_make_move(points_t& pts, const matrix<score_t>& scor
 
 	sort(pts, score_pr(scores_field, move_color));
 	return make_move_find_win(pts);
-}
-
-bool node_t::mark_limit_reached()
-{
-	deep_limit_reached = true;
-	return !neutrals.empty();
 }
 
 bool node_t::make_move_find_win(const points_t& pts)

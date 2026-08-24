@@ -108,7 +108,6 @@ namespace Gomoku { namespace State5
 		bool make_move_find_win(const points_t& pts);
 		void make_move(const point& p);
 
-		bool mark_limit_reached();
 		void limit_to_p4_fork(const sorted_scores& other_srt);
 	};
 
