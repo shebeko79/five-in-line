@@ -109,6 +109,7 @@ namespace Gomoku { namespace State5
 		void make_move(const point& p);
 
 		void limit_to_p4_fork(const sorted_scores& other_srt);
+		void process_oposite_forked(points_t& pts);
 	};
 
 

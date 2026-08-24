@@ -113,11 +113,13 @@ void node_t::process()
 
 	pts = other_srt.p4h;
 	remove_if(pts, move_srt.p4_pr());
+	process_oposite_forked(pts);
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
 	pts = set_to_point(move_srt.p3h);
 	remove_if(pts, other_srt.p4h_pr());
+	process_oposite_forked(pts);
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
@@ -126,54 +128,62 @@ void node_t::process()
 
 	pts = other_srt.p4l;
 	remove_if(pts, move_srt.p3h_pr());
+	process_oposite_forked(pts);
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
 	pts = set_to_point(move_srt.p3l);
 	remove_if(pts, other_srt.p4_pr());
+	process_oposite_forked(pts);
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
 	pts = set_to_point(other_srt.p3h);
 	remove_if(pts, move_srt.p3_pr());
+	process_oposite_forked(pts);
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
 	pts = set_to_point(other_srt.p3l);
 	remove_if(pts, move_srt.p3_pr());
+	process_oposite_forked(pts);
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
 	pts = set_to_point(move_srt.p2);
 	remove_if(pts, other_srt.p3_pr());
+	process_oposite_forked(pts);
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
 	pts = set_to_point(other_srt.p2);
 	remove_if(pts, move_srt.p2_pr());
+	process_oposite_forked(pts);
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 }
 
-bool node_t::mark_unchecked_make_move(points_t& pts, const matrix<score_t>& scores_field)
+void node_t::process_oposite_forked(points_t& pts)
 {
-	if (oposite_fork.is_active())
+	if (!oposite_fork.is_active())
+		return;
+
+	for (const point& p : pts)
 	{
-		for (const point& p : pts)
+		if (!oposite_fork.inside(p))
 		{
-			if (!oposite_fork.inside(p))
-			{
-				if (deep > 0)
-					forced_max_fail = 4;
-				else
-					fails.emplace_back(npoint(p, 4));
-			}
+			if (deep > 0)
+				forced_max_fail = 4;
+			else
+				fails.emplace_back(npoint(p, 4));
 		}
 	}
 
-	if (oposite_fork.is_active())
-		pts.erase(std::remove_if(pts.begin(),pts.end(),[this](const point& p){return !oposite_fork.inside(p);}), pts.end());
+	pts.erase(std::remove_if(pts.begin(),pts.end(),[this](const point& p){return !oposite_fork.inside(p);}), pts.end());
+}
 
+bool node_t::mark_unchecked_make_move(points_t& pts, const matrix<score_t>& scores_field)
+{
 	if (deep_limit_reached)
 	{
 		for(const point& p : pts)
