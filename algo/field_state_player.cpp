@@ -157,23 +157,11 @@ void node_t::process()
 
 bool node_t::mark_unchecked_make_move(points_t& pts, const matrix<score_t>& scores_field)
 {
-	bool inside_exists = false;
-	Score inside_fscore = 0;
-
-
 	if (oposite_fork.is_active())
 	{
 		for (const point& p : pts)
 		{
-			if (oposite_fork.inside(p))
-			{
-				Score s = player.field5.get_score(p, move_color);
-				if(!inside_exists)
-					inside_fscore = s;
-				else
-					inside_fscore = best_fscore(inside_fscore,s, move_color);
-			}
-			else
+			if (!oposite_fork.inside(p))
 			{
 				if (deep > 0)
 					forced_max_fail = 4;
