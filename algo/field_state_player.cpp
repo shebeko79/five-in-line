@@ -25,9 +25,7 @@ void field_state_player_t::delegate_step()
 
 	try
 	{
-		field5.is_update_empty_fields = false;
 		root.process();
-		field5.is_update_empty_fields = true;
 	}
 	catch(e_cancel&)
 	{

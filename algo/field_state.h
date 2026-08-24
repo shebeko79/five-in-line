@@ -159,15 +159,11 @@ namespace Gomoku { namespace State5
 		
 		inline Score get_score() const {return field_score;}
 		inline Score get_score(const point& p, Step move_color) const {return field_score + scores_field.get(p).total(move_color);}
-
-		bool is_update_sorted=true;
-		bool is_update_empty_fields=true; 
 	private:
 		matrix<lines5_t> lines_field;
 		matrix<score_t> scores_field;
 		sorted_scores sorted_krestik;
 		sorted_scores sorted_nolik;
-		points_set_t empty_fields;
 		Score field_score = 0;
 		
 		void change_state(const field_t& field, int dx, int dy);
