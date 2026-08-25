@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include "../db/solution_tree_utils.h"
 #include "../algo/game.h"
-#include "../algo/wsplayer.h"
-#include "../algo/wsplayer_node.h"
+#include "../algo/field_state_player.h"
 
 #include "../extern/object_progress.hpp"
 #include "../algo/env_variables.h"
@@ -12,6 +11,7 @@ ObjectProgress::logout_cerr log_err;
 ObjectProgress::logout_file log_file;
 
 using namespace Gomoku;
+using namespace Gomoku::State5;
 
 void print_use()
 {
@@ -19,109 +19,44 @@ void print_use()
     Gomoku::print_enviropment_variables_hint();
 }
 
-std::string print_state(const WsPlayer::wide_item_t& r,const steps_t& key,unsigned& cnt)
+std::string print_state(const node_t& r,const steps_t& key)
 {
-	points_t neitrals;
-	items2points(r.get_neitrals(),neitrals);
-
-	npoints_t wins;
-	items2depth_npoints(r.get_wins().get_vals(),wins);
-
-	npoints_t fails;
-	items2depth_npoints(r.get_fails().get_vals(),fails);
+	const auto& neutrals = r.get_neutrals();
+	const auto& wins = r.get_wins();
+	const auto& fails = r.get_fails();
 
 	std::string str;
 	data_t bin;
-
-	std::string slevel=std::to_string(cnt);
-	cnt++;
 
 	std::string ret;
 
 	points2bin(key,bin);
 	bin2hex(bin,str);
-	ret+="k"+slevel+"="+str;
+	ret+="k="+str;
 
-	if(!neitrals.empty())
+	if(!neutrals.empty())
 	{
-		points2bin(neitrals,bin);
+		points2bin(neutrals,bin);
 		bin2hex(bin,str);
-		ret+="&n"+slevel+"="+str;
+		ret+="&n="+str;
 	}
 
 	if(!wins.empty())
 	{
 		points2bin(wins,bin);
 		bin2hex(bin,str);
-		ret+="&w"+slevel+"="+str;
+		ret+="&w="+str;
 	}
 
 	if(!fails.empty())
 	{
 		points2bin(fails,bin);
 		bin2hex(bin,str);
-		ret+="&f"+slevel+"="+str;
+		ret+="&f="+str;
 	}
-
-	//ObjectProgress::log_generator lg(true);
-
-	//lg<<"k="<<print_steps(key);
-	//lg<<"n="<<print_points(neitrals);
-	//lg<<"w="<<print_points(wins);
-	//lg<<"f="<<print_points(fails);
 
 	return ret;
 }
-
-void print_sub_states(const WsPlayer::wide_item_t& r,steps_t& init_state,unsigned& cnt)
-{
-	const Gomoku::WsPlayer::items_t& neitrals=r.get_neitrals();
-	
-	//base state already completed
-	if(neitrals.empty() || !r.get_wins().empty())
-		return;
-
-	init_state.push_back(step_t(next_color(init_state.size()),0,0));
-	
-	for(size_t i=0;i<neitrals.size();i++)
-	{
-		const WsPlayer::wide_item_t* sub=dynamic_cast<const WsPlayer::wide_item_t*>(&*neitrals[i]);
-		if(!sub)
-			continue;
-
-		if(sub->get_neitrals().empty()&&
-			sub->get_wins().empty()&&
-			sub->get_fails().empty())
-			continue;
-
-		static_cast<point&>(init_state.back())=*sub;
-
-		std::string ln=print_state(*sub,init_state,cnt);
-		printf("&%s",ln.c_str());
-	}
-	
-	for(size_t i=0;i<neitrals.size();i++)
-	{
-		const WsPlayer::wide_item_t* sub=dynamic_cast<const WsPlayer::wide_item_t*>(&*neitrals[i]);
-		if(!sub)
-			continue;
-
-		static_cast<point&>(init_state.back())=*sub;
-		print_sub_states(*sub,init_state,cnt);
-	}
-
-	init_state.pop_back();
-
-}
-
-void print_states(const WsPlayer::wide_item_t& r,steps_t& init_state)
-{
-	unsigned cnt=0;
-	std::string ln=print_state(r,init_state,cnt);
-	printf("%s",ln.c_str());
-	print_sub_states(r,init_state,cnt);
-}
-
 
 int main(int argc,char** argv)
 {
@@ -172,13 +107,13 @@ int main(int argc,char** argv)
 		game_t gm;
 		gm.field().set_steps(init_state);
 
-		WsPlayer::wsplayer_t pl;
+		State5::field_state_player_t pl;
 
 		pl.init(gm,other_color(last_step));
-		pl.solve();
+		node_t r = pl.solve();
 
-		const WsPlayer::wide_item_t& r=static_cast<const WsPlayer::wide_item_t&>(*pl.root);
-		print_states(r,init_state);
+		std::string ln=print_state(r,init_state);
+		printf("%s",ln.c_str());
 	}
 	catch(std::exception& e)
 	{

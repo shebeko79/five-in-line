@@ -93,11 +93,14 @@ namespace Gomoku { namespace State5
 
 		const npoint* get_min_win() const;
 		const npoint* get_max_fail() const;
-		inline const ipoints_t& get_neutrals() const {return neutrals;}
 		int best_neutral_score() const;
 
 		void replace_shorter_wins(const node_t& rnode);
 		void replace_shorter_fails(const node_t& rnode);
+
+		inline const ipoints_t& get_neutrals() const {return neutrals;}
+		inline const npoints_t& get_wins() const {return wins;}
+		inline const npoints_t& get_fails() const {return fails;}
 
 		static size_t nodes_created;
 	private:

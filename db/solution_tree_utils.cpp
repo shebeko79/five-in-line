@@ -10,7 +10,7 @@ namespace Gomoku
 		bin.resize(pts.size()*2);
 		for(unsigned i=0;i<pts.size();i++)
 		{
-			const point& p=pts[i];
+			const auto& p=pts[i];
 			if(p.x<=-128||p.x>127||p.y<=-128||p.y>127)
 				throw std::runtime_error("points2bin(): invalid point: ("+
 				std::to_string(p.x)+","+std::to_string(p.y)+")");
@@ -32,7 +32,7 @@ namespace Gomoku
 
 		for(unsigned i=0;i<pts.size();i++)
 		{
-			point& p=pts[i];
+			auto& p=pts[i];
 
 			char x=*reinterpret_cast<const unsigned char*>(&bin[i*2]);
 			char y=*reinterpret_cast<const unsigned char*>(&bin[i*2+1]);
@@ -47,7 +47,7 @@ namespace Gomoku
 		bin.resize(pts.size()*3);
 		for(unsigned i=0;i<pts.size();i++)
 		{
-			const step_t& p=pts[i];
+			const auto& p=pts[i];
 			if(p.x<=-128||p.x>127||p.y<=-128||p.y>127)
 				throw std::runtime_error("points2bin(): invalid point: ("+
 				std::to_string(p.x)+","
@@ -71,7 +71,7 @@ namespace Gomoku
 
 		for(unsigned i=0;i<pts.size();i++)
 		{
-			step_t& p=pts[i];
+			auto& p=pts[i];
 
 			char x=*reinterpret_cast<const unsigned char*>(&bin[i*3]);
 			char y=*reinterpret_cast<const unsigned char*>(&bin[i*3+1]);
@@ -87,7 +87,7 @@ namespace Gomoku
 		bin.resize(pts.size()*3);
 		for(unsigned i=0;i<pts.size();i++)
 		{
-			const npoint& p=pts[i];
+			const auto& p=pts[i];
 			if(p.x<=-128||p.x>127||p.y<=-128||p.y>127)
 				throw std::runtime_error("points2bin(): invalid point: ("+
 					std::to_string(p.x)+","+std::to_string(p.y)+")");
@@ -113,7 +113,7 @@ namespace Gomoku
 
 		for(unsigned i=0;i<pts.size();i++)
 		{
-			npoint& p=pts[i];
+			auto& p=pts[i];
 
 			char x=*reinterpret_cast<const unsigned char*>(&bin[i*3]);
 			char y=*reinterpret_cast<const unsigned char*>(&bin[i*3+1]);
@@ -121,6 +121,45 @@ namespace Gomoku
 			p.x=x;
 			p.y=y;
 			p.n=bin[i*3+2];
+		}
+	}
+
+	void points2bin(const ipoints_t& pts,data_t& bin)
+	{
+		bin.resize(pts.size()*6);
+		for(unsigned i=0;i<pts.size();i++)
+		{
+			const auto& p=pts[i];
+			if(p.x<=-128||p.x>127||p.y<=-128||p.y>127)
+				throw std::runtime_error("points2bin(): invalid point: ("+
+					std::to_string(p.x)+","+std::to_string(p.y)+")");
+
+			char x=p.x;
+			char y=p.y;
+
+			bin[i*6]=*reinterpret_cast<const unsigned char*>(&x);
+			bin[i*6+1]=*reinterpret_cast<const unsigned char*>(&y);
+			*reinterpret_cast<int*>(&bin[i*6+2])=p.i;
+		}
+	}
+
+	void bin2points(const data_t& bin,ipoints_t& pts)
+	{
+		if((bin.size()%6)!=0)
+			throw std::runtime_error("bin2points(): (bin.size()%6)!=0");
+
+		pts.resize(bin.size()/6);
+
+		for(unsigned i=0;i<pts.size();i++)
+		{
+			auto& p=pts[i];
+
+			char x=*reinterpret_cast<const unsigned char*>(&bin[i*6]);
+			char y=*reinterpret_cast<const unsigned char*>(&bin[i*6+1]);
+
+			p.x=x;
+			p.y=y;
+			p.i= *reinterpret_cast<const int*>(&bin[i*6+2]);
 		}
 	}
 
