@@ -16,14 +16,13 @@ namespace fs=boost::filesystem;
 #include "solution_tree_fixes.h"
 #include "bin_index.h"
 #include <stdexcept>
-#include "../algo/wsplayer.h"
-#include "../algo/wsplayer_node.h"
 #include "../extern/object_progress.hpp"
+#include "../algo/field_state_player.h"
 #include "../algo/env_variables.h"
 #include "bin_index_solution_base.h"
-#include "mysql_solution_base.h"
 
 using namespace Gomoku;
+using namespace Gomoku::State5;
 
 ObjectProgress::logout_cerr log_err;
 ObjectProgress::logout_file log_file;
@@ -43,8 +42,6 @@ void print_use()
 	printf("db <root_dir> fix_zero_fails\n");
 	printf("db <root_dir> relax <key>\n");
     Gomoku::print_enviropment_variables_hint();
-	printf("win_neitrals (default: %u)\n",solution_tree_t::win_neitrals);
-	printf("mysql_db  (no default)\n");
 }
 
 void self_solve(solution_tree_t& tr,const steps_t& key)
@@ -65,29 +62,22 @@ void self_solve(solution_tree_t& tr,const steps_t& key)
 	game_t gm;
 	gm.field().set_steps(init_state);
 
-	WsPlayer::wsplayer_t pl;
+	State5::field_state_player_t pl;
 
 	pl.init(gm,other_color(last_step));
-	pl.solve();
+	node_t r = pl.solve();
 
-	const WsPlayer::wide_item_t& r=static_cast<const WsPlayer::wide_item_t&>(*pl.root);
+	const npoints_t& wins = r.get_wins();
+	const npoints_t& fails = r.get_fails();
+	const ipoints_t& ineutrals = r.get_neutrals();
 
-	points_t neitrals;
-	items2points(r.get_neitrals(),neitrals);
-
-	npoints_t wins;
-	items2depth_npoints(r.get_wins().get_vals(),wins);
-
-	npoints_t fails;
-	items2depth_npoints(r.get_fails().get_vals(),fails);
-
-	tr.trunc_neitrals(key,neitrals,wins,fails);
+	points_t neutrals(ineutrals.begin(),ineutrals.end());
 
 	std::string str_key=print_steps(key);
 	ObjectProgress::log_generator lg(true);
-	lg<<str_key<<": n="<<neitrals.size()<<" w="<<wins.size()<<" f="<<fails.size();
+	lg<<str_key<<": n="<<neutrals.size()<<" w="<<wins.size()<<" f="<<fails.size();
 
-	tr.save_job(key,neitrals,wins,fails);
+	tr.save_job(key,neutrals,wins,fails);
 }
 
 static bool need_break;
@@ -127,13 +117,8 @@ void self_solve(solution_tree_t& tr,size_t iteration_count,const steps_t& root_k
 {
     scan_enviropment_variables();
 
-	const char* sval=getenv("win_neitrals");
-	if(sval!=0&&(*sval)!=0)
-		solution_tree_t::win_neitrals=atol(sval);
-
 	ObjectProgress::log_generator lg(true);
 	print_used_enviropment_variables(lg);
-    lg<<"win_neitrals="<<solution_tree_t::win_neitrals;
 
     set_ctrl_handler();
 
@@ -176,7 +161,7 @@ void self_solve(solution_tree_t& tr,size_t iteration_count,const steps_t& root_k
 		    else if(key.size()!=key_len)
 		    {
 #ifdef _WIN32
-			    printf("level %u succesefully solved\n",key_len);
+			    printf("level %llu succesefully solved\n",key_len);
 #else
 			    printf("level %lu succesefully solved\n",key_len);
 #endif
@@ -209,14 +194,14 @@ bool show_state(solution_tree_t& tr,steps_t req)
 	bin2hex(bin_key,h);
 
 	std::string k=print_steps(st.key);
-	std::string n=print_points(st.neitrals);
+	std::string n=print_points(st.neutrals);
 	std::string sw=print_points(st.solved_wins);
 	std::string sf=print_points(st.solved_fails);
 	std::string tw=print_points(st.tree_wins);
 	std::string tf=print_points(st.tree_fails);
 	std::string field_str=print_field(req);
 
-	printf("key: %s\nhex_key: %s\nwins_count=%llu fails_count=%llu\nneitrals: %s\nsolved wins: %s\ntree wins: %s\nsolved fails: %s\ntree fails: %s\nfield:\n%s",
+	printf("key: %s\nhex_key: %s\nwins_count=%llu fails_count=%llu\nneutrals: %s\nsolved wins: %s\ntree wins: %s\nsolved fails: %s\ntree fails: %s\nfield:\n%s",
         k.c_str(),h.c_str(),st.wins_count,st.fails_count,
 		n.c_str(),
 		sw.c_str(),tw.c_str(),
@@ -256,7 +241,7 @@ void save_job(solution_tree_t& tr,const std::string& file_name)
 		data_t bin;
 
 		steps_t key;
-		points_t neitrals;
+		points_t neutrals;
 		npoints_t win;
 		npoints_t fails;
 		
@@ -264,7 +249,7 @@ void save_job(solution_tree_t& tr,const std::string& file_name)
 		bin2points(bin,key);
 		
 		hex2bin(parts[1],bin);
-		bin2points(bin,neitrals);
+		bin2points(bin,neutrals);
 		
 		hex2bin(parts[2],bin);
 		bin2points(bin,win);
@@ -272,8 +257,7 @@ void save_job(solution_tree_t& tr,const std::string& file_name)
 		hex2bin(parts[3],bin);
 		bin2points(bin,fails);
 		
-		tr.trunc_neitrals(key,neitrals,win,fails);
-		tr.save_job(key,neitrals,win,fails);
+		tr.save_job(key,neutrals,win,fails);
 	}
 }
 
@@ -307,12 +291,7 @@ int main(int argc,char** argv)
 		fs::path root_dir(argv[1]);
 		std::string cmd=argv[2];
 
-		isolution_tree_base_ptr db;
-		
-		const char* mysql_db=getenv("mysql_db");
-		
-		if(mysql_db!=0&&(*mysql_db)!=0) db=isolution_tree_base_ptr(new Mysql::base_t(mysql_db));
-		else  db=isolution_tree_base_ptr(new bin_index_solution_base_t(root_dir.string()));
+		auto db = std::make_shared<bin_index_solution_base_t>(root_dir.string());
 		 
 		solution_tree_t tr(db);
 		tr.init(root_dir.string());
@@ -391,7 +370,7 @@ int main(int argc,char** argv)
 			if(str.empty())str="empty";
 			printf("%s\n",str.c_str());
 
-			points2bin(st.neitrals,bin);
+			points2bin(st.neutrals,bin);
 			bin2hex(bin,str);
 			if(str.empty())str="empty";
 			printf("%s\n",str.c_str());

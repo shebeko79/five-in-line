@@ -8,13 +8,6 @@
 #include <unordered_map>
 #include <boost/weak_ptr.hpp>
 
-#ifdef _WIN32
-namespace std
-{
-	using namespace std::tr1;
-}
-#endif
-
 namespace Gomoku
 {
 
@@ -108,8 +101,8 @@ public:
 	};
 
 	class page_t;
-	typedef boost::shared_ptr<page_t> page_ptr;
-	typedef boost::weak_ptr<page_t> page_wptr;
+	typedef std::shared_ptr<page_t> page_ptr;
+	typedef std::weak_ptr<page_t> page_wptr;
 	typedef std::unordered_map<file_offset_t,page_ptr> pages_t;
 
 	class page_t
@@ -237,7 +230,7 @@ public:
 		virtual bool next(data_t& key,data_t& val) const=0;
 	};
 
-	typedef boost::shared_ptr<inode> node_ptr;
+	typedef std::shared_ptr<inode> node_ptr;
 
 	class file_node : public inode
 	{
@@ -376,7 +369,16 @@ public:
         {
             save_items_count();
         }
-        UNCATCHED_EXCEPTION_CATCH;
+		catch(std::exception& e)
+		{
+			ObjectProgress::log_generator lg(true);
+			lg<<__FILE__<<": "<<__LINE__<<" std::exception: "<<e.what();
+		}
+		catch(...)
+		{
+			ObjectProgress::log_generator lg(true);
+			lg<<__FILE__<<": "<<__LINE__<<" unknown exception";
+		}
     }
 
 	
@@ -416,7 +418,7 @@ public:
 class bin_indexes_t : public ibin_indexes_t
 {
 public:
-  typedef boost::shared_ptr<bin_index_t> item_ptr;
+  typedef std::shared_ptr<bin_index_t> item_ptr;
   typedef std::map<unsigned,item_ptr> indexes_t;
 private:
   const std::string base_dir;

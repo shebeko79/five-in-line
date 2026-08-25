@@ -12,7 +12,7 @@ class CgomokuDlg : public CDialog
 {
 // Construction
 public:
-	typedef boost::shared_ptr<CMfcField> field_ptr;
+	typedef std::shared_ptr<CMfcField> field_ptr;
 
     static const DWORD WM_CHECK_STATE=WM_USER+1;
 

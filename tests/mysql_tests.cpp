@@ -191,8 +191,8 @@ TEST_F(mysql, DISABLED_generate_index_data)
 
 		const WsPlayer::wide_item_t& r=static_cast<const WsPlayer::wide_item_t&>(*pl.root);
 
-		points_t neitrals;
-		items2points(r.get_neitrals(),neitrals);
+		points_t neutrals;
+		items2points(r.get_neutrals(),neutrals);
 
 		npoints_t wins;
 		items2depth_npoints(r.get_wins().get_vals(),wins);
@@ -200,14 +200,14 @@ TEST_F(mysql, DISABLED_generate_index_data)
 		npoints_t fails;
 		items2depth_npoints(r.get_fails().get_vals(),fails);
 
-		tr.save_job(key,neitrals,wins,fails);
+		tr.save_job(key,neutrals,wins,fails);
 
 
 		sol_state_t st;
 		st.key=key;
 
 		ASSERT_TRUE(tr.get(st));
-		ASSERT_EQ(st.neitrals,neitrals);
+		ASSERT_EQ(st.neutrals,neutrals);
 		ASSERT_EQ(st.solved_wins,wins);
 		ASSERT_EQ(st.solved_fails,fails);
 

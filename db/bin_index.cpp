@@ -1,10 +1,9 @@
 #include "bin_index.h"
-#include <boost/filesystem/operations.hpp>
 #include <stdexcept>
 #include "../extern/binary_find.h"
 #include <boost/lexical_cast.hpp>
 
-namespace fs=boost::filesystem;
+namespace fs=std::filesystem;
 
 namespace Gomoku
 {
@@ -42,7 +41,7 @@ namespace Gomoku
 		file_hldr hld(f);
 
 #ifdef _WIN32
-		if(fscanf(f,"%u",&items_count)!=1)
+		if(fscanf(f,"%llu",&items_count)!=1)
 #else
 		if(fscanf(f,"%lluu",&items_count)!=1)
 #endif
@@ -57,7 +56,7 @@ namespace Gomoku
 		file_hldr hld(f);
 
 #ifdef _WIN32
-		if(fprintf(f,"%u",items_count)<0)
+		if(fprintf(f,"%llu",items_count)<0)
 #else
 		if(fprintf(f,"%llu",items_count)<0)
 #endif
@@ -731,7 +730,7 @@ namespace Gomoku
 		{
 			fs::path fl=*itr;
 			if(!is_directory(fl))continue;
-            std::string h=fl.leaf().string();
+            std::string h=fl.filename().string();
 			data_t d;
 			hex2bin(h,d);
 			if(d.size()!=parent.dir_key_len)

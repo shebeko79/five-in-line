@@ -30,12 +30,12 @@ public:
        }
 	};
 public:
-	boost::shared_ptr< data_t > data;
+	std::shared_ptr< data_t > data;
 
 	one_message(){}
 	one_message(log_generator& mgr)
 	{
-		data=boost::shared_ptr< data_t >(new data_t(mgr));
+		data=std::shared_ptr< data_t >(new data_t(mgr));
 	};
 };
 

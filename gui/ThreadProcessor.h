@@ -1,5 +1,4 @@
 #pragma once
-#include <boost/shared_ptr.hpp>
 #include <boost/thread/thread.hpp>
 #include <vector>
 #include <boost/thread/recursive_mutex.hpp>
@@ -12,7 +11,7 @@ class CThreadProcessor : public CWnd
 {
 	DECLARE_DYNAMIC(CThreadProcessor)
 public:
-	typedef boost::shared_ptr<boost::thread> thrd_ptr;
+	typedef std::shared_ptr<boost::thread> thrd_ptr;
 	typedef boost::recursive_mutex::scoped_lock lkt;
 
 	struct error_t

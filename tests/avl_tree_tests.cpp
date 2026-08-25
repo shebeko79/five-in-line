@@ -333,8 +333,8 @@ TEST_F(avl_tree, DISABLED_generate_index_data)
 
 		const WsPlayer::wide_item_t& r=static_cast<const WsPlayer::wide_item_t&>(*pl.root);
 
-		points_t neitrals;
-		items2points(r.get_neitrals(),neitrals);
+		points_t neutrals;
+		items2points(r.get_neutrals(),neutrals);
 
 		npoints_t wins;
 		items2depth_npoints(r.get_wins().get_vals(),wins);
@@ -342,7 +342,7 @@ TEST_F(avl_tree, DISABLED_generate_index_data)
 		npoints_t fails;
 		items2depth_npoints(r.get_fails().get_vals(),fails);
 
-		tr.save_job(key,neitrals,wins,fails);
+		tr.save_job(key,neutrals,wins,fails);
 
 
 		if(key_size!=key.size())
@@ -356,7 +356,7 @@ TEST_F(avl_tree, DISABLED_generate_index_data)
 
 		sol_state_t st;
 		st.key=key;
-		st.neitrals=neitrals;
+		st.neutrals=neutrals;
 		st.solved_wins=wins;
 		st.solved_fails=fails;
 		

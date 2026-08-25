@@ -6,13 +6,6 @@
 #include <unordered_map>
 #include <boost/weak_ptr.hpp>
 
-#ifdef _WIN32
-namespace std
-{
-	using namespace std::tr1;
-}
-#endif
-
 namespace Gomoku
 {
 
@@ -21,8 +14,8 @@ namespace Gomoku
 	public:
 		struct page_t;
 
-		typedef boost::shared_ptr<page_t> page_ptr;
-		typedef boost::weak_ptr<page_t> page_wptr;
+		typedef std::shared_ptr<page_t> page_ptr;
+		typedef std::weak_ptr<page_t> page_wptr;
 		typedef std::unordered_map<file_offset_t,page_ptr> pages_t;
 
 		struct page_t

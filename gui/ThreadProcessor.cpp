@@ -35,7 +35,7 @@ void CThreadProcessor::start()
 
 	try
 	{
-		thrd=boost::shared_ptr<boost::thread>(new boost::thread(
+		thrd=std::shared_ptr<boost::thread>(new boost::thread(
 			boost::bind(&CThreadProcessor::execute,this)));
 	}
 	catch(...)

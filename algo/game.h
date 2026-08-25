@@ -3,7 +3,7 @@
 
 #include "field.h"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #  include "../extern/polimvar_intf.h"
 #  include <boost/signals2.hpp>
@@ -53,8 +53,8 @@ namespace Gomoku
         POLIMVAR_DECLARE_CLONE(iplayer_t )
 	};
 
-	typedef boost::shared_ptr<iplayer_t> player_ptr;
-	typedef boost::shared_ptr<field_t> field_ptr;
+	typedef std::shared_ptr<iplayer_t> player_ptr;
+	typedef std::shared_ptr<field_t> field_ptr;
 
 	class game_t
 	{

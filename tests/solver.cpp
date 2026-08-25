@@ -18,7 +18,7 @@ class solver : public testing::Test
  protected:
 	game_t gm;
 	WsPlayer::wsplayer_t player;
-	points_t neitrals;
+	points_t neutrals;
 	npoints_t wins;
 	npoints_t fails;
 
@@ -72,7 +72,7 @@ void solver::solve(const std::string& state_str)
 
 	const WsPlayer::wide_item_t& r=static_cast<const WsPlayer::wide_item_t&>(*pl.root);
 
-	WsPlayer::items2points(r.get_neitrals(),neitrals);
+	WsPlayer::items2points(r.get_neutrals(),neutrals);
 
 	WsPlayer::items2depth_npoints(r.get_wins().get_vals(),wins);
 
@@ -81,23 +81,23 @@ void solver::solve(const std::string& state_str)
 
 void solver::sort_results()
 {
-    std::sort(neitrals.begin(),neitrals.end(),less_point_pr());
+    std::sort(neutrals.begin(),neutrals.end(),less_point_pr());
     std::sort(wins.begin(),wins.end(),less_point_pr());
     std::sort(fails.begin(),fails.end(),less_point_pr());
 }
 
 void solver::print_results()
 {
-	std::string sneitrals=print_points(neitrals);
+	std::string sneutrals=print_points(neutrals);
 	std::string swins=print_points(wins);
 	std::string sfails=print_points(fails);
 
-	printf("neitrals=%s\nwins=%s\nfails=%s\n",sneitrals.c_str(),swins.c_str(),sfails.c_str());
+	printf("neutrals=%s\nwins=%s\nfails=%s\n",sneutrals.c_str(),swins.c_str(),sfails.c_str());
 }
 
-// Bug description. In solve result empty points inside play field is absent in neitrals,wins,fails output.
+// Bug description. In solve result empty points inside play field is absent in neutrals,wins,fails output.
 // This points should be there because they pass "2 points around" condition and this state is not restricted answer to the treat
-TEST_F(solver, skiped_neitrals_inside_field)
+TEST_F(solver, skiped_neutrals_inside_field)
 {
 	WsPlayer::stored_deep=1;
 	WsPlayer::def_lookup_deep=6;

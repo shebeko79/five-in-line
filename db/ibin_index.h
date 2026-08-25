@@ -2,7 +2,7 @@
 #define ibin_indexH
 #include <vector>
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include "bin_index_utils.h"
 
 namespace Gomoku

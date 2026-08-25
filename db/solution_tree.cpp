@@ -1,19 +1,17 @@
 #include "solution_tree.h"
 #include <functional>
 #include <numeric>
-#include <boost/filesystem/operations.hpp>
 #include <stdexcept>
 #include "../extern/binary_find.h"
 #include <boost/lexical_cast.hpp>
 #include "../extern/pair_comparator.h"
 
-namespace fs=boost::filesystem;
+namespace fs=std::filesystem;
 
 namespace Gomoku
 {
 	const char* solution_tree_t::first_solving_file_name="first_solving";
 	const char* solution_tree_t::last_solving_file_name="last_solving";
-	unsigned solution_tree_t::win_neitrals=0;
 
 	void solution_tree_t::init(const std::string& _base_dir)
 	{
@@ -51,13 +49,13 @@ namespace Gomoku
 		sol_state_t s;
 		s.key.push_back(step_t(st_krestik,0,0));
 
-		s.neitrals.push_back(point(1,0));
-		s.neitrals.push_back(point(1,1));
-		s.neitrals.push_back(point(2,0));
-		s.neitrals.push_back(point(2,1));
-		s.neitrals.push_back(point(2,2));
+		s.neutrals.push_back(point(1,0));
+		s.neutrals.push_back(point(1,1));
+		s.neutrals.push_back(point(2,0));
+		s.neutrals.push_back(point(2,1));
+		s.neutrals.push_back(point(2,2));
 
-		save_job(s.key,s.neitrals,s.solved_wins,s.solved_fails);
+		save_job(s.key,s.neutrals,s.solved_wins,s.solved_fails);
 	}
 
 	bool solution_tree_t::get(sol_state_t& res) const
@@ -103,11 +101,11 @@ namespace Gomoku
 		Step move_step=next_color(val.key.size());
 		
 		val.key.push_back(step_t(move_step,0,0));
-		val.neitrals.push_back(ss.neitrals);
+		val.neutrals.push_back(ss.neutrals);
 		
-		for(size_t i=0;i<ss.neitrals.size();i++)		
+		for(size_t i=0;i<ss.neutrals.size();i++)		
 		{
-			const point& p=ss.neitrals[i];
+			const point& p=ss.neutrals[i];
 			static_cast<point&>(val.key.back())=p;
 			
 			if(get_first_deep(val,max_key_size))
@@ -115,7 +113,7 @@ namespace Gomoku
 		}
 		
 		val.key.pop_back();
-		val.neitrals.pop_back();
+		val.neutrals.pop_back();
 		
 		return false;
 	}
@@ -176,7 +174,7 @@ namespace Gomoku
 		{
 			p=steps_t(k.begin(),k.end()-1);
 
-			const points_t& n=key.get_key_neitrals(p.size());
+			const points_t& n=key.get_key_neutrals(p.size());
 
 			points_t::const_iterator it=std::find(n.begin(),n.end(),k.back());
 			if(it==n.end())throw std::runtime_error("rewind_to_not_solved(): neitral does not exist: "+print_steps(k)+" of "+print_steps(key.key));
@@ -202,9 +200,9 @@ namespace Gomoku
 		return false;
 	}
 
-	void solution_tree_t::save_job(const steps_t& key,const points_t& neitrals,const npoints_t& win,const npoints_t& fails)
+	void solution_tree_t::save_job(const steps_t& key,const points_t& neutrals,const npoints_t& win,const npoints_t& fails)
 	{
-        check_really_unique(key,neitrals,"neitrals");
+        check_really_unique(key,neutrals,"neutrals");
         check_really_unique(key,win,"win");
         check_really_unique(key,fails,"fails");
 
@@ -214,14 +212,14 @@ namespace Gomoku
 		if(get(st))
 			return;
 
-		st.neitrals=neitrals;
+		st.neutrals=neutrals;
 		st.solved_wins=win;
 		st.solved_fails=fails;
 
         st.wins_count=st.solved_wins.size();
         st.fails_count=st.solved_fails.size();
 
-        scan_already_solved_neitrals(st);
+        scan_already_solved_neutrals(st);
 
 		set(st);
 
@@ -237,17 +235,6 @@ namespace Gomoku
         if(st.wins_count!=0 || st.fails_count!=0)
             update_base_wins_and_fails(st,st.wins_count,st.fails_count);
 	}
-
-	void solution_tree_t::trunc_neitrals(const steps_t& key,points_t& neitrals,const npoints_t& win,const npoints_t& fails)
-	{
-		if(win_neitrals==0)return;
-		if(last_color(key.size())!=st_nolik)return;
-		if(!win.empty())return;
-
-		if(neitrals.size()<=win_neitrals)return;
-		neitrals.resize(win_neitrals);
-	}
-    
 
 	void solution_tree_t::relax(const sol_state_t& child_st)
 	{
@@ -270,8 +257,8 @@ namespace Gomoku
 
 			if(!get(prev_st))continue;
 
-			prev_st.neitrals.erase(
-				std::remove(prev_st.neitrals.begin(),prev_st.neitrals.end(),st),prev_st.neitrals.end());
+			prev_st.neutrals.erase(
+				std::remove(prev_st.neutrals.begin(),prev_st.neutrals.end(),st),prev_st.neutrals.end());
 
 			npoints_t& solved=child_st.is_win()? prev_st.tree_fails:prev_st.tree_wins;
 
@@ -290,17 +277,17 @@ namespace Gomoku
 		}
 	}
 
-    void solution_tree_t::scan_already_solved_neitrals(sol_state_t& base_st)
+    void solution_tree_t::scan_already_solved_neutrals(sol_state_t& base_st)
     {
 		Step next_step=next_color(base_st.key.size());
         
         sol_state_t st;
 		steps_t& key=st.key;
 
-		for(size_t ii=base_st.neitrals.size();ii>0;ii--)
+		for(size_t ii=base_st.neutrals.size();ii>0;ii--)
 		{
             size_t i=ii-1;
-			const point& p=base_st.neitrals[i];
+			const point& p=base_st.neutrals[i];
 			
 			key=base_st.key;
 			key.push_back(step_t(next_step,p.x,p.y));
@@ -312,13 +299,13 @@ namespace Gomoku
             {
                 unsigned n=st.min_win_chain()+1;
                 base_st.tree_fails.push_back(npoint(p,n));
-                base_st.neitrals.erase(base_st.neitrals.begin()+i);
+                base_st.neutrals.erase(base_st.neutrals.begin()+i);
             }
-            else if(st.neitrals.empty())
+            else if(st.neutrals.empty())
             {
                 unsigned n=st.max_fail_chain()+1;
                 base_st.tree_wins.push_back(npoint(p,n));
-                base_st.neitrals.erase(base_st.neitrals.begin()+i);
+                base_st.neutrals.erase(base_st.neutrals.begin()+i);
             }
 
             base_st.wins_count+=st.fails_count/2;
@@ -398,7 +385,7 @@ namespace Gomoku
 
         std::vector<steps_t> childs_states;
         state_refs_t childs;
-        load_all_childs_neitrals(base_st,childs_states,childs);
+        load_all_childs_neutrals(base_st,childs_states,childs);
 
 		if(childs.empty())
 			return false;
@@ -436,9 +423,9 @@ namespace Gomoku
         return get_ant_job(*childs[shift].second,wins_hints_for_childs,result_key);
     }
 
-    void solution_tree_t::load_all_childs_neitrals(const sol_state_t base_st,std::vector<steps_t>& childs,state_refs_t& refs)
+    void solution_tree_t::load_all_childs_neutrals(const sol_state_t base_st,std::vector<steps_t>& childs,state_refs_t& refs)
     {
-        size_t mi=base_st.neitrals.size();
+        size_t mi=base_st.neutrals.size();
         childs.resize(mi);
         refs.resize(mi);
 
@@ -447,7 +434,7 @@ namespace Gomoku
 
         for(size_t i=0;i<mi;i++)
         {
-            static_cast<point&>(k.back())=base_st.neitrals[i];
+            static_cast<point&>(k.back())=base_st.neutrals[i];
             steps_t& st=childs[i];
             st=k;
 
@@ -506,11 +493,11 @@ namespace Gomoku
         steps_t child_key(key);
         child_key.push_back(step_t(next_color(key.size()),0,0));
 
-        if(pr.should_scan_neitrals(st))
+        if(pr.should_scan_neutrals(st))
         {
-            for(size_t i=0;i<st.neitrals.size();i++)
+            for(size_t i=0;i<st.neutrals.size();i++)
             {
-                static_cast<point&>(child_key.back())=st.neitrals[i];
+                static_cast<point&>(child_key.back())=st.neutrals[i];
                 depth_first_search(child_key,pr);
             }
         }
@@ -554,7 +541,7 @@ namespace Gomoku
         pack_raw(fails_count,bin);
 
 		pack(key,bin);
-		pack(neitrals,bin);
+		pack(neutrals,bin);
 		pack(solved_wins,bin);
 		pack(solved_fails,bin);
 		pack(tree_wins,bin);
@@ -569,7 +556,7 @@ namespace Gomoku
 		unpack_raw(bin,fails_count,from,"sol_state_t::unpack(): unpack fails_count failed");
 
 		unpack(bin,key,from);
-		unpack(bin,neitrals,from);
+		unpack(bin,neutrals,from);
 		unpack(bin,solved_wins,from);
 		unpack(bin,solved_fails,from);
 		unpack(bin,tree_wins,from);
@@ -692,12 +679,12 @@ namespace Gomoku
 
 		sol_state_t::pack(key,bin);
 
-		size_t neitrals_counts=neitrals.size();
-        const unsigned char* p=reinterpret_cast<const unsigned char*>(&neitrals_counts);
-		bin.insert(bin.end(),p,p+sizeof(neitrals_counts));
+		size_t neutrals_counts=neutrals.size();
+        const unsigned char* p=reinterpret_cast<const unsigned char*>(&neutrals_counts);
+		bin.insert(bin.end(),p,p+sizeof(neutrals_counts));
 
-		for(size_t i=0;i<neitrals_counts;i++)
-			sol_state_t::pack(neitrals[i],bin);
+		for(size_t i=0;i<neutrals_counts;i++)
+			sol_state_t::pack(neutrals[i],bin);
 	}
 
 	void deep_solve_t::unpack(const data_t& bin)
@@ -705,29 +692,29 @@ namespace Gomoku
 		size_t from=0;
 		sol_state_t::unpack(bin,key,from);
 
-		size_t neitrals_counts=0;
-		if(from+sizeof(neitrals_counts)>bin.size())
-			throw std::runtime_error("deep_solve_t::unpack(): unpack neitrals_counts failed");
-		neitrals_counts=*(const size_t*)(&bin[from]);
-		from+=sizeof(neitrals_counts);
+		size_t neutrals_counts=0;
+		if(from+sizeof(neutrals_counts)>bin.size())
+			throw std::runtime_error("deep_solve_t::unpack(): unpack neutrals_counts failed");
+		neutrals_counts=*(const size_t*)(&bin[from]);
+		from+=sizeof(neutrals_counts);
 
-		neitrals.resize(neitrals_counts);
+		neutrals.resize(neutrals_counts);
 
-		for(size_t i=0;i<neitrals_counts;i++)
-			sol_state_t::unpack(bin,neitrals[i],from);
+		for(size_t i=0;i<neutrals_counts;i++)
+			sol_state_t::unpack(bin,neutrals[i],from);
 	}
 
-	const points_t& deep_solve_t::get_key_neitrals(size_t cur_key_size) const
+	const points_t& deep_solve_t::get_key_neutrals(size_t cur_key_size) const
 	{
-		unsigned idx=neitrals.size()-(key.size()-cur_key_size);
-		if(idx>=neitrals.size())throw std::runtime_error("get_key_neitrals(): invalid neitrals index");
-		return neitrals[idx];
+		unsigned idx=neutrals.size()-(key.size()-cur_key_size);
+		if(idx>=neutrals.size())throw std::runtime_error("get_key_neutrals(): invalid neutrals index");
+		return neutrals[idx];
 	}
 
 	void deep_solve_t::trunc_to_key_size(size_t cur_key_size)
 	{
-		unsigned idx=neitrals.size()-(key.size()-cur_key_size);
-		if(idx>neitrals.size())throw std::runtime_error("get_key_neitrals(): invalid neitrals index");
-		neitrals.erase(neitrals.begin()+idx,neitrals.end());
+		unsigned idx=neutrals.size()-(key.size()-cur_key_size);
+		if(idx>neutrals.size())throw std::runtime_error("get_key_neutrals(): invalid neutrals index");
+		neutrals.erase(neutrals.begin()+idx,neutrals.end());
 	}
 }//namespace

@@ -17,7 +17,7 @@ namespace Gomoku
         unsigned long long fails_count;
 		steps_t key;
 
-        points_t neitrals;
+        points_t neutrals;
         //step from state key is a win
 		npoints_t solved_wins;
         //step from state key is a fail
@@ -37,7 +37,7 @@ namespace Gomoku
 		void unpack(const data_t& bin);
 
 		bool is_win() const{return !solved_wins.empty()||!tree_wins.empty();}
-        bool is_completed() const{return is_win() || neitrals.empty();}
+        bool is_completed() const{return is_win() || neutrals.empty();}
 		unsigned min_win_chain() const;
 		unsigned max_fail_chain() const;
 
@@ -55,7 +55,7 @@ namespace Gomoku
 	struct deep_solve_t
 	{
 		steps_t key;
-		std::vector<points_t> neitrals;
+		std::vector<points_t> neutrals;
 
 		void pack(data_t& bin) const;
 		void unpack(const data_t& bin);
@@ -69,9 +69,9 @@ namespace Gomoku
 			return ret;
 		}
 
-		const points_t& get_key_neitrals(size_t cur_key_size) const;
+		const points_t& get_key_neutrals(size_t cur_key_size) const;
 		void trunc_to_key_size(size_t cur_key_size);
-		inline size_t get_root_key_size() const{return key.size()-neitrals.size();}
+		inline size_t get_root_key_size() const{return key.size()-neutrals.size();}
 	};
 
     typedef std::pair<point,steps_t*> state_ref_t;
@@ -97,7 +97,7 @@ namespace Gomoku
         //return true if val changed
         virtual bool on_exit_node(sol_state_t& val){return false;}
 
-        virtual bool should_scan_neitrals(const sol_state_t& val){return true;}
+        virtual bool should_scan_neutrals(const sol_state_t& val){return true;}
         virtual bool should_scan_tree_fails(const sol_state_t& val){return true;}
         virtual bool should_scan_tree_wins(const sol_state_t& val){return true;}
 
@@ -115,7 +115,7 @@ namespace Gomoku
         virtual void width_first_search_from_bottom_to_top(sol_state_width_pr& pr) = 0;
 	};
 
-	typedef boost::shared_ptr<isolution_tree_base_t> isolution_tree_base_ptr;
+	typedef std::shared_ptr<isolution_tree_base_t> isolution_tree_base_ptr;
 
     class solution_tree_t
 	{
@@ -131,7 +131,7 @@ namespace Gomoku
 
         bool rewind_to_not_solved(bool first_rewind,deep_solve_t& key);
 
-        void scan_already_solved_neitrals(sol_state_t& base_st);
+        void scan_already_solved_neutrals(sol_state_t& base_st);
         void update_base_wins_and_fails(const sol_state_t& child_st,unsigned long long delta_wins,unsigned long long delta_fails);
 		
 		bool get_root_first_deep(deep_solve_t& _val);
@@ -141,13 +141,12 @@ namespace Gomoku
         static void check_really_unique(const steps_t& key,const std::vector<T>& vals,const std::string& vals_name);
 
         bool get_ant_job(const steps_t& base_st_key,const npoints_t& wins_hint,steps_t& result_key);
-        void load_all_childs_neitrals(const sol_state_t base_st,std::vector<steps_t>& childs,state_refs_t& refs);
+        void load_all_childs_neutrals(const sol_state_t base_st,std::vector<steps_t>& childs,state_refs_t& refs);
         void load_all_fails_its_wins(const sol_state_t base_st,npoints_t& wins);
 
 	public:
 		static const char* first_solving_file_name;
 		static const char* last_solving_file_name;
-		static unsigned win_neitrals;
 		
 		solution_tree_t(const isolution_tree_base_ptr _db_ptr) : db_ptr(_db_ptr),db(*_db_ptr){}
 
@@ -157,8 +156,7 @@ namespace Gomoku
 		bool get_job(steps_t& key);
 		bool get_ant_job(steps_t& key);
         bool get_ant_job(const steps_t& root_key,steps_t& key);
-		void save_job(const steps_t& key,const points_t& neitrals,const npoints_t& win,const npoints_t& fails);
-		static void trunc_neitrals(const steps_t& key,points_t& neitrals,const npoints_t& win,const npoints_t& fails);
+		void save_job(const steps_t& key,const points_t& neutrals,const npoints_t& win,const npoints_t& fails);
 
 		bool get(sol_state_t& res) const;
 		void set(const sol_state_t& val);

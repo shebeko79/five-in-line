@@ -1,6 +1,6 @@
 #ifndef ifile_accessH
 #define ifile_accessH
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <vector>
 #include <string>
 
@@ -24,7 +24,7 @@ namespace Gomoku
 		virtual file_offset_t append(const data_t& res)=0;
 	};
 
-	typedef boost::shared_ptr<ifile_access_t> file_access_ptr;
+	typedef std::shared_ptr<ifile_access_t> file_access_ptr;
 
 	class ifile_access_provider_t
 	{
