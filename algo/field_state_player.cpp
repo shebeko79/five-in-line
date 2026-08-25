@@ -65,7 +65,7 @@ void field_state_player_t::squeeze_win(node_t& root, point& p)
 
 	ObjectProgress::log_generator lg(true);
 
-	for (unsigned td = gl_threat_deep - 2; td >= 2; td -= 2)
+	for (unsigned td = gl_threat_deep - 1; td >= 2; td--)
 	{
 		lg<<"Squeeze win: threat_deep="<<td;
 
@@ -97,7 +97,7 @@ void field_state_player_t::squeeze_fail(node_t& root, point& p)
 
 	ObjectProgress::log_generator lg(true);
 
-	for (unsigned td = gl_threat_deep - 2; td >= 2; td -= 2)
+	for (unsigned td = gl_threat_deep - 1; td >= 2; td--)
 	{
 		lg<<"Squeeze fail: threat_deep="<<td;
 
