@@ -16,6 +16,7 @@ namespace Gomoku { namespace State5
 	public:
 		void delegate_step() override;
         bool is_thinking() const override{return thinking>0;}
+		node_t solve();
 
         POLIMVAR_IMPLEMENT_CLONE(field_state_player_t )
 
@@ -25,8 +26,8 @@ namespace Gomoku { namespace State5
 
         int thinking = 0;
 
-		void squeeze_win(node_t& root, point& p);
-		void squeeze_fail(node_t& root, point& p);
+		void squeeze_win(node_t& root);
+		void squeeze_fail(node_t& root);
 	};
 
 	class fork_t
@@ -94,6 +95,9 @@ namespace Gomoku { namespace State5
 		const npoint* get_max_fail() const;
 		inline const ipoints_t& get_neutrals() const {return neutrals;}
 		int best_neutral_score() const;
+
+		void replace_shorter_wins(const node_t& rnode);
+		void replace_shorter_fails(const node_t& rnode);
 
 		static size_t nodes_created;
 	private:

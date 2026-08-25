@@ -15,6 +15,13 @@ unsigned gl_threat_deep = 8;
 
 void field_state_player_t::delegate_step()
 {
+	node_t root = solve();
+	point p=root.get_next_step();
+	game().OnNextStep(*this,p);
+}
+
+node_t field_state_player_t::solve()
+{
     incer_t<int> hld_thinking(thinking);
 	ObjectProgress::perfomance perf;
 	node_t::nodes_created=0;
@@ -52,13 +59,13 @@ void field_state_player_t::delegate_step()
 	field5.get_sorted(st_nolik).log_statistic();
 
 	
-	squeeze_win(root,p);
-	squeeze_fail(root,p);
+	squeeze_win(root);
+	squeeze_fail(root);
 
-	game().OnNextStep(*this,p);
+	return root;
 }
 
-void field_state_player_t::squeeze_win(node_t& root, point& p)
+void field_state_player_t::squeeze_win(node_t& root)
 {
 	const npoint* pmin_win = root.get_min_win();
 	if (!pmin_win)
@@ -82,14 +89,14 @@ void field_state_player_t::squeeze_win(node_t& root, point& p)
 
 		if (dist_win->n < min_win.n)
 		{
-			p = *dist_win;
+			root.replace_shorter_wins(dist_root);
 			min_win = *dist_win;
 			lg << "Better win: " << print_points(npoints_t({ min_win}));
 		}
 	}
 }
 
-void field_state_player_t::squeeze_fail(node_t& root, point& p)
+void field_state_player_t::squeeze_fail(node_t& root)
 {
 	const npoint* pmax_fail = root.get_max_fail();
 
@@ -120,7 +127,7 @@ void field_state_player_t::squeeze_fail(node_t& root, point& p)
 
 		if (dist_fail->n < max_fail.n)
 		{
-			p = *dist_fail;
+			root.replace_shorter_fails(dist_root);
 			max_fail = *dist_fail;
 			lg << "Better fail: " << print_points(npoints_t({ max_fail}));
 		}
@@ -428,7 +435,41 @@ void node_t::log_statistic() const
 			lg << "Neutrals: " << print_points(tmp)<<"...";
 		}
 	}
-
 }
+
+void node_t::replace_shorter_wins(const node_t& rnode)
+{
+	for (const npoint& p : rnode.wins)
+	{
+		auto it = std::find(wins.begin(), wins.end(), point(p));
+		if (it == wins.end())
+		{
+			wins.push_back(p);
+
+			auto nit = std::find(neutrals.begin(), neutrals.end(), point(p));
+			if(nit != neutrals.end())
+				neutrals.erase(nit);
+		}
+		else
+		{
+			if (it->n > p.n)
+				*it = p;
+		}
+	}
+}
+
+void node_t::replace_shorter_fails(const node_t& rnode)
+{
+	for (const npoint& p : rnode.fails)
+	{
+		auto it = std::find(fails.begin(), fails.end(), point(p));
+		if(it == fails.end())
+			throw std::runtime_error("replace_shorter_fails(): longer chain doesn't exist");
+
+		if(it->n > p.n)
+			*it = p;
+	}
+}
+
 
 } }//namespace Gomoku
