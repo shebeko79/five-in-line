@@ -4,9 +4,7 @@
 #include "stdafx.h"
 #include "gomoku.h"
 #include "gomokuDlg.h"
-#include <boost/filesystem/path.hpp>
 #include "../extern/object_progress.hpp"
-#include <boost/filesystem/operations.hpp>
 
 
 // CgomokuApp

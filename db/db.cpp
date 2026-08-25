@@ -9,9 +9,7 @@
 #  include <sys/time.h>
 #endif
 
-#include <boost/filesystem/operations.hpp>
 #include <boost/algorithm/string.hpp>
-namespace fs=boost::filesystem;
 #include "solution_tree.h"
 #include "solution_tree_fixes.h"
 #include "bin_index.h"
@@ -26,6 +24,8 @@ using namespace Gomoku::State5;
 
 ObjectProgress::logout_cerr log_err;
 ObjectProgress::logout_file log_file;
+
+namespace fs=std::filesystem;
 
 void print_use()
 {

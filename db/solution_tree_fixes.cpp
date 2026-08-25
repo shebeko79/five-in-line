@@ -1,5 +1,4 @@
 #include "solution_tree_fixes.h"
-#include <boost/filesystem/operations.hpp>
 #include "../extern/binary_find.h"
 
 namespace Gomoku

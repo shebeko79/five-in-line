@@ -8,9 +8,6 @@
 
 #include "gomokuDlg.h"
 
-#include <boost/filesystem/operations.hpp>
-namespace fs=boost::filesystem;
-
 #include "../algo/check_player.h"
 #include "../algo/game.h"
 #include "../algo/env_variables.h"

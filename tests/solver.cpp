@@ -1,6 +1,4 @@
 #include "gtest/gtest.h"
-#include "../algo/wsplayer.h"
-#include "../algo/wsplayer_node.h"
 #include <boost/lexical_cast.hpp>
 #include "../db/solution_tree_utils.h"
 

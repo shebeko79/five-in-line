@@ -1,15 +1,11 @@
 #include <fstream>
 #include "gtest/gtest.h"
-#include <boost/filesystem/operations.hpp>
-namespace fs=boost::filesystem;
 #include "../db/solution_tree.h"
 #include "../db/bin_index.h"
-#include "../algo/wsplayer.h"
-#include "../algo/wsplayer_node.h"
 #include <boost/algorithm/string.hpp>
 #include "../db/bin_index_solution_base.h"
 
-namespace fs=boost::filesystem;
+namespace fs=std::filesystem;
 
 namespace Gomoku{
 
@@ -297,12 +293,12 @@ TEST_F(avl_tree, DISABLED_generate_index_data)
     steps_t steps;
     hex_or_str2points(str,steps);
 //	tr.create_init_tree(steps);
-
+#if 0
 	WsPlayer::stored_deep=1;
 	WsPlayer::def_lookup_deep=0;
 	WsPlayer::treat_deep=0;
 	WsPlayer::ant_count=0;
-
+#endif
 	size_t key_size=0;
 
 	std::string file_name;
@@ -322,7 +318,7 @@ TEST_F(avl_tree, DISABLED_generate_index_data)
 		}
 
 		reorder_state_to_game_order(key);
-
+#if 0
 		game_t gm;
 		gm.field().set_steps(key);
 
@@ -343,7 +339,7 @@ TEST_F(avl_tree, DISABLED_generate_index_data)
 		items2depth_npoints(r.get_fails().get_vals(),fails);
 
 		tr.save_job(key,neutrals,wins,fails);
-
+#endif
 
 		if(key_size!=key.size())
 		{
@@ -356,9 +352,11 @@ TEST_F(avl_tree, DISABLED_generate_index_data)
 
 		sol_state_t st;
 		st.key=key;
+#if 0
 		st.neutrals=neutrals;
 		st.solved_wins=wins;
 		st.solved_fails=fails;
+#endif
 		
 		steps_t sorted_key=key;
 		sort_steps(sorted_key);
