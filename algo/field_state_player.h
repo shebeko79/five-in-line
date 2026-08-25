@@ -7,8 +7,8 @@ namespace Gomoku { namespace State5
 {
 	class node_t;
 
-	constexpr unsigned common_deep = 2;
-	constexpr unsigned gl_threat_deep = 8;
+	extern unsigned common_deep;
+	extern unsigned gl_threat_deep;
 
 	class field_state_player_t : public iplayer_t
 	{

@@ -9,6 +9,9 @@
 namespace Gomoku { namespace State5
 {
 
+unsigned common_deep = 2;
+unsigned gl_threat_deep = 8;
+
 
 void field_state_player_t::delegate_step()
 {

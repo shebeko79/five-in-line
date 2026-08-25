@@ -106,11 +106,11 @@ BOOL CgomokuDlg::OnInitDialog()
 	szr.Fix(IDC_PLAYER2_LABEL,szr.kWidthRight,szr.kHeightTop);
     szr.Fix(IDC_LOG,szr.kWidthRight,szr.kTopBottom);
 
-	mPlayer1.SetCurSel(1);
+	mPlayer1.SetCurSel(0);
     game.set_krestik(create_player(mPlayer1,Gomoku::st_krestik));
     mfcKrestik.init(game,Gomoku::st_krestik);
 
-	mPlayer2.SetCurSel(1);
+	mPlayer2.SetCurSel(0);
     game.set_nolik(create_player(mPlayer2,Gomoku::st_nolik));
     mfcNolik.init(game,Gomoku::st_nolik);
 
@@ -167,12 +167,6 @@ Gomoku::player_ptr CgomokuDlg::create_player(const CComboBox& cb,Gomoku::Step st
 	Gomoku::player_ptr ret;
 	switch(cb.GetCurSel())
 	{
-    case 0:
-	{
-		Gomoku::player_ptr sub(new Gomoku::WsPlayer::wsplayer_t);
-		ret=Gomoku::player_ptr(new Gomoku::ThreadPlayer(sub));
-		break;
-	}
 	default:
 	{
 		Gomoku::player_ptr sub(new Gomoku::State5::field_state_player_t);
@@ -192,8 +186,7 @@ int CgomokuDlg::player2index(Gomoku::iplayer_t& pl)
 	Gomoku::player_ptr sub=tpl->get_player();
 	if(!sub)return -1;
 
-	if(dynamic_cast<Gomoku::WsPlayer::wsplayer_t*>(&*sub)!=0) return 0;
-    if(dynamic_cast<Gomoku::State5::field_state_player_t*>(&*sub)!=0) return 1;
+    if(dynamic_cast<Gomoku::State5::field_state_player_t*>(&*sub)!=0) return 0;
 	return -1;
 }
 
