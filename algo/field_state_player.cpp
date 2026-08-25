@@ -19,7 +19,7 @@ void field_state_player_t::delegate_step()
 	field=game().field();
 	field5.set_steps(field.get_steps());
 
-	node_t root(*this, field.back());
+	node_t root(*this, field.back(),0,gl_threat_deep);
 
 	ObjectProgress::log_generator lg(true);
 
@@ -48,18 +48,92 @@ void field_state_player_t::delegate_step()
 	lg<<"Sorted nolik:";
 	field5.get_sorted(st_nolik).log_statistic();
 
+	
+	squeeze_win(root,p);
+	squeeze_fail(root,p);
 
 	game().OnNextStep(*this,p);
 }
+
+void field_state_player_t::squeeze_win(node_t& root, point& p)
+{
+	const npoint* pmin_win = root.get_min_win();
+	if (!pmin_win)
+		return;
+
+	npoint min_win = *pmin_win;
+
+	ObjectProgress::log_generator lg(true);
+
+	for (unsigned td = gl_threat_deep - 2; td >= 2; td -= 2)
+	{
+		lg<<"Squeeze win: threat_deep="<<td;
+
+		node_t dist_root(*this, field.back(),0,td);
+
+		dist_root.process();
+
+		const npoint* dist_win = dist_root.get_min_win();
+		if(!dist_win)
+			break;
+
+		if (dist_win->n < min_win.n)
+		{
+			p = *dist_win;
+			min_win = *dist_win;
+			lg << "Better win: " << print_points(npoints_t({ min_win}));
+		}
+	}
+}
+
+void field_state_player_t::squeeze_fail(node_t& root, point& p)
+{
+	const npoint* pmax_fail = root.get_max_fail();
+
+	if(!pmax_fail || root.get_min_win()!= nullptr || !root.get_neutrals().empty())
+		return;
+
+	npoint max_fail = *pmax_fail;
+
+	ObjectProgress::log_generator lg(true);
+
+	for (unsigned td = gl_threat_deep - 2; td >= 2; td -= 2)
+	{
+		lg<<"Squeeze fail: threat_deep="<<td;
+
+		node_t dist_root(*this, field.back(),0,td);
+
+		dist_root.process();
+
+		const npoint* dist_fail = dist_root.get_max_fail();
+		if(!dist_fail)
+			break;
+		
+		if(dist_root.get_min_win()!= nullptr)
+			throw std::runtime_error("squeeze_fail(): win found");
+		
+		if(!dist_root.get_neutrals().empty())
+			break;
+
+		if (dist_fail->n < max_fail.n)
+		{
+			p = *dist_fail;
+			max_fail = *dist_fail;
+			lg << "Better fail: " << print_points(npoints_t({ max_fail}));
+		}
+	}
+}
+
 
 //
 // node_t
 //
 size_t node_t::nodes_created=0;
 
-node_t::node_t(field_state_player_t& _player, const step_t& st, unsigned _deep) :
+node_t::node_t(field_state_player_t& _player, const step_t& st, unsigned _deep, unsigned _threat_deep) :
 	prev_step(st),
 	deep(_deep),
+	threat_deep(_threat_deep),
 	move_color(other_color(prev_step.step)),
 	player(_player)
 {
@@ -216,7 +290,7 @@ void node_t::make_move(const point& p)
 	snapshot_t snapshot = player.field5.make_snapshot(new_step);
 	player.field5.change_state(player.field);
 
-	node_t sub(player, new_step, deep+1);
+	node_t sub(player, new_step, deep+1, threat_deep);
 	sub.process();
 
 	auto* win = sub.get_min_win();

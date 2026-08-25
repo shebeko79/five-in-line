@@ -8,23 +8,25 @@ namespace Gomoku { namespace State5
 	class node_t;
 
 	constexpr unsigned common_deep = 2;
-	constexpr unsigned threat_deep = 7;
+	constexpr unsigned gl_threat_deep = 8;
 
 	class field_state_player_t : public iplayer_t
 	{
+		friend class node_t;
+	public:
+		void delegate_step() override;
+        bool is_thinking() const override{return thinking>0;}
+
+        POLIMVAR_IMPLEMENT_CLONE(field_state_player_t )
+
 	private:
 		field_t field;
 		field5_t field5;
 
         int thinking = 0;
 
-		friend class node_t;
-	public:
-		void delegate_step() override;
-        bool is_thinking() const override{return thinking>0;}
-
-
-        POLIMVAR_IMPLEMENT_CLONE(field_state_player_t )
+		void squeeze_win(node_t& root, point& p);
+		void squeeze_fail(node_t& root, point& p);
 	};
 
 	class fork_t
@@ -77,9 +79,10 @@ namespace Gomoku { namespace State5
 	public:
 		const step_t prev_step;
 		const unsigned deep;
+		const unsigned threat_deep;
 		const Step move_color;
 
-		node_t(field_state_player_t& _player, const step_t& st, unsigned _deep = 0);
+		node_t(field_state_player_t& _player, const step_t& st, unsigned _deep, unsigned _threat_deep);
 
 		void process();
 
@@ -89,6 +92,7 @@ namespace Gomoku { namespace State5
 
 		const npoint* get_min_win() const;
 		const npoint* get_max_fail() const;
+		inline const ipoints_t& get_neutrals() const {return neutrals;}
 		int best_neutral_score() const;
 
 		static size_t nodes_created;
