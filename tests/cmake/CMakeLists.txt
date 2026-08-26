@@ -14,10 +14,8 @@ FILE(GLOB SRC_ALGO_FILES
 
 FILE(GLOB SRC_DB_FILES
 ../../db/bin_index.*
-../../db/bin_index_utils.*
 ../../db/bin_index_solution_base.*
 ../../db/solution_tree.*
-../../db/solution_tree_utils.*
 ../../db/regular_file_access.*
 ../../db/paged_file_access.*
 )

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../db/solution_tree_utils.h"
+#include "../algo/solution_tree_utils.h"
 #include "../algo/game.h"
 #include "../algo/field_state_player.h"
 

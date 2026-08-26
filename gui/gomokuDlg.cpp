@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "gomoku.h"
 
-#include "../db/solution_tree_utils.h"
+#include "../algo/solution_tree_utils.h"
 
 #include "gomokuDlg.h"
 

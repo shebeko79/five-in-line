@@ -2,7 +2,7 @@
 #define solution_treeH
 #include <stdio.h>
 #include "ibin_index.h"
-#include "solution_tree_utils.h"
+#include "../algo/solution_tree_utils.h"
 #include "../algo/field.h"
 #include "../extern/object_progress.hpp"
 

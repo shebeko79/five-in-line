@@ -18,13 +18,6 @@ FILE(GLOB SRC_SOLVER_FILES
 ../*.hpp
 )
 
-FILE(GLOB SRC_DB_FILES
-../../db/bin_index_utils.cpp
-../../db/bin_index_utils.h
-../../db/solution_tree_utils.cpp
-../../db/solution_tree_utils.h
-)
-
 FILE(GLOB SRC_EXTERN_FILES
 ../../extern/*.cpp
 ../../extern/*.h
@@ -34,7 +27,6 @@ FILE(GLOB SRC_EXTERN_FILES
 
 SOURCE_GROUP(algo FILES ${SRC_ALGO_FILES} )
 SOURCE_GROUP(solver FILES ${SRC_SOLVER_FILES} )
-SOURCE_GROUP(db FILES ${SRC_DB_FILES} )
 SOURCE_GROUP(extern FILES ${SRC_EXTERN_FILES} )
 
 

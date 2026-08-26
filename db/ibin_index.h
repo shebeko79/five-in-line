@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include "bin_index_utils.h"
+#include "../algo/bin_index_utils.h"
 
 namespace Gomoku
 {
