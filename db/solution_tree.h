@@ -136,7 +136,6 @@ namespace Gomoku
 		solution_tree_t(const isolution_tree_base_ptr _db_ptr) : db_ptr(_db_ptr),db(*_db_ptr){}
 
 		void init(const std::string& _base_dir);
-		void create_init_tree();
 
 		bool get_job(steps_t& key);
 		bool get_ant_job(steps_t& key);

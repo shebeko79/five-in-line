@@ -44,20 +44,6 @@ namespace Gomoku
 		save_file(file_name,bin);
 	}
 
-	void solution_tree_t::create_init_tree()
-	{
-		sol_state_t s;
-		s.key.push_back(step_t(st_krestik,0,0));
-
-		s.neutrals.push_back({ point(1,0),0 });
-		s.neutrals.push_back({ point(1,1),0 });
-		s.neutrals.push_back({ point(2,0),0 });
-		s.neutrals.push_back({ point(2,1),0 });
-		s.neutrals.push_back({ point(2,2),0 });
-
-		save_job(s.key,s.neutrals,s.solved_wins,s.solved_fails);
-	}
-
 	bool solution_tree_t::get(sol_state_t& res) const
 	{
 		return db.get(res);

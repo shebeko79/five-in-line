@@ -191,8 +191,11 @@ bool show_state(solution_tree_t& tr,steps_t req)
 	std::string h;
 	bin2hex(bin_key,h);
 
+	auto neutrals = st.neutrals;
+	sort(neutrals,fscore_pr(next_color(st.key.size())));
+
 	std::string k=print_steps(st.key);
-	std::string n=print_points(st.neutrals);
+	std::string n=print_points(neutrals);
 	std::string sw=print_points(st.solved_wins);
 	std::string sf=print_points(st.solved_fails);
 	std::string tw=print_points(st.tree_wins);
@@ -297,7 +300,7 @@ int main(int argc,char** argv)
 		if(!fs::exists(root_dir))
 		{
 			fs::create_directory(root_dir);
-			tr.create_init_tree();
+			self_solve(tr, steps_t{step_t(st_krestik,0,0)});
 		}
 
 
