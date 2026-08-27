@@ -11,13 +11,9 @@ namespace Gomoku
 	
 	struct sol_state_t
 	{
-        //wins for next step from state key
-        unsigned long long wins_count;
-        //fails for next step from state key
-        unsigned long long fails_count;
 		steps_t key;
 
-        points_t neutrals;
+        ipoints_t neutrals;
         //step from state key is a win
 		npoints_t solved_wins;
         //step from state key is a fail
@@ -27,12 +23,6 @@ namespace Gomoku
         //step from state key is a fail
 		npoints_t tree_fails;
 
-		sol_state_t()
-		{
-            wins_count = 0;
-            fails_count = 0;
-		}
-
 		void pack(data_t& bin) const;
 		void unpack(const data_t& bin);
 
@@ -40,9 +30,8 @@ namespace Gomoku
         bool is_completed() const{return is_win() || neutrals.empty();}
 		unsigned min_win_chain() const;
 		unsigned max_fail_chain() const;
+		int best_neutral_score() const;
 
-        inline double get_win_rate() const{return static_cast<double>(wins_count+1)/(fails_count+1);}
-        inline bool is_win_fail_stat_empty() const{return wins_count==0&&fails_count==0;}
 	public:
 		static void pack(const points_t& pts,data_t& bin);
 		static void unpack(const data_t& bin,points_t& pts,size_t& from);
@@ -50,12 +39,14 @@ namespace Gomoku
 		static void unpack(const data_t& bin,steps_t& pts,size_t& from);
 		static void pack(const npoints_t& pts,data_t& bin);
 		static void unpack(const data_t& bin,npoints_t& pts,size_t& from);
+		static void pack(const ipoints_t& pts,data_t& bin);
+		static void unpack(const data_t& bin,ipoints_t& pts,size_t& from);
 	};
 
 	struct deep_solve_t
 	{
 		steps_t key;
-		std::vector<points_t> neutrals;
+		std::vector<ipoints_t> neutrals;
 
 		void pack(data_t& bin) const;
 		void unpack(const data_t& bin);
@@ -69,7 +60,7 @@ namespace Gomoku
 			return ret;
 		}
 
-		const points_t& get_key_neutrals(size_t cur_key_size) const;
+		const ipoints_t& get_key_neutrals(size_t cur_key_size) const;
 		void trunc_to_key_size(size_t cur_key_size);
 		inline size_t get_root_key_size() const{return key.size()-neutrals.size();}
 	};
@@ -132,18 +123,12 @@ namespace Gomoku
         bool rewind_to_not_solved(bool first_rewind,deep_solve_t& key);
 
         void scan_already_solved_neutrals(sol_state_t& base_st);
-        void update_base_wins_and_fails(const sol_state_t& child_st,unsigned long long delta_wins,unsigned long long delta_fails);
 		
 		bool get_root_first_deep(deep_solve_t& _val);
 		bool get_first_deep(deep_solve_t& val,unsigned max_key_size);
 
         template<typename T>
         static void check_really_unique(const steps_t& key,const std::vector<T>& vals,const std::string& vals_name);
-
-        bool get_ant_job(const steps_t& base_st_key,const npoints_t& wins_hint,steps_t& result_key);
-        void load_all_childs_neutrals(const sol_state_t base_st,std::vector<steps_t>& childs,state_refs_t& refs);
-        void load_all_fails_its_wins(const sol_state_t base_st,npoints_t& wins);
-
 	public:
 		static const char* first_solving_file_name;
 		static const char* last_solving_file_name;
@@ -155,8 +140,8 @@ namespace Gomoku
 
 		bool get_job(steps_t& key);
 		bool get_ant_job(steps_t& key);
-        bool get_ant_job(const steps_t& root_key,steps_t& key);
-		void save_job(const steps_t& key,const points_t& neutrals,const npoints_t& win,const npoints_t& fails);
+        bool get_ant_job(const steps_t& base_st_key, steps_t& key);
+		void save_job(const steps_t& key,const ipoints_t& neutrals,const npoints_t& win,const npoints_t& fails);
 
 		bool get(sol_state_t& res) const;
 		void set(const sol_state_t& val);

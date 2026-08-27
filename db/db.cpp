@@ -69,9 +69,7 @@ void self_solve(solution_tree_t& tr,const steps_t& key)
 
 	const npoints_t& wins = r.get_wins();
 	const npoints_t& fails = r.get_fails();
-	const ipoints_t& ineutrals = r.get_neutrals();
-
-	points_t neutrals(ineutrals.begin(),ineutrals.end());
+	const ipoints_t& neutrals = r.get_neutrals();
 
 	std::string str_key=print_steps(key);
 	ObjectProgress::log_generator lg(true);
@@ -201,8 +199,8 @@ bool show_state(solution_tree_t& tr,steps_t req)
 	std::string tf=print_points(st.tree_fails);
 	std::string field_str=print_field(req);
 
-	printf("key: %s\nhex_key: %s\nwins_count=%llu fails_count=%llu\nneutrals: %s\nsolved wins: %s\ntree wins: %s\nsolved fails: %s\ntree fails: %s\nfield:\n%s",
-        k.c_str(),h.c_str(),st.wins_count,st.fails_count,
+	printf("key: %s\nhex_key: %s\nneutrals: %s\nsolved wins: %s\ntree wins: %s\nsolved fails: %s\ntree fails: %s\nfield:\n%s",
+        k.c_str(),h.c_str(),
 		n.c_str(),
 		sw.c_str(),tw.c_str(),
 		sf.c_str(),tf.c_str(),
@@ -241,7 +239,7 @@ void save_job(solution_tree_t& tr,const std::string& file_name)
 		data_t bin;
 
 		steps_t key;
-		points_t neutrals;
+		ipoints_t neutrals;
 		npoints_t win;
 		npoints_t fails;
 		
@@ -485,9 +483,6 @@ int main(int argc,char** argv)
 			st.key=req;
 			if(!tr.get(st))
 				throw std::runtime_error("state not found");
-
-			if(!st.is_completed())
-				throw std::runtime_error("state is not completed");
 
 			tr.relax(st);
 		}

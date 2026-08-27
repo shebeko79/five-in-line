@@ -294,8 +294,8 @@ std::string print_field(const steps_t& val)
 	    if(pts.empty())return;
 	    std::sort(pts.begin(),pts.end(),less_point_pr());
 
-	    npoints_t::iterator i=pts.begin(),endi=pts.end();
-	    npoints_t::iterator j=i;
+	    auto i=pts.begin(),endi=pts.end();
+	    auto j=i;
 
 	    for(++i;i!=endi;++i)
 	    if(j->is_same_point(*i))j->n+=i->n;
@@ -309,7 +309,27 @@ std::string print_field(const steps_t& val)
 	    pts.erase(j,endi);
     }
 
-    void make_unique(points_t& pts)
+    void make_unique(ipoints_t& pts)
+    {
+	    if(pts.empty())return;
+	    std::sort(pts.begin(),pts.end(),less_point_pr());
+
+	    auto i=pts.begin(),endi=pts.end();
+	    auto j=i;
+
+	    for(++i;i!=endi;++i)
+	    if(j->is_same_point(*i))j->i+=i->i;
+	    else
+	    {
+		    ++j;
+		    *j=*i;
+	    }
+
+	    ++j;
+	    pts.erase(j,endi);
+    }
+
+	void make_unique(points_t& pts)
     {
 	    std::sort(pts.begin(),pts.end(),less_point_pr());
 	    pts.erase(

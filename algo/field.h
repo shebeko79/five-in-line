@@ -257,6 +257,7 @@ namespace Gomoku
     void reorder_state_to_game_order(steps_t& steps);
 
 	void make_unique(npoints_t& pts);
+	void make_unique(ipoints_t& pts);
 	void make_unique(points_t& pts);
 
 	void insert(points_t& pts, const point& pt);
