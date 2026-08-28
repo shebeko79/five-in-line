@@ -1,4 +1,5 @@
 #include "bin_index_solution_base.h"
+#include "../algo/symmetry.h"
 
 namespace Gomoku
 {
@@ -8,7 +9,11 @@ bool bin_index_solution_base_t::get(sol_state_t& res) const
 	ibin_index_t* idx=indexes.find_index(res.key.size());
     if(!idx)return false;
 
+	steps_t old_key=res.key;
 	steps_t key=res.key;
+	
+	auto tr = Symmetry::minimal(key);
+	Symmetry::transform(key, tr);
 	sort_steps(key);
 
 	data_t bin_key;
@@ -18,13 +23,30 @@ bool bin_index_solution_base_t::get(sol_state_t& res) const
 	if(!idx->get(bin_key,bin))return false;
 
 	res.unpack(bin);
+
+	auto inv_tr = tr.invert();
+	res.key = old_key;
+	Symmetry::transform(res.neutrals, *inv_tr);
+	Symmetry::transform(res.solved_wins, *inv_tr);
+	Symmetry::transform(res.solved_fails, *inv_tr);
+	Symmetry::transform(res.tree_wins, *inv_tr);
+	Symmetry::transform(res.tree_fails, *inv_tr);
+
 	return true;
 }
 
 void bin_index_solution_base_t::set(const sol_state_t& _val)
 {
 	sol_state_t val=_val;
+	auto tr = Symmetry::minimal(val.key);
+	Symmetry::transform(val.key, tr);
 	sort_steps(val.key);
+	Symmetry::transform(val.neutrals, tr);
+	Symmetry::transform(val.solved_wins, tr);
+	Symmetry::transform(val.solved_fails, tr);
+	Symmetry::transform(val.tree_wins, tr);
+	Symmetry::transform(val.tree_fails, tr);
+
 
 	ibin_index_t& idx=indexes.get_index(val.key.size());
 
