@@ -47,17 +47,9 @@ void print_use()
 void self_solve(solution_tree_t& tr,const steps_t& key)
 {
 	steps_t init_state=key;
+	reorder_to_proper_last_color(init_state);
+
 	Step last_step=last_color(init_state.size());
-
-	steps_t::iterator i=init_state.begin();
-	
-	for(;i!=init_state.end();++i)
-		if(i->step==last_step)
-			break;
-
-	if(i==init_state.end())
-		throw std::runtime_error("self_solve(): state invalid");
-	std::swap(*i,*(init_state.end()-1));
 
 	game_t gm;
 	gm.field().set_steps(init_state);

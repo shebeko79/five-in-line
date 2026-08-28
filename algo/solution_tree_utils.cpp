@@ -202,4 +202,25 @@ namespace Gomoku
         return it-marks.begin();
     }
 
+	void reorder_to_proper_last_color(steps_t& steps)
+	{
+		if(steps.empty())
+			throw std::runtime_error("empty steps");
+
+		Step last_step=last_color(steps.size());
+		if(steps.back().step == last_step)
+			return;
+
+
+		auto i=steps.begin();
+	
+		for(;i!=steps.end();++i)
+			if(i->step==last_step)
+				break;
+
+		if(i==steps.end())
+			throw std::runtime_error("reorder_to_proper_last_color(): state invalid");
+		std::swap(*i,steps.back());
+	}
+
 }//namespace

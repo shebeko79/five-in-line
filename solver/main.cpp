@@ -87,22 +87,9 @@ int main(int argc,char** argv)
 			print_use();
 			return 1;
 		}
-
-		Step last_step=last_color(init_state.size());
-
-		steps_t::iterator i=init_state.begin();
 		
-		for(;i!=init_state.end();++i)
-			if(i->step==last_step)
-				break;
-
-		if(i==init_state.end())
-		{
-			print_use();
-			return 1;
-		}
-
-		std::swap(*i,*(init_state.end()-1));
+		reorder_to_proper_last_color(init_state);
+		Step last_step=last_color(init_state.size());
 
 		game_t gm;
 		gm.field().set_steps(init_state);

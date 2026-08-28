@@ -17,6 +17,8 @@ namespace Gomoku
     void hex_or_str2points(const std::string& str,steps_t& pts);
 
 	size_t normalize_marks_select_shift(std::vector<double>& marks);
+
+	void reorder_to_proper_last_color(steps_t& steps);
 }//namespace
 
 #endif
