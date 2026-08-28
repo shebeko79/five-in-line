@@ -81,12 +81,12 @@ namespace Gomoku { namespace Symmetry
 		return ha < hb;
 	}
 
-	tr_agregate rotate_90(const steps_t& steps, const tr_agregate& base_tr)
+	tr_agregate flip_x(const steps_t& steps, const tr_agregate& base_tr)
 	{
 		tr_agregate tr_a = base_tr;
 		
 		tr_agregate tr_b = base_tr;
-		tr_b.sub.push_back(std::make_shared<tr_90_cw>());
+		tr_b.sub.push_back(std::make_shared<tr_flip_x>());
 
 		binary_field ba(steps,tr_a);
 		binary_field bb(steps,tr_b);
@@ -96,12 +96,12 @@ namespace Gomoku { namespace Symmetry
 
 	tr_agregate flip_y(const steps_t& steps, const tr_agregate& base_tr)
 	{
-		tr_agregate tr_a = rotate_90(steps, base_tr);
+		tr_agregate tr_a = flip_x(steps, base_tr);
 		
 		tr_agregate tr_b = base_tr;
 		tr_b.sub.push_back(std::make_shared<tr_flip_y>());
 
-		tr_b = rotate_90(steps, tr_b);
+		tr_b = flip_x(steps, tr_b);
 
 		binary_field ba(steps,tr_a);
 		binary_field bb(steps,tr_b);
@@ -114,7 +114,7 @@ namespace Gomoku { namespace Symmetry
 		tr_agregate tr_a;
 		
 		tr_agregate tr_b;
-		tr_b.sub.push_back(std::make_shared<tr_flip_x>());
+		tr_b.sub.push_back(std::make_shared<tr_90_cw>());
 
 		tr_a = flip_y(steps, tr_a);
 		tr_b = flip_y(steps, tr_b);
