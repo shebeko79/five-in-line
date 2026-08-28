@@ -55,4 +55,13 @@ TEST_F(symmetry_test, common)
 	ASSERT_NE(lowest, not_in_line1);
 }
 
+TEST_F(symmetry_test, lowest_chain)
+{
+	steps_t steps = scan_steps("(0,0:X)");
+	auto tr = Symmetry::minimal(steps);
+
+	ASSERT_EQ(0, tr.sub.size());
+}
+
+
 }//namespace

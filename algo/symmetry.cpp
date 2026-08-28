@@ -91,7 +91,7 @@ namespace Gomoku { namespace Symmetry
 		binary_field ba(steps,tr_a);
 		binary_field bb(steps,tr_b);
 		
-		return ba<bb? tr_a : tr_b;
+		return bb<ba? tr_b : tr_a;
 	}
 
 	tr_agregate flip_y(const steps_t& steps, const tr_agregate& base_tr)
@@ -106,7 +106,7 @@ namespace Gomoku { namespace Symmetry
 		binary_field ba(steps,tr_a);
 		binary_field bb(steps,tr_b);
 		
-		return ba<bb? tr_a : tr_b;
+		return bb<ba? tr_b : tr_a;
 	}
 
 	tr_agregate minimal(const steps_t& steps)
@@ -122,7 +122,7 @@ namespace Gomoku { namespace Symmetry
 		binary_field ba(steps,tr_a);
 		binary_field bb(steps,tr_b);
 		
-		return ba<bb? tr_a : tr_b;
+		return bb<ba? tr_b : tr_a;
 	}
 
 } }//namespace
