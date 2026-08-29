@@ -45,6 +45,11 @@ void print_use()
 
 void self_solve(solution_tree_t& tr,const steps_t& key)
 {
+	std::string str_key=print_steps(key);
+	ObjectProgress::log_generator lg(true);
+	lg<<"";
+	lg<<"Solving: "<<str_key;
+
 	steps_t init_state=key;
 	reorder_to_proper_last_color(init_state);
 
@@ -62,8 +67,6 @@ void self_solve(solution_tree_t& tr,const steps_t& key)
 	const npoints_t& fails = r.get_fails();
 	const ipoints_t& neutrals = r.get_neutrals();
 
-	std::string str_key=print_steps(key);
-	ObjectProgress::log_generator lg(true);
 	lg<<str_key<<": n="<<neutrals.size()<<" w="<<wins.size()<<" f="<<fails.size();
 
 	tr.save_job(key,neutrals,wins,fails);
