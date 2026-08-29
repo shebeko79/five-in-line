@@ -356,7 +356,7 @@ namespace Gomoku
 			return true;
 		}
 
-		if(base_st.neutrals.empty())
+		if(base_st.is_completed())
 			return false;
 
 		auto it = std::min_element(base_st.neutrals.begin(), base_st.neutrals.end(),
