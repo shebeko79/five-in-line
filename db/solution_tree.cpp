@@ -603,7 +603,7 @@ namespace Gomoku
 		if(neutrals.empty())
 			throw std::runtime_error("best_neutral_score(): neutrals is empty");
 		Step move_color = other_color(last_color(key.size()));
-		const int k = move_color==st_krestik? 1:0;
+		const int k = move_color==st_krestik? 1:-1;
 		return std::min_element(neutrals.begin(), neutrals.end(), 
 			[k](const ipoint& pa, const ipoint& pb){return pa.i*k > pb.i*k;})->i;
 	}
