@@ -5,6 +5,7 @@
 #include "../extern/binary_find.h"
 #include <boost/lexical_cast.hpp>
 #include "../extern/pair_comparator.h"
+#include "../algo/symmetry.h"
 
 namespace fs=std::filesystem;
 
@@ -221,7 +222,6 @@ namespace Gomoku
 		Step cur_step=last_color(child_st.key.size());
 		
 		sol_state_t prev_st;
-		steps_t& key=prev_st.key;
 
 		unsigned n = 0;
 		int best_score = 0;
@@ -236,38 +236,55 @@ namespace Gomoku
 			best_score = child_st.best_neutral_score();
 		}
 
+		steps_t min_child_key = child_st.key;
+		Symmetry::transform(min_child_key,Symmetry::minimal(min_child_key));
+		sort_steps(min_child_key);
+
 		for(size_t i=0;i<child_st.key.size();i++)
 		{
 			const step_t& st=child_st.key[i];
 			if(st.step!=cur_step)continue;
 
-			key=child_st.key;
-			key.erase(key.begin()+i);
+			prev_st.key=child_st.key;
+			prev_st.key.erase(prev_st.key.begin()+i);
 
 			if(!get(prev_st))continue;
 
 			if(prev_st.is_completed())
 				continue;
 
-			if (child_st.is_completed())
+			steps_t scratch_key = prev_st.key;
+			scratch_key.push_back(st);
+
+			for (size_t jj = prev_st.neutrals.size(); jj > 0; --jj)
 			{
-				prev_st.neutrals.erase(
-					std::remove(prev_st.neutrals.begin(), prev_st.neutrals.end(), st), prev_st.neutrals.end());
+				size_t j = jj-1;
+				point pn = prev_st.neutrals[j];
 
-				npoints_t& solved = child_st.is_win() ? prev_st.tree_fails : prev_st.tree_wins;
+				static_cast<point&>(scratch_key.back())=pn;
+				steps_t cmp_key = scratch_key;
+				Symmetry::transform(cmp_key,Symmetry::minimal(cmp_key));
+				sort_steps(cmp_key);
+				if(cmp_key != min_child_key)
+					continue;
 
-				npoint p(st);
-				p.n = n;
+				if (child_st.is_completed())
+				{
+					prev_st.neutrals.erase(prev_st.neutrals.begin()+j);
 
-				npoints_t::iterator it = std::find(solved.begin(), solved.end(), st);
-				if (it == solved.end())solved.push_back(p);
-				else *it = p;
-			}
-			else
-			{
-				auto it = std::find(prev_st.neutrals.begin(), prev_st.neutrals.end(), st);
-				if (it != prev_st.neutrals.end())
-					it->i = best_score;
+					npoints_t& solved = child_st.is_win() ? prev_st.tree_fails : prev_st.tree_wins;
+
+					npoint p(pn);
+					p.n = n;
+
+					npoints_t::iterator it = std::find(solved.begin(), solved.end(), pn);
+					if (it == solved.end())solved.push_back(p);
+					else *it = p;
+				}
+				else
+				{
+					prev_st.neutrals[j].i = best_score;
+				}
 			}
 
 			set(prev_st);
