@@ -47,7 +47,6 @@ void self_solve(solution_tree_t& tr,const steps_t& key)
 {
 	std::string str_key=print_steps(key);
 	ObjectProgress::log_generator lg(true);
-	lg<<"";
 	lg<<"Solving: "<<str_key;
 
 	steps_t init_state=key;
@@ -160,7 +159,8 @@ void self_solve(solution_tree_t& tr,size_t iteration_count,const steps_t& root_k
 			    return;
 		    }
         }
-
+		lg<<"";
+		lg<<"self_solve(): i="<<i<<" iteration_count="<<iteration_count;
 		self_solve(tr,key);
 	}
 }
