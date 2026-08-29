@@ -359,15 +359,23 @@ namespace Gomoku
 		if(base_st.is_completed())
 			return false;
 
-		auto it = std::min_element(base_st.neutrals.begin(), base_st.neutrals.end(),
-			[](const ipoint& pa, const ipoint& pb)
-			{
-				//if next step is st_krestik we value strongest moves first
-				//if next step is st_nolik we value weakest moves first to keep whole tree as narrow as possible
-				return pa.i > pb.i;
-			});
-
 		Step next_cl = next_color(base_st_key.size());
+
+		ipoints_t::iterator it;
+
+		if (next_cl == st_nolik || rand() % 100 == 0)
+		{
+			it = base_st.neutrals.begin() + (rand()%base_st.neutrals.size());
+		}
+		else
+		{
+			it = std::min_element(base_st.neutrals.begin(), base_st.neutrals.end(),
+				[](const ipoint& pa, const ipoint& pb)
+				{
+					return pa.i > pb.i;
+				});
+		}
+
 		steps_t child_st = base_st_key;
 		child_st.push_back(step_t(next_cl, *it));
 
@@ -602,7 +610,7 @@ namespace Gomoku
 	{
 		if(neutrals.empty())
 			throw std::runtime_error("best_neutral_score(): neutrals is empty");
-		Step move_color = other_color(last_color(key.size()));
+		Step move_color = next_color(key.size());
 		const int k = move_color==st_krestik? 1:-1;
 		return std::min_element(neutrals.begin(), neutrals.end(), 
 			[k](const ipoint& pa, const ipoint& pb){return pa.i*k > pb.i*k;})->i;
