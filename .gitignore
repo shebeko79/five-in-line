@@ -16,3 +16,5 @@ cmake_install.cmake
 .vs
 *.aps
 data/
+.idea
+*.log
