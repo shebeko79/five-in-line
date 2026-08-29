@@ -88,6 +88,8 @@ int main(int argc,char** argv)
 			return 1;
 		}
 		
+		lg<<"Solving: "<<print_steps(init_state);
+
 		reorder_to_proper_last_color(init_state);
 		Step last_step=last_color(init_state.size());
 
