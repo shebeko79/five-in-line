@@ -35,7 +35,6 @@ void print_use()
 	printf("db <root_dir> save_job <file_name>\n");
 	printf("db <root_dir> get <key>\n");
 	printf("db <root_dir> view <printable_steps>\n");
-	printf("db <root_dir> view_hex <printable_steps>\n");
 	printf("db <root_dir> view_root\n");
 	printf("db <root_dir> solve_level [iteration_count]\n");
 	printf("db <root_dir> solve_ant [root_key] [iteration_count]\n");
@@ -398,23 +397,6 @@ int main(int argc,char** argv)
 
 			steps_t req;
             hex_or_str2points(argv[3],req);
-			if(!show_state(tr,req))
-				return 1;
-		}
-		else if(cmd=="view_hex")
-		{
-			if(argc!=4)
-			{
-				print_use();
-				return 1;
-			}
-
-			data_t bin;
-			hex2bin(argv[3],bin);
-
-			steps_t req;
-			bin2points(bin,req);
-
 			if(!show_state(tr,req))
 				return 1;
 		}
