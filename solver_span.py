@@ -82,7 +82,6 @@ def wait_cycle():
                 continue
 
             s['err'].close()
-            print(f'job complete {i=} key={s["key"]}\n')
             if s['p'].returncode != 0:
                 print(f'solver failed {i=} key={s["key"]}\n')
             else:
