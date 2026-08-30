@@ -2,11 +2,10 @@ import subprocess
 import time
 import os
 
-db_path = 'data/'
+db_path = 'e:/f5'
 solver = 'solver/cmake/Release/solver.exe'
 db = 'db/cmake/Release/db.exe'
-#base_state = '(0,0:X);(-4,-4:O);(-1,0:X)'
-base_state = '(0,0:X);(-4,-4:O);(-1,0:X);(-8,-8:O);(-1,1:X)'
+base_state = '(0,0:X);(-4,-4:O);(-1,0:X)'
 
 process_count = os.cpu_count()
 solvers = []
@@ -16,8 +15,7 @@ span_count = 0
 def get_job():
     result = subprocess.run([db, db_path, 'get_ant_job', base_state], capture_output=True, text=True)
     if result.returncode != 0:
-        print("get_job(): ", result.stdout)
-        return ''
+        raise Exception(f'get_job(): ret={result.stdout}')
     return result.stdout
 
 
@@ -27,7 +25,7 @@ def save_job(content):
 
     result = subprocess.run([db, db_path, 'save_job', "save_job.log"], capture_output=True, text=True)
     if result.returncode != 0:
-        print("save_job(): ", result.stdout)
+        raise Exception(f'save_job(): ret={result.stdout}')
 
 
 def span_solver(hex_key, idx):
@@ -83,7 +81,7 @@ def wait_cycle():
 
             s['err'].close()
             if s['p'].returncode != 0:
-                print(f'solver failed {i=} key={s["key"]}\n')
+                raise Exception(f'solver failed {i=} key={s["key"]}')
             else:
                 solver_str = s['p'].communicate()[0].decode("utf-8")
                 save_job_str = solver_output2save_job(solver_str)
