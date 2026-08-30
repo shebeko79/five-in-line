@@ -8,6 +8,7 @@ db = 'db/cmake/Release/db.exe'
 base_state = '(0,0:X);(-4,-4:O);(-1,0:X)'
 
 process_count = os.cpu_count()
+#process_count = 4
 solvers = []
 span_count = 0
 
@@ -17,6 +18,13 @@ def get_job():
     if result.returncode != 0:
         raise Exception(f'get_job(): ret={result.stdout}')
     return result.stdout
+
+
+def key_exists(key):
+    for s in solvers:
+        if s['key'] == key and not s['pause']:
+            return True
+    return False
 
 
 def save_job(content):
@@ -33,7 +41,7 @@ def span_solver(hex_key, idx):
     span_count += 1
 
     print(f'span_solver() {idx=} {span_count=} {hex_key=}')
-    ret = {'err': open(f'solver{idx}.log', "wb"), 'key': hex_key}
+    ret = {'err': open(f'solver{idx}.log', "wb"), 'key': hex_key, 'pause': False}
     ret['p'] = subprocess.Popen([solver, hex_key], stdout=subprocess.PIPE, stderr=ret['err'])
 
     return ret
@@ -64,36 +72,46 @@ def solver_output2save_job(res_str):
     return ret
 
 
-def initial_span():
-    for i in range(0, process_count):
-        hex_key = get_job()
-        solvers.append(span_solver(hex_key, i))
-
-
 def wait_cycle():
-    while True:
-        for i in range(0, process_count):
-            s = solvers[i]
-            try:
-                s['p'].wait(0)
-            except subprocess.TimeoutExpired as e:
-                continue
+    global solvers
+    global process_count
 
-            s['err'].close()
-            if s['p'].returncode != 0:
-                raise Exception(f'solver failed {i=} key={s["key"]}')
-            else:
-                solver_str = s['p'].communicate()[0].decode("utf-8")
-                save_job_str = solver_output2save_job(solver_str)
-                save_job(save_job_str)
+    while True:
+        for i in range(0, len(solvers)):
+            s = solvers[i]
+            if not s['pause']:
+                try:
+                    s['p'].wait(0)
+                except subprocess.TimeoutExpired as e:
+                    continue
+
+                s['err'].close()
+                if s['p'].returncode != 0:
+                    raise Exception(f'solver failed {i=} key={s["key"]}')
+                else:
+                    solver_str = s['p'].communicate()[0].decode("utf-8")
+                    save_job_str = solver_output2save_job(solver_str)
+                    save_job(save_job_str)
 
             hex_key = get_job()
-            solvers[i] = span_solver(hex_key, i)
+            if key_exists(hex_key):
+                s['pause'] = True
+                print(f'key={hex_key} already processing')
+            else:
+                s = span_solver(hex_key, i)
+
+            solvers[i] = s
+
+        if len(solvers) < process_count:
+            hex_key = get_job()
+            if key_exists(hex_key):
+                print(f'key={hex_key} already processing')
+            else:
+                solvers.append(span_solver(hex_key, len(solvers)))
 
         time.sleep(1)
 
 
-initial_span()
 wait_cycle()
 
 
