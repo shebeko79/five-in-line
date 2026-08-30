@@ -1,13 +1,15 @@
 import subprocess
 import time
+import os
 
 db_path = 'data/'
 solver = 'solver/cmake/Release/solver.exe'
 db = 'db/cmake/Release/db.exe'
 base_state = '(0,0:X);(-4,-4:O);(-1,0:X)'
 
-process_count = 4
+process_count = os.cpu_count()
 solvers = []
+span_count = 0
 
 
 def get_job():
@@ -19,16 +21,23 @@ def get_job():
 
 
 def save_job(content):
-    with open("save_job.txt", "w", encoding="utf-8") as file:
+    with open("save_job.log", "w", encoding="utf-8") as file:
         file.write(content)
 
-    result = subprocess.run([db, db_path, 'save_job', "save_job.txt"], capture_output=True, text=True)
+    result = subprocess.run([db, db_path, 'save_job', "save_job.log"], capture_output=True, text=True)
     if result.returncode != 0:
         print("save_job(): ", result.stdout)
 
 
-def span_solver(hex_key):
-    return subprocess.Popen([solver, hex_key], stdout=subprocess.PIPE)
+def span_solver(hex_key, idx):
+    global span_count
+    span_count += 1
+
+    print(f'span_solver() {idx=} {span_count=} {hex_key=}')
+    ret = {'err': open(f'solver{idx}.log', "wb"), 'key': hex_key}
+    ret['p'] = subprocess.Popen([solver, hex_key], stdout=subprocess.PIPE, stderr=ret['err'])
+
+    return ret
 
 
 def solver_output2save_job(res_str):
@@ -59,29 +68,30 @@ def solver_output2save_job(res_str):
 def initial_span():
     for i in range(0, process_count):
         hex_key = get_job()
-        solvers.append(span_solver(hex_key))
+        solvers.append(span_solver(hex_key, i))
+        time.sleep(10)
 
 
 def wait_cycle():
     while True:
         for i in range(0, process_count):
-            p = solvers[i]
+            s = solvers[i]
             try:
-                p.wait(0)
+                s['p'].wait(0)
             except subprocess.TimeoutExpired as e:
                 continue
 
-            print(f'job complete {i=}\n')
-            if p.returncode != 0:
-                print('solver failed\n')
+            s['err'].close()
+            print(f'job complete {i=} key={s["key"]}\n')
+            if s['p'].returncode != 0:
+                print(f'solver failed {i=} key={s["key"]}\n')
             else:
-                solver_str = p.communicate()[0].decode("utf-8")
+                solver_str = s['p'].communicate()[0].decode("utf-8")
                 save_job_str = solver_output2save_job(solver_str)
                 save_job(save_job_str)
 
             hex_key = get_job()
-            print(f'span new {hex_key=}\n')
-            solvers[i] = span_solver(hex_key)
+            solvers[i] = span_solver(hex_key, i)
 
         time.sleep(1)
 
