@@ -11,6 +11,7 @@ namespace Gomoku { namespace State5
 
 unsigned common_deep = 2;
 unsigned gl_threat_deep = 8;
+bool prove_mode = false;
 
 
 void field_state_player_t::delegate_step()
@@ -205,7 +206,7 @@ void node_t::process()
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
 
-	if (deep >= common_deep)
+	if (deep >= common_deep || prove_mode&&move_color==st_krestik)
 		deep_limit_reached = true;
 
 	pts = other_srt.p4l;

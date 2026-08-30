@@ -9,6 +9,7 @@ namespace Gomoku { namespace State5
 
 	extern unsigned common_deep;
 	extern unsigned gl_threat_deep;
+	extern bool prove_mode;
 
 	class field_state_player_t : public iplayer_t
 	{
