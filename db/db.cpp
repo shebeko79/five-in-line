@@ -6,9 +6,9 @@
 
 #ifndef _WIN32
 #  include <signal.h>
-#  include <sys/time.h>
 #endif
 
+#include <chrono>
 #include <boost/algorithm/string.hpp>
 #include "solution_tree.h"
 #include "solution_tree_fixes.h"
@@ -271,14 +271,9 @@ int main(int argc,char** argv)
     log_file.open();
 
     ObjectProgress::log_generator lg(true);
-
-#ifdef _WIN32
-	srand(static_cast<unsigned>(time(0)));
-#else
-	struct timeval time; 
-    gettimeofday(&time,NULL);
-    srand((time.tv_sec * 1000) + (time.tv_usec / 1000));
-#endif
+	
+	unsigned seed = static_cast<unsigned>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+	srand(seed);
 
 	try
 	{
