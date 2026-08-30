@@ -5,7 +5,8 @@ import os
 db_path = 'data/'
 solver = 'solver/cmake/Release/solver.exe'
 db = 'db/cmake/Release/db.exe'
-base_state = '(0,0:X);(-4,-4:O);(-1,0:X)'
+#base_state = '(0,0:X);(-4,-4:O);(-1,0:X)'
+base_state = '(0,0:X);(-4,-4:O);(-1,0:X);(-8,-8:O);(-1,1:X)'
 
 process_count = os.cpu_count()
 solvers = []
@@ -69,7 +70,6 @@ def initial_span():
     for i in range(0, process_count):
         hex_key = get_job()
         solvers.append(span_solver(hex_key, i))
-        time.sleep(10)
 
 
 def wait_cycle():
