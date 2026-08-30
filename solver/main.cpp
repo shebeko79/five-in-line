@@ -70,7 +70,7 @@ int main(int argc,char** argv)
         
     log_file.file_name="solver.log";
     log_file.print_timestamp=true;
-    log_file.open();
+    //log_file.open();
 
     scan_enviropment_variables();
 
