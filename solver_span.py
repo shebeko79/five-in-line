@@ -93,9 +93,10 @@ def wait_cycle():
                     save_job_str = solver_output2save_job(solver_str)
                     save_job(save_job_str)
 
+            s['pause'] = True
+
             hex_key = get_job()
             if key_exists(hex_key):
-                s['pause'] = True
                 print(f'key={hex_key} already processing')
             else:
                 s = span_solver(hex_key, i)
@@ -112,6 +113,15 @@ def wait_cycle():
         time.sleep(1)
 
 
-wait_cycle()
+try:
+    wait_cycle()
+except Exception as e:
+    print(e)
+
+for s in solvers:
+    if not s['pause']:
+        print(f'kill key={s["key"]}')
+        s['p'].kill()
+
 
 
