@@ -6,6 +6,7 @@
 #include <boost/lexical_cast.hpp>
 #include "../extern/pair_comparator.h"
 #include "../algo/symmetry.h"
+#include "../algo/field_state.h"
 
 namespace fs=std::filesystem;
 
@@ -359,25 +360,21 @@ namespace Gomoku
 		if(base_st.is_completed())
 			return false;
 
-		Step next_cl = next_color(base_st_key.size());
+		Step move_color = next_color(base_st_key.size());
 
 		ipoints_t::iterator it;
 
-		if (next_cl == st_nolik || rand() % 100 == 0)
+		if (move_color == st_nolik || rand() % 100 == 0)
 		{
 			it = base_st.neutrals.begin() + (rand()%base_st.neutrals.size());
 		}
 		else
 		{
-			it = std::min_element(base_st.neutrals.begin(), base_st.neutrals.end(),
-				[](const ipoint& pa, const ipoint& pb)
-				{
-					return pa.i > pb.i;
-				});
+			it = std::min_element(base_st.neutrals.begin(), base_st.neutrals.end(), State5::fscore_pr(move_color));
 		}
 
 		steps_t child_st = base_st_key;
-		child_st.push_back(step_t(next_cl, *it));
+		child_st.push_back(step_t(move_color, *it));
 
 		return get_ant_job(child_st, result_key);
     }
@@ -611,9 +608,7 @@ namespace Gomoku
 		if(neutrals.empty())
 			throw std::runtime_error("best_neutral_score(): neutrals is empty");
 		Step move_color = next_color(key.size());
-		const int k = move_color==st_krestik? 1:-1;
-		return std::min_element(neutrals.begin(), neutrals.end(), 
-			[k](const ipoint& pa, const ipoint& pb){return pa.i*k > pb.i*k;})->i;
+		return std::min_element(neutrals.begin(), neutrals.end(), State5::fscore_pr(move_color))->i;
 	}
 
 	void deep_solve_t::pack(data_t& bin) const
