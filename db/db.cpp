@@ -185,11 +185,15 @@ bool show_state(solution_tree_t& tr,steps_t req)
 	std::string h;
 	bin2hex(bin_key,h);
 
-	auto neutrals = st.neutrals;
-	sort(neutrals,fscore_pr(next_color(st.key.size())));
+	sort(st.neutrals,fscore_pr(next_color(st.key.size())));
+
+	sort(st.solved_wins,less_n_pr());
+	sort(st.solved_fails,greater_n_pr());
+	sort(st.tree_wins,less_n_pr());
+	sort(st.tree_fails,greater_n_pr());
 
 	std::string k=print_steps(st.key);
-	std::string n=print_points(neutrals);
+	std::string n=print_points(st.neutrals);
 	std::string sw=print_points(st.solved_wins);
 	std::string sf=print_points(st.solved_fails);
 	std::string tw=print_points(st.tree_wins);

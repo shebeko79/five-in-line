@@ -251,11 +251,28 @@ namespace Gomoku
 
 			if(!get(prev_st))continue;
 
-			if(prev_st.is_completed())
-				continue;
+			sol_state_t prev_old = prev_st;
 
 			steps_t scratch_key = prev_st.key;
 			scratch_key.push_back(st);
+
+			if (child_st.is_completed())
+			{
+				npoints_t& solved = child_st.is_win() ? prev_st.tree_fails : prev_st.tree_wins;
+
+				for (auto& pn : solved)
+				{
+					static_cast<point&>(scratch_key.back())=pn;
+					steps_t cmp_key = scratch_key;
+					Symmetry::transform(cmp_key,Symmetry::minimal(cmp_key));
+					sort_steps(cmp_key);
+					if(cmp_key != min_child_key)
+						continue;
+
+					pn.n = n;
+				}
+
+			}
 
 			for (size_t jj = prev_st.neutrals.size(); jj > 0; --jj)
 			{
@@ -290,7 +307,7 @@ namespace Gomoku
 
 			set(prev_st);
 
-			if(prev_st.key.size()>1)
+			if(prev_st.key.size()>1 && prev_st.state_changed(prev_old))
 				relax(prev_st);
 		}
 	}
@@ -610,6 +627,31 @@ namespace Gomoku
 		Step move_color = next_color(key.size());
 		return std::min_element(neutrals.begin(), neutrals.end(), State5::fscore_pr(move_color))->i;
 	}
+
+	bool sol_state_t::state_changed(sol_state_t& rhs) const
+	{
+		if(is_completed() != rhs.is_completed())
+			return true;
+
+		if (!is_completed())
+		{
+			Step move_color = next_color(key.size());
+			auto sa = best_neutral_score();
+			auto sb = rhs.best_neutral_score();
+			return move_color==st_krestik? sa>sb : sa<sb;
+		}
+
+		if(is_win() != rhs.is_win())
+			throw std::runtime_error("sol_state_t::state_changed(): inconsistent state");
+
+		if (is_win())
+			return min_win_chain() != rhs.min_win_chain();
+		else
+			return max_fail_chain() != rhs.max_fail_chain();
+	}
+
+
+
 
 	void deep_solve_t::pack(data_t& bin) const
 	{

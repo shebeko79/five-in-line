@@ -32,6 +32,8 @@ namespace Gomoku
 		unsigned max_fail_chain() const;
 		int best_neutral_score() const;
 
+		bool state_changed(sol_state_t& rhs) const;
+
 	public:
 		static void pack(const points_t& pts,data_t& bin);
 		static void unpack(const data_t& bin,points_t& pts,size_t& from);

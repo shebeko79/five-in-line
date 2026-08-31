@@ -75,6 +75,15 @@ namespace Gomoku
 		}
 	};
 
+	struct greater_n_pr
+	{
+		inline bool operator()(const npoint& a,const npoint& b) const
+		{
+			return a.n>b.n;
+		}
+	};
+	
+
 	typedef std::set<point, less_point_pr> points_set_t;
 
 	struct near_point_pr : public less_point_pr
