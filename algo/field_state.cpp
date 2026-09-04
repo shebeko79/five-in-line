@@ -202,7 +202,7 @@ namespace Gomoku { namespace State5
 		p4l.reserve(20);
 	}
 
-	void sorted_scores::update(const point& pt, Score old_scr, Score new_scr)
+	bool sorted_scores::update(const point& pt, Score old_scr, Score new_scr)
 	{
 		unsigned old_step = max_step(old_scr);
 		unsigned new_step = max_step(new_scr);
@@ -211,46 +211,48 @@ namespace Gomoku { namespace State5
 		{
 			switch (new_step)
 			{
+			case 5:
+				break;
 			case 4:
 				if ((old_scr / kScore4 >= 2) == (new_scr / kScore4 >= 2))
-					return;
+					return true;
 				break;
 			case 3:
 				if ((old_scr/kScore3 >= 2) == (new_scr/kScore3 >= 2))
-					return;
+					return new_scr/kScore3 >= 2;
 				break;
 			default:
-				return;
+				return false;
 			}
 		}
 
 		remove(pt, old_step, old_scr);
-		add(pt, new_step, new_scr);
+		return add(pt, new_step, new_scr);
 	}
 	
-	void sorted_scores::add(const point& pt, unsigned step, Score scr)
+	bool sorted_scores::add(const point& pt, unsigned step, Score scr)
 	{
 		switch (step)
 		{
 		case 5:
 			insert(p5, pt);
-			break;
+			return true;
 		case 4:
 			if(scr/kScore4>=2)
 				insert(p4h, pt);
 			else
 				sorted_insert(p4l, pt);
-			break;
+			return true;
 		case 3:
-			if(scr/kScore3>=2)
+			if (scr / kScore3 >= 2)
+			{
 				p3h.insert(pt);
-			else
-				p3l.insert(pt);
-			break;
-		case 2:
-			p2.insert(pt);
+				return true;
+			}
 			break;
 		}
+
+		return false;
 	}
 
 	void sorted_scores::remove(const point& pt, unsigned step, Score scr)
@@ -269,11 +271,6 @@ namespace Gomoku { namespace State5
 		case 3:
 			if(scr/kScore3>=2)
 				p3h.erase(pt);
-			else
-				p3l.erase(pt);
-			break;
-		case 2:
-			p2.erase(pt);
 			break;
 		}
 	}
@@ -285,9 +282,7 @@ namespace Gomoku { namespace State5
 		lg<<"Size: p5="<<p5.size()
 			<<" p4h="<<p4h.size()
 			<<" p4l="<<p4l.size()
-			<<" p3h="<<p3h.size()
-			<<" p3l="<<p3l.size()
-			<<" p2="<<p2.size();
+			<<" p3h="<<p3h.size();
 
 		//lg<<"Capacity: p5="<<p5.capacity()
 		//	<<" p4h="<<p4h.capacity()
@@ -378,8 +373,14 @@ namespace Gomoku { namespace State5
 	void field5_t::set_score(const point& pt, const score_t& new_scr)
 	{
 		score_t& old_scr = scores_field.get_ref(pt);
-		sorted_krestik.update(pt, old_scr.krestik_score, new_scr.krestik_score);
-		sorted_nolik.update(pt, old_scr.nolik_score, new_scr.nolik_score);
+		
+		bool krestik_updated = sorted_krestik.update(pt, old_scr.krestik_score, new_scr.krestik_score);
+		bool nolik_updated = sorted_nolik.update(pt, old_scr.nolik_score, new_scr.nolik_score);
+		
+		if (krestik_updated || nolik_updated || new_scr.krestik_score <=20 && new_scr.nolik_score <=20)
+			other_empty.erase(pt);
+		else
+			other_empty.insert(pt);
 
 		old_scr = new_scr;
 	}

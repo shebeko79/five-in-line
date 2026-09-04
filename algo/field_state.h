@@ -113,31 +113,25 @@ namespace Gomoku { namespace State5
 		points_t p4h;
 		points_t p4l;
 		points_set_t p3h;
-		points_set_t p3l;
-		points_set_t p2;
 
 		sorted_scores();
 		
-		void update(const point& pt, Score old_scr, Score new_scr);
+		bool update(const point& pt, Score old_scr, Score new_scr);
 
 		bool p5_exists(const point& p) const {return std::find(p5.begin(),p5.end(),p)!=p5.end();}
 		bool p4h_exists(const point& p) const {return std::find(p4h.begin(),p4h.end(),p)!=p4h.end();}
 		bool p4l_exists(const point& p) const {return binary_find(p4l.begin(),p4l.end(),p,less_point_pr())!=p4l.end();}
 		bool p3h_exists(const point& p) const {return p3h.find(p) != p3h.end();}
-		bool p3l_exists(const point& p) const {return p3l.find(p) != p3l.end();}
-		bool p2_exists(const point& p) const {return p2.find(p) != p2.end();}
 
 		inline auto p5_pr()  const { return [this] (const point& p){return p5_exists(p);}; }
 		inline auto p4h_pr() const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p);}; }
 		inline auto p4_pr()  const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p) || p4l_exists(p);}; }
 		inline auto p3h_pr() const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p) || p4l_exists(p) || p3h_exists(p);}; }
-		inline auto p3_pr()  const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p) || p4l_exists(p) || p3h_exists(p) || p3l_exists(p);}; }
-		inline auto p2_pr()  const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p) || p4l_exists(p) || p3h_exists(p) || p3l_exists(p) || p2_exists(p);}; }
 
 		void log_statistic() const;
-		unsigned size() const {return p5.size() + p4h.size() + p4l.size() + p3h.size() + p3l.size() + p2.size();}
+		unsigned size() const {return p5.size() + p4h.size() + p4l.size() + p3h.size();}
 	private:
-		void add(const point& pt, unsigned step, Score scr);
+		bool add(const point& pt, unsigned step, Score scr);
 		void remove(const point& pt, unsigned step, Score scr);
 	};
 
@@ -154,6 +148,7 @@ namespace Gomoku { namespace State5
 		void set_steps(const field_t::steps_t& steps);
 		inline const sorted_scores& get_sorted(Step st) const {return st==st_krestik? sorted_krestik: sorted_nolik;};
 		inline const matrix<score_t>& get_scores_field() const {return scores_field;}
+		inline const points_set_t& get_other_empty() const {return other_empty;}
 
 		void iterate_involved_lines(const point& pt, const line_visitor& visitor);
 		
@@ -164,6 +159,7 @@ namespace Gomoku { namespace State5
 		matrix<score_t> scores_field;
 		sorted_scores sorted_krestik;
 		sorted_scores sorted_nolik;
+		points_set_t other_empty;
 		Score field_score = 0;
 		
 		void change_state(const field_t& field, int dx, int dy);

@@ -209,38 +209,19 @@ void node_t::process()
 	if (deep >= common_deep || prove_mode&&move_color==st_krestik)
 		deep_limit_reached = true;
 
+	const points_set_t& other_empty = player.field5.get_other_empty();
+
+	pts.reserve(other_srt.p4l.size()+other_srt.p3h.size()+other_empty.size());
+
 	pts = other_srt.p4l;
 	remove_if(pts, move_srt.p3h_pr());
-	process_oposite_forked(pts);
-	if(mark_unchecked_make_move(pts, scores_field))
-		return;
 
-	pts = set_to_point(move_srt.p3l);
-	remove_if(pts, other_srt.p4_pr());
-	process_oposite_forked(pts);
-	if(mark_unchecked_make_move(pts, scores_field))
-		return;
+	size_t sz =pts.size();
+	pts.insert(pts.end(), other_srt.p3h.begin(), other_srt.p3h.end());
+	pts.erase(std::remove_if(pts.begin()+sz, pts.end(), move_srt.p3h_pr()), pts.end());
 
-	pts = set_to_point(other_srt.p3h);
-	remove_if(pts, move_srt.p3_pr());
-	process_oposite_forked(pts);
-	if(mark_unchecked_make_move(pts, scores_field))
-		return;
+	pts.insert(pts.end(), other_empty.begin(),other_empty.end());
 
-	pts = set_to_point(other_srt.p3l);
-	remove_if(pts, move_srt.p3_pr());
-	process_oposite_forked(pts);
-	if(mark_unchecked_make_move(pts, scores_field))
-		return;
-
-	pts = set_to_point(move_srt.p2);
-	remove_if(pts, other_srt.p3_pr());
-	process_oposite_forked(pts);
-	if(mark_unchecked_make_move(pts, scores_field))
-		return;
-
-	pts = set_to_point(other_srt.p2);
-	remove_if(pts, move_srt.p2_pr());
 	process_oposite_forked(pts);
 	if(mark_unchecked_make_move(pts, scores_field))
 		return;
