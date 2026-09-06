@@ -339,12 +339,6 @@ namespace Gomoku { namespace State5
 			return ba && !bb;
 
 
-		move_a %= kScore5;
-		opp_a %= kScore5;
-
-		move_b %= kScore5;
-		opp_b %= kScore5;
-
 		Score ca = move_a/kScore4;
 		Score cb = move_b/kScore4;
 		if(ca>=2 || cb>=2)
@@ -358,9 +352,6 @@ namespace Gomoku { namespace State5
 		if(ca>=2 || cb>=2)
 			return ca>=2 && !(cb>=2);
 
-
-		move_a %= kScore4;
-		move_b %= kScore4;
 
 		ca = move_a/kScore3;
 		cb = move_b/kScore3;
