@@ -58,6 +58,7 @@ node_t field_state_player_t::solve()
 	
 	squeeze_win(root);
 	squeeze_fail(root);
+	lg<<"total_time="<<perf;
 
 	return root;
 }
