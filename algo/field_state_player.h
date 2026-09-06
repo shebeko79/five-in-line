@@ -116,7 +116,7 @@ namespace Gomoku { namespace State5
 
 		fork_t oposite_fork;
 
-		bool mark_unchecked_make_move(const points_range& rng,const matrix<score_t>& scores_field);
+		bool mark_unchecked_make_move(const points_range& rng);
 		bool make_move_find_win(const points_range& rng);
 		void make_move(const point& p);
 

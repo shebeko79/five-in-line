@@ -203,7 +203,7 @@ void node_t::process()
 	scr.cnt(prev_step.step) = 0;
 	rng = std::equal_range(rng.second,pts.end(), scr, pr);
 
-	if(mark_unchecked_make_move(rng, scores_field))
+	if(mark_unchecked_make_move(rng))
 		return;
 
 	scr.cnt(move_color) = 0;
@@ -221,7 +221,7 @@ void node_t::process()
 
 	auto cut_rng = rng;
 	process_oposite_forked(cut_rng);
-	if(mark_unchecked_make_move(cut_rng, scores_field))
+	if(mark_unchecked_make_move(cut_rng))
 		return;
 
 	scr.cnt(move_color) = kCount3*2;
@@ -229,7 +229,7 @@ void node_t::process()
 	rng = std::equal_range(rng.second,pts.end(), scr, pr);
 	cut_rng = rng;
 	process_oposite_forked(cut_rng);
-	if(mark_unchecked_make_move(cut_rng, scores_field))
+	if(mark_unchecked_make_move(cut_rng))
 		return;
 
 	if (deep >= common_deep || prove_mode&&move_color==st_krestik)
@@ -239,7 +239,7 @@ void node_t::process()
 	rng.second = pts.end();
 	cut_rng = rng;
 	process_oposite_forked(cut_rng);
-	if(mark_unchecked_make_move(cut_rng, scores_field))
+	if(mark_unchecked_make_move(cut_rng))
 		return;
 }
 
@@ -262,7 +262,7 @@ void node_t::process_oposite_forked(points_range& rng)
 	rng.second = std::remove_if(rng.first,rng.second,[this](const point& p){return !oposite_fork.inside(p);});
 }
 
-bool node_t::mark_unchecked_make_move(const points_range& rng, const matrix<score_t>& scores_field)
+bool node_t::mark_unchecked_make_move(const points_range& rng)
 {
 	if (deep_limit_reached)
 	{
@@ -272,7 +272,7 @@ bool node_t::mark_unchecked_make_move(const points_range& rng, const matrix<scor
 		return false;
 	}
 
-	std::sort(rng.first, rng.second, score_pr(scores_field, move_color));
+	std::sort(rng.first, rng.second, score_pr(player.field5, move_color));
 	return make_move_find_win(rng);
 }
 

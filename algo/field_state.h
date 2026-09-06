@@ -138,12 +138,12 @@ namespace Gomoku { namespace State5
 	
 	struct score_pr
 	{
-		const matrix<score_t>& scores_field;
+		const field5_t& field;
 		const Step move_color;
 		const int k;
 
-		score_pr(const matrix<score_t>& _scores_field, Step _move_color) :
-			scores_field(_scores_field),
+		score_pr(const field5_t& _field, Step _move_color) :
+			field(_field),
 			move_color(_move_color),
 			k(move_color==st_krestik? 1:-1)
 		{
@@ -151,9 +151,9 @@ namespace Gomoku { namespace State5
 
 		inline bool operator()(const point& pa, const point& pb) const
 		{
-			score_t sa = scores_field.get(pa);
-			score_t sb = scores_field.get(pb);
-			return k*sa.total(move_color) > k*sb.total(move_color);
+			Score sa = field.get_score(pa, move_color);
+			Score sb = field.get_score(pb, move_color);
+			return k*sa > k*sb;
 		}
 	};
 
