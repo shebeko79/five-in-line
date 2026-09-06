@@ -400,9 +400,24 @@ void CgomokuDlg::OnEditCopystate()
 {
     try
     {
-	    Gomoku::steps_t steps=game.field().get_steps();
-	    std::string str=print_steps(steps);
+        std::string str;
 
+        int startSel = 0;
+        int endSel = 0;
+        mLog.GetSel(startSel, endSel);
+        
+        if (startSel != endSel)
+        {
+            CString txt;
+            mLog.GetWindowText(txt);
+            str = txt.Mid(startSel, endSel - startSel).GetString();
+        }
+        else
+        {
+	        Gomoku::steps_t steps=game.field().get_steps();
+	        str=print_steps(steps);
+        }
+    
         HGLOBAL hMem =  GlobalAlloc(GMEM_MOVEABLE, str.size()+1);
         memcpy(GlobalLock(hMem), str.c_str(), str.size()+1);
         GlobalUnlock(hMem);
