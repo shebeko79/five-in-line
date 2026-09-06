@@ -195,100 +195,6 @@ namespace Gomoku { namespace State5
 		}
 	}
 
-	sorted_scores::sorted_scores()
-	{
-		p5.reserve(4);
-		p4h.reserve(8);
-		p4l.reserve(20);
-	}
-
-	bool sorted_scores::update(const point& pt, Score old_scr, Score new_scr)
-	{
-		unsigned old_step = max_step(old_scr);
-		unsigned new_step = max_step(new_scr);
-
-		if (old_step == new_step)
-		{
-			switch (new_step)
-			{
-			case 5:
-				break;
-			case 4:
-				if ((old_scr / kScore4 >= 2) == (new_scr / kScore4 >= 2))
-					return true;
-				break;
-			case 3:
-				if ((old_scr/kScore3 >= 2) == (new_scr/kScore3 >= 2))
-					return new_scr/kScore3 >= 2;
-				break;
-			default:
-				return false;
-			}
-		}
-
-		remove(pt, old_step, old_scr);
-		return add(pt, new_step, new_scr);
-	}
-	
-	bool sorted_scores::add(const point& pt, unsigned step, Score scr)
-	{
-		switch (step)
-		{
-		case 5:
-			insert(p5, pt);
-			return true;
-		case 4:
-			if(scr/kScore4>=2)
-				insert(p4h, pt);
-			else
-				sorted_insert(p4l, pt);
-			return true;
-		case 3:
-			if (scr / kScore3 >= 2)
-			{
-				p3h.insert(pt);
-				return true;
-			}
-			break;
-		}
-
-		return false;
-	}
-
-	void sorted_scores::remove(const point& pt, unsigned step, Score scr)
-	{
-		switch (step)
-		{
-		case 5:
-			erase(p5, pt);
-			break;
-		case 4:
-			if(scr/kScore4>=2)
-				erase(p4h, pt);
-			else
-				sorted_erase(p4l, pt);
-			break;
-		case 3:
-			if(scr/kScore3>=2)
-				p3h.erase(pt);
-			break;
-		}
-	}
-
-	void sorted_scores::log_statistic() const
-	{
-		ObjectProgress::log_generator lg(true);
-		
-		lg<<"Size: p5="<<p5.size()
-			<<" p4h="<<p4h.size()
-			<<" p4l="<<p4l.size()
-			<<" p3h="<<p3h.size();
-
-		//lg<<"Capacity: p5="<<p5.capacity()
-		//	<<" p4h="<<p4h.capacity()
-		//	<<" p4l="<<p4l.capacity();
-	}
-
 
 	void field5_t::change_state(const field_t& field)
 	{
@@ -305,8 +211,7 @@ namespace Gomoku { namespace State5
 	{
 		lines_field.clear();
 		scores_field.clear();
-		sorted_krestik = sorted_scores();
-		sorted_nolik = sorted_scores();
+		empty_points.clear();
 		field_score = 0;
 
 		field_t field;
@@ -373,14 +278,17 @@ namespace Gomoku { namespace State5
 	void field5_t::set_score(const point& pt, const score_t& new_scr)
 	{
 		score_t& old_scr = scores_field.get_ref(pt);
-		
-		bool krestik_updated = sorted_krestik.update(pt, old_scr.krestik_score, new_scr.krestik_score);
-		bool nolik_updated = sorted_nolik.update(pt, old_scr.nolik_score, new_scr.nolik_score);
-		
-		if (krestik_updated || nolik_updated || new_scr.krestik_score <=20 && new_scr.nolik_score <=20)
-			other_empty.erase(pt);
-		else
-			other_empty.insert(pt);
+
+		bool new_add = new_scr.krestik_score > 20 || new_scr.nolik_score > 20;
+		bool old_add = old_scr.krestik_score > 20 || old_scr.nolik_score > 20;
+
+		if (new_add != old_add)
+		{
+			if(new_add)
+				empty_points.insert(pt);
+			else
+				empty_points.erase(pt);
+		}
 
 		old_scr = new_scr;
 	}
@@ -410,4 +318,55 @@ namespace Gomoku { namespace State5
 		}
 	}
 
+
+	bool max_step_pr::operator()(const score_t& sa, const score_t& sb) const
+	{
+		Score move_a = sa.score(move_color);
+		Score opp_a = sa.score(oposite_color);
+
+		Score move_b = sb.score(move_color);
+		Score opp_b = sb.score(oposite_color);
+
+		
+		bool ba = move_a>=kScore5;
+		bool bb = move_b>=kScore5;
+		if(ba || bb)
+			return ba && !bb;
+
+		ba = opp_a>=kScore5;
+		bb = opp_b>=kScore5;
+		if(ba || bb)
+			return ba && !bb;
+
+
+		move_a %= kScore5;
+		opp_a %= kScore5;
+
+		move_b %= kScore5;
+		opp_b %= kScore5;
+
+		Score ca = move_a/kScore4;
+		Score cb = move_b/kScore4;
+		if(ca>=2 || cb>=2)
+			return ca>=2 && !(cb>=2);
+
+		if(ca==1 || cb==1)
+			return ca==1 && !(cb==1);
+
+		ca = opp_a/kScore4;
+		cb = opp_b/kScore4;
+		if(ca>=2 || cb>=2)
+			return ca>=2 && !(cb>=2);
+
+
+		move_a %= kScore4;
+		move_b %= kScore4;
+
+		ca = move_a/kScore3;
+		cb = move_b/kScore3;
+		if(ca>=2 || cb>=2)
+			return ca>=2 && !(cb>=2);
+
+		return false;
+	}
 } }

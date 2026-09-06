@@ -28,6 +28,7 @@ namespace Gomoku
 
 	typedef std::vector<step_t> steps_t;
 	typedef std::vector<point> points_t;
+	using points_range = std::pair<points_t::iterator, points_t::iterator>;
 
 	struct npoint : public point
 	{

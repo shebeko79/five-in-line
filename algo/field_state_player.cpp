@@ -53,11 +53,7 @@ node_t field_state_player_t::solve()
 		<<": time="<<perf<<" nodes="<<node_t::nodes_created<<" nps="<<nps;
 	lg<<"old_scores="<<field5.get_score()<<" new_scores="<<field5.get_score(p,root.move_color);
 	root.log_statistic();
-	lg<<"empty_count="<<(field5.get_sorted(st_krestik).size() + field5.get_sorted(st_krestik).size());
-	lg<<"Sorted krestik:";
-	field5.get_sorted(st_krestik).log_statistic();
-	lg<<"Sorted nolik:";
-	field5.get_sorted(st_nolik).log_statistic();
+	lg<<"empty_count="<<field5.get_empty_points().size();
 
 	
 	squeeze_win(root);
@@ -153,118 +149,137 @@ node_t::node_t(field_state_player_t& _player, const step_t& st, unsigned _deep, 
 
 void node_t::process()
 {
-	const sorted_scores& move_srt = player.field5.get_sorted(move_color);
-	const sorted_scores& other_srt = player.field5.get_sorted(prev_step.step);
+	points_t pts = set_to_point(player.field5.get_empty_points());
 
-	if (!move_srt.p5.empty())
+	auto& scores_field = player.field5.get_scores_field();
+	max_step_pr pr(scores_field, move_color);
+
+	sort(pts,pr);
+
+	score_t scr;
+	scr.score(move_color) = kScore5;
+	scr.score(prev_step.step) = 0;
+	auto rng = std::equal_range(pts.begin(),pts.end(), scr, pr);
+
+	if (rng.first != rng.second)
 	{
-		wins.push_back(npoint(move_srt.p5.front(),1));
+		wins.push_back(npoint(*rng.first,1));
 		return;
 	}
 
-	if (!other_srt.p5.empty())
+	scr.score(move_color) = 0;
+	scr.score(prev_step.step) = kScore5;
+	rng = std::equal_range(rng.second,pts.end(), scr, pr);
+
+	if (rng.first != rng.second)
 	{
-		if (other_srt.p5.size() > 1)
+		if (rng.second - rng.first > 1)
 		{
-			for(const point& p : other_srt.p5)
-				fails.emplace_back(npoint(p,2));
+			for(;rng.first != rng.second; ++rng.first)
+				fails.emplace_back(npoint(*rng.first,2));
 
 			return;
 		}
 
-		make_move(other_srt.p5.front());
+		make_move(*rng.first);
 		return;
 	}
 
 	if (deep >= threat_deep)
 		deep_limit_reached = true;
 
-	auto& scores_field = player.field5.get_scores_field();
+	scr.score(move_color) = kScore4*2;
+	scr.score(prev_step.step) = 0;
+	rng = std::equal_range(rng.second,pts.end(), scr, pr);
 
-	if (!move_srt.p4h.empty())
+	if (rng.first != rng.second)
 	{
-		wins.push_back(npoint(move_srt.p4h.front(),3));
+		wins.push_back(npoint(*rng.first,3));
 		return;
 	}
 
-	points_t pts = move_srt.p4l;
-	remove_if(pts, other_srt.p5_pr());
-	if(mark_unchecked_make_move(pts, scores_field))
+	scr.score(move_color) = kScore4;
+	scr.score(prev_step.step) = 0;
+	rng = std::equal_range(rng.second,pts.end(), scr, pr);
+
+	if(mark_unchecked_make_move(rng, scores_field))
 		return;
 
-	limit_to_p4_fork(other_srt);
+	scr.score(move_color) = 0;
+	scr.score(prev_step.step) = kScore4*2;
+	rng = std::equal_range(rng.second,pts.end(), scr, pr);
 
-	pts = other_srt.p4h;
-	remove_if(pts, move_srt.p4_pr());
-	process_oposite_forked(pts);
-	if(mark_unchecked_make_move(pts, scores_field))
+	points_t p4_pts(pts.begin(), rng.second);
+	remove_if(p4_pts, [&scores_field,cl = prev_step.step](const point& p)
+		{
+			Score scr = scores_field.get(p).score(cl) % kScore5;
+			return scr < kScore4*2;
+		});
+
+	limit_to_p4_fork(p4_pts);
+
+	auto cut_rng = rng;
+	process_oposite_forked(cut_rng);
+	if(mark_unchecked_make_move(cut_rng, scores_field))
 		return;
 
-	pts = set_to_point(move_srt.p3h);
-	remove_if(pts, other_srt.p4h_pr());
-	process_oposite_forked(pts);
-	if(mark_unchecked_make_move(pts, scores_field))
+	scr.score(move_color) = kScore3*2;
+	scr.score(prev_step.step) = 0;
+	rng = std::equal_range(rng.second,pts.end(), scr, pr);
+	cut_rng = rng;
+	process_oposite_forked(cut_rng);
+	if(mark_unchecked_make_move(cut_rng, scores_field))
 		return;
 
 	if (deep >= common_deep || prove_mode&&move_color==st_krestik)
 		deep_limit_reached = true;
 
-	const points_set_t& other_empty = player.field5.get_other_empty();
-
-	pts.reserve(other_srt.p4l.size()+other_srt.p3h.size()+other_empty.size());
-
-	pts = other_srt.p4l;
-	remove_if(pts, move_srt.p3h_pr());
-
-	size_t sz =pts.size();
-	pts.insert(pts.end(), other_srt.p3h.begin(), other_srt.p3h.end());
-	pts.erase(std::remove_if(pts.begin()+sz, pts.end(), move_srt.p3h_pr()), pts.end());
-
-	pts.insert(pts.end(), other_empty.begin(),other_empty.end());
-
-	process_oposite_forked(pts);
-	if(mark_unchecked_make_move(pts, scores_field))
+	rng.first = rng.second;
+	rng.second = pts.end();
+	cut_rng = rng;
+	process_oposite_forked(cut_rng);
+	if(mark_unchecked_make_move(cut_rng, scores_field))
 		return;
 }
 
-void node_t::process_oposite_forked(points_t& pts)
+void node_t::process_oposite_forked(points_range& rng)
 {
 	if (!oposite_fork.is_active())
 		return;
 
-	for (const point& p : pts)
+	for(auto p = rng.first; p != rng.second; ++p)
 	{
-		if (!oposite_fork.inside(p))
+		if (!oposite_fork.inside(*p))
 		{
 			if (deep > 0)
 				forced_max_fail = 4;
 			else
-				fails.emplace_back(npoint(p, 4));
+				fails.emplace_back(npoint(*p, 4));
 		}
 	}
 
-	pts.erase(std::remove_if(pts.begin(),pts.end(),[this](const point& p){return !oposite_fork.inside(p);}), pts.end());
+	rng.second = std::remove_if(rng.first,rng.second,[this](const point& p){return !oposite_fork.inside(p);});
 }
 
-bool node_t::mark_unchecked_make_move(points_t& pts, const matrix<score_t>& scores_field)
+bool node_t::mark_unchecked_make_move(const points_range& rng, const matrix<score_t>& scores_field)
 {
 	if (deep_limit_reached)
 	{
-		for(const point& p : pts)
-			neutrals.emplace_back(p, player.field5.get_score(p, move_color));
+		for(auto p = rng.first; p != rng.second; ++p)
+			neutrals.emplace_back(*p, player.field5.get_score(*p, move_color));
 		
 		return false;
 	}
 
-	sort(pts, score_pr(scores_field, move_color));
-	return make_move_find_win(pts);
+	std::sort(rng.first, rng.second, score_pr(scores_field, move_color));
+	return make_move_find_win(rng);
 }
 
-bool node_t::make_move_find_win(const points_t& pts)
+bool node_t::make_move_find_win(const points_range& rng)
 {
-	for (const point& p : pts)
+	for(auto p = rng.first; p != rng.second; ++p)
 	{
-		make_move(p);
+		make_move(*p);
 		if(!wins.empty())
 			return true;
 	}
@@ -308,14 +323,14 @@ void node_t::make_move(const point& p)
 	player.field.pop(old_bound);
 }
 
-void node_t::limit_to_p4_fork(const sorted_scores& other_srt)
+void node_t::limit_to_p4_fork(const points_t& other_p4h)
 {
-	if(other_srt.p4h.empty())
+	if(other_p4h.empty())
 		return;
 
 	const matrix<score_t>& scores_field = player.field5.get_scores_field();
 
-	for (const point& p : other_srt.p4h)
+	for(const auto& p : other_p4h)
 	{
 		auto count4 = scores_field.get(p).score(prev_step.step)/kScore4;
 

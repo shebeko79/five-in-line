@@ -50,6 +50,7 @@ namespace Gomoku { namespace State5
 		}
 
 		inline Score score(Step color) const {return color == st_krestik? krestik_score : nolik_score;}
+		inline Score& score(Step color) {return color == st_krestik? krestik_score : nolik_score;}
 	};
 
 	struct lines5_t
@@ -106,35 +107,6 @@ namespace Gomoku { namespace State5
 		void apply(matrix<lines5_t>& lines_field, const line_t& line, int dx, int dy) const;
 		void apply(const score_set& scr_set, const scores_t& line, int dx, int dy) const;
 	};
-
-	struct sorted_scores
-	{
-		points_t p5;
-		points_t p4h;
-		points_t p4l;
-		points_set_t p3h;
-
-		sorted_scores();
-		
-		bool update(const point& pt, Score old_scr, Score new_scr);
-
-		bool p5_exists(const point& p) const {return std::find(p5.begin(),p5.end(),p)!=p5.end();}
-		bool p4h_exists(const point& p) const {return std::find(p4h.begin(),p4h.end(),p)!=p4h.end();}
-		bool p4l_exists(const point& p) const {return binary_find(p4l.begin(),p4l.end(),p,less_point_pr())!=p4l.end();}
-		bool p3h_exists(const point& p) const {return p3h.find(p) != p3h.end();}
-
-		inline auto p5_pr()  const { return [this] (const point& p){return p5_exists(p);}; }
-		inline auto p4h_pr() const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p);}; }
-		inline auto p4_pr()  const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p) || p4l_exists(p);}; }
-		inline auto p3h_pr() const { return [this] (const point& p){return p5_exists(p) || p4h_exists(p) || p4l_exists(p) || p3h_exists(p);}; }
-
-		void log_statistic() const;
-		unsigned size() const {return p5.size() + p4h.size() + p4l.size() + p3h.size();}
-	private:
-		bool add(const point& pt, unsigned step, Score scr);
-		void remove(const point& pt, unsigned step, Score scr);
-	};
-
 	
 	class field5_t
 	{
@@ -146,9 +118,8 @@ namespace Gomoku { namespace State5
 		
 		void change_state(const field_t& field);
 		void set_steps(const field_t::steps_t& steps);
-		inline const sorted_scores& get_sorted(Step st) const {return st==st_krestik? sorted_krestik: sorted_nolik;};
 		inline const matrix<score_t>& get_scores_field() const {return scores_field;}
-		inline const points_set_t& get_other_empty() const {return other_empty;}
+		inline const points_set_t& get_empty_points() const {return empty_points;}
 
 		void iterate_involved_lines(const point& pt, const line_visitor& visitor);
 		
@@ -157,9 +128,7 @@ namespace Gomoku { namespace State5
 	private:
 		matrix<lines5_t> lines_field;
 		matrix<score_t> scores_field;
-		sorted_scores sorted_krestik;
-		sorted_scores sorted_nolik;
-		points_set_t other_empty;
+		points_set_t empty_points;
 		Score field_score = 0;
 		
 		void change_state(const field_t& field, int dx, int dy);
@@ -204,6 +173,39 @@ namespace Gomoku { namespace State5
 				return pa.i*k > pb.i*k;
 
 			return near_point_pr::operator()(pa,pb);
+		}
+	};
+
+	struct max_step_pr
+	{
+		const matrix<score_t>& scores_field;
+		const Step move_color;
+		const Step oposite_color;
+		const int k;
+
+		max_step_pr(const matrix<score_t>& _scores_field, Step _move_color) :
+			scores_field(_scores_field),
+			move_color(_move_color),
+			oposite_color(other_color(_move_color)),
+			k(move_color==st_krestik? 1:-1)
+		{
+		}
+
+		bool operator()(const score_t& sa, const score_t& sb) const;
+		
+		inline bool operator()(const point& pa, const point& pb) const
+		{
+			return operator()(scores_field.get(pa), scores_field.get(pb));
+		}
+
+		inline bool operator()(const score_t& sa, const point& pb) const
+		{
+			return operator()(sa, scores_field.get(pb));
+		}
+
+		inline bool operator()(const point& pa, const score_t& sb) const
+		{
+			return operator()(scores_field.get(pa), sb);
 		}
 	};
 
