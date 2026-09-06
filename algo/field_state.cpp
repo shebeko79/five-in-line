@@ -24,7 +24,7 @@ namespace Gomoku { namespace State5
 		return true;
 	}
 
-	Score line5_t::next_score(Step for_color) const
+	Score line5_t::next_cnt(Step for_color) const
 	{
 		if (steps == 0)
 			return 0;
@@ -35,19 +35,19 @@ namespace Gomoku { namespace State5
 		switch (steps)
 		{
 		case 2:
-			return kScore2;
+			return kCount2;
 		case 3:
-			return kScore3;
+			return kCount3;
 		case 4:
-			return kScore4;
+			return kCount4;
 		case 5:
-			return kScore5;
+			return kCount5;
 		}
 		
 		return 1;
 	}
 
-	Score line5_t::cur_score(Step for_color) const
+	Score line5_t::cur_cnt(Step for_color) const
 	{
 		if (steps == 0)
 			return 0;
@@ -60,11 +60,11 @@ namespace Gomoku { namespace State5
 		case 2:
 			return 1;
 		case 3:
-			return kScore2;
+			return kCount2;
 		case 4:
-			return kScore3;
+			return kCount3;
 		case 5:
-			return kScore4;
+			return kCount4;
 		}
 		
 		return 0;
@@ -83,45 +83,45 @@ namespace Gomoku { namespace State5
 		if(score == 0)
 			return 0;
 
-		if(score>=kScore5)
+		if(score>=kCount5)
 			return 5;
 
-		if(score>=kScore4)
+		if(score>=kCount4)
 			return 4;
 
-		if(score>=kScore3)
+		if(score>=kCount3)
 			return 3;
 
-		if(score>=kScore2)
+		if(score>=kCount2)
 			return 2;
 
 		return 1;
 	}
 
-	Score prev_score(Score score)
+	Score prev_cnt(Score score)
 	{
 		Score ret=0;
 
-		if (score >= kScore5)
+		if (score >= kCount5)
 		{
-			ret += score / kScore5 * kScore4;
-			score %= kScore5;
+			ret += score / kCount5 * kCount4;
+			score %= kCount5;
 		}
 
-		if (score >= kScore4)
+		if (score >= kCount4)
 		{
-			ret += score / kScore4 * kScore3;
-			score %= kScore4;
+			ret += score / kCount4 * kCount3;
+			score %= kCount4;
 		}
 
-		if (score >= kScore3)
+		if (score >= kCount3)
 		{
-			ret += score / kScore3 * kScore2;
-			score %= kScore3;
+			ret += score / kCount3 * kCount2;
+			score %= kCount3;
 		}
 
-		if (score >= kScore2)
-			ret += score / kScore2;
+		if (score >= kCount2)
+			ret += score / kCount2;
 
 		return ret;
 	}
@@ -245,8 +245,8 @@ namespace Gomoku { namespace State5
 		change_score(field,old_line,line,point(line_point.x + (2) * dx, line_point.y + (2) * dy));
 
 
-		field_score+= line.cur_score(st_krestik) - old_line.cur_score(st_krestik);
-		field_score-= line.cur_score(st_nolik) - old_line.cur_score(st_nolik);
+		field_score+= line.cur_cnt(st_krestik) - old_line.cur_cnt(st_krestik);
+		field_score-= line.cur_cnt(st_nolik) - old_line.cur_cnt(st_nolik);
 	}
 	
 	void field5_t::change_score(const field_t& field, const line5_t& old_line, const line5_t& new_line, const point& pt)
@@ -256,21 +256,21 @@ namespace Gomoku { namespace State5
 
 		score_t scr = scores_field.get(pt);
 
-		if (scr.krestik_score + new_line.next_score(st_krestik) < old_line.next_score(st_krestik))
+		if (scr.krestik_cnt + new_line.next_cnt(st_krestik) < old_line.next_cnt(st_krestik))
 		{
 			throw std::runtime_error("field5_t::change_score(st_krestik): <0");
 		}
 
-		if (scr.nolik_score + new_line.next_score(st_nolik) < old_line.next_score(st_nolik))
+		if (scr.nolik_cnt + new_line.next_cnt(st_nolik) < old_line.next_cnt(st_nolik))
 		{
 			throw std::runtime_error("field5_t::change_score(st_nolik): <0");
 		}
 
-		scr.krestik_score -= old_line.next_score(st_krestik);
-		scr.krestik_score += new_line.next_score(st_krestik);
+		scr.krestik_cnt -= old_line.next_cnt(st_krestik);
+		scr.krestik_cnt += new_line.next_cnt(st_krestik);
 
-		scr.nolik_score   -= old_line.next_score(st_nolik);
-		scr.nolik_score   += new_line.next_score(st_nolik);
+		scr.nolik_cnt   -= old_line.next_cnt(st_nolik);
+		scr.nolik_cnt   += new_line.next_cnt(st_nolik);
 		
 		set_score(pt, scr);
 	}
@@ -279,8 +279,8 @@ namespace Gomoku { namespace State5
 	{
 		score_t& old_scr = scores_field.get_ref(pt);
 
-		bool new_add = new_scr.krestik_score > 20 || new_scr.nolik_score > 20;
-		bool old_add = old_scr.krestik_score > 20 || old_scr.nolik_score > 20;
+		bool new_add = new_scr.krestik_cnt > 20 || new_scr.nolik_cnt > 20;
+		bool old_add = old_scr.krestik_cnt > 20 || old_scr.nolik_cnt > 20;
 
 		if (new_add != old_add)
 		{
@@ -321,40 +321,40 @@ namespace Gomoku { namespace State5
 
 	bool max_step_pr::operator()(const score_t& sa, const score_t& sb) const
 	{
-		Score move_a = sa.score(move_color);
-		Score opp_a = sa.score(oposite_color);
+		Score move_a = sa.cnt(move_color);
+		Score opp_a = sa.cnt(oposite_color);
 
-		Score move_b = sb.score(move_color);
-		Score opp_b = sb.score(oposite_color);
+		Score move_b = sb.cnt(move_color);
+		Score opp_b = sb.cnt(oposite_color);
 
 		
-		bool ba = move_a>=kScore5;
-		bool bb = move_b>=kScore5;
+		bool ba = move_a>=kCount5;
+		bool bb = move_b>=kCount5;
 		if(ba || bb)
 			return ba && !bb;
 
-		ba = opp_a>=kScore5;
-		bb = opp_b>=kScore5;
+		ba = opp_a>=kCount5;
+		bb = opp_b>=kCount5;
 		if(ba || bb)
 			return ba && !bb;
 
 
-		Score ca = move_a/kScore4;
-		Score cb = move_b/kScore4;
+		Score ca = move_a/kCount4;
+		Score cb = move_b/kCount4;
 		if(ca>=2 || cb>=2)
 			return ca>=2 && !(cb>=2);
 
 		if(ca==1 || cb==1)
 			return ca==1 && !(cb==1);
 
-		ca = opp_a/kScore4;
-		cb = opp_b/kScore4;
+		ca = opp_a/kCount4;
+		cb = opp_b/kCount4;
 		if(ca>=2 || cb>=2)
 			return ca>=2 && !(cb>=2);
 
 
-		ca = move_a/kScore3;
-		cb = move_b/kScore3;
+		ca = move_a/kCount3;
+		cb = move_b/kCount3;
 		if(ca>=2 || cb>=2)
 			return ca>=2 && !(cb>=2);
 

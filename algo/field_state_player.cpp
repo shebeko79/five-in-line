@@ -157,8 +157,8 @@ void node_t::process()
 	sort(pts,pr);
 
 	score_t scr;
-	scr.score(move_color) = kScore5;
-	scr.score(prev_step.step) = 0;
+	scr.cnt(move_color) = kCount5;
+	scr.cnt(prev_step.step) = 0;
 	auto rng = std::equal_range(pts.begin(),pts.end(), scr, pr);
 
 	if (rng.first != rng.second)
@@ -167,8 +167,8 @@ void node_t::process()
 		return;
 	}
 
-	scr.score(move_color) = 0;
-	scr.score(prev_step.step) = kScore5;
+	scr.cnt(move_color) = 0;
+	scr.cnt(prev_step.step) = kCount5;
 	rng = std::equal_range(rng.second,pts.end(), scr, pr);
 
 	if (rng.first != rng.second)
@@ -188,8 +188,8 @@ void node_t::process()
 	if (deep >= threat_deep)
 		deep_limit_reached = true;
 
-	scr.score(move_color) = kScore4*2;
-	scr.score(prev_step.step) = 0;
+	scr.cnt(move_color) = kCount4*2;
+	scr.cnt(prev_step.step) = 0;
 	rng = std::equal_range(rng.second,pts.end(), scr, pr);
 
 	if (rng.first != rng.second)
@@ -198,22 +198,22 @@ void node_t::process()
 		return;
 	}
 
-	scr.score(move_color) = kScore4;
-	scr.score(prev_step.step) = 0;
+	scr.cnt(move_color) = kCount4;
+	scr.cnt(prev_step.step) = 0;
 	rng = std::equal_range(rng.second,pts.end(), scr, pr);
 
 	if(mark_unchecked_make_move(rng, scores_field))
 		return;
 
-	scr.score(move_color) = 0;
-	scr.score(prev_step.step) = kScore4*2;
+	scr.cnt(move_color) = 0;
+	scr.cnt(prev_step.step) = kCount4*2;
 	rng = std::equal_range(rng.second,pts.end(), scr, pr);
 
 	points_t p4_pts(pts.begin(), rng.second);
 	remove_if(p4_pts, [&scores_field,cl = prev_step.step](const point& p)
 		{
-			Score scr = scores_field.get(p).score(cl) % kScore5;
-			return scr < kScore4*2;
+			Score scr = scores_field.get(p).cnt(cl) % kCount5;
+			return scr < kCount4*2;
 		});
 
 	limit_to_p4_fork(p4_pts);
@@ -223,8 +223,8 @@ void node_t::process()
 	if(mark_unchecked_make_move(cut_rng, scores_field))
 		return;
 
-	scr.score(move_color) = kScore3*2;
-	scr.score(prev_step.step) = 0;
+	scr.cnt(move_color) = kCount3*2;
+	scr.cnt(prev_step.step) = 0;
 	rng = std::equal_range(rng.second,pts.end(), scr, pr);
 	cut_rng = rng;
 	process_oposite_forked(cut_rng);
@@ -332,7 +332,7 @@ void node_t::limit_to_p4_fork(const points_t& other_p4h)
 
 	for(const auto& p : other_p4h)
 	{
-		auto count4 = scores_field.get(p).score(prev_step.step)/kScore4;
+		auto count4 = scores_field.get(p).cnt(prev_step.step)/kCount4;
 
 		fork_t f(p);
 		if(count4 == 2) 

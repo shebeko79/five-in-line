@@ -10,18 +10,13 @@ namespace Gomoku { namespace State5
 {
 	using Score = int;
 	
-	constexpr Score kScore2 = (1<<10);
-	constexpr Score kScore3 = (1<<18);
-	constexpr Score kScore4 = (1<<23);
-	constexpr Score kScore5 = (1<<27);
+	constexpr Score kCount2 = (1<<10);
+	constexpr Score kCount3 = (1<<18);
+	constexpr Score kCount4 = (1<<23);
+	constexpr Score kCount5 = (1<<27);
 
 	unsigned max_step(Score score);
-	Score prev_score(Score score);
-
-	inline Score best_fscore(Score a, Score b, Step move_color)
-	{
-		return (move_color == st_krestik) == (a>b)? a : b;
-	}
+	Score prev_cnt(Score score);
 
 	struct line5_t
 	{
@@ -29,28 +24,28 @@ namespace Gomoku { namespace State5
 		unsigned steps = 1; //number of steps made if we move here
 		
 		bool adjust(Step new_color);
-		Score next_score(Step for_color) const;
-		Score cur_score(Step for_color) const;
+		Score next_cnt(Step for_color) const;
+		Score cur_cnt(Step for_color) const;
 	};
 
 	struct score_t
 	{
-		Score krestik_score = 20;
-		Score nolik_score = 20;
+		Score krestik_cnt = 20;
+		Score nolik_cnt = 20;
 		
 		score_t() = default;
-		score_t(Score k, Score n) : krestik_score(k), nolik_score(n) {}
+		score_t(Score k, Score n) : krestik_cnt(k), nolik_cnt(n) {}
 		
 		inline Score total(Step move_color) const 
 		{
 			if(move_color == st_krestik)
-				return krestik_score-prev_score(krestik_score)+prev_score(nolik_score);
+				return krestik_cnt-prev_cnt(krestik_cnt)+prev_cnt(nolik_cnt);
 			else
-				return -nolik_score+prev_score(nolik_score)-prev_score(krestik_score);
+				return -nolik_cnt+prev_cnt(nolik_cnt)-prev_cnt(krestik_cnt);
 		}
 
-		inline Score score(Step color) const {return color == st_krestik? krestik_score : nolik_score;}
-		inline Score& score(Step color) {return color == st_krestik? krestik_score : nolik_score;}
+		inline Score cnt(Step color) const {return color == st_krestik? krestik_cnt : nolik_cnt;}
+		inline Score& cnt(Step color) {return color == st_krestik? krestik_cnt : nolik_cnt;}
 	};
 
 	struct lines5_t
