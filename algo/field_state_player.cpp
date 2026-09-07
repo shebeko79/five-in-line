@@ -429,12 +429,22 @@ void node_t::log_statistic() const
 	{
 		ipoints_t tmp = neutrals;
 		std::stable_sort(tmp.begin(),tmp.end(), fscore_pr(move_color));
-		if (tmp.size() <= 100)
+		
+		ipoints_t tmpf = tmp;
+		for(auto& p : tmpf)
+			p.i = player.field5.get_score(p, move_color);
+
+		if (tmp.size() <= 10)
+		{
 			lg << "Neutrals: " << print_points(tmp);
+			lg << "Near est: " << print_points(tmpf);
+		}
 		else
 		{
 			tmp.resize(10);
+			tmpf.resize(10);
 			lg << "Neutrals: " << print_points(tmp)<<"...";
+			lg << "Near est: " << print_points(tmpf);
 		}
 	}
 }
