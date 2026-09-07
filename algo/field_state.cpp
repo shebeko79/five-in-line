@@ -6,6 +6,48 @@
 
 namespace Gomoku { namespace State5
 {
+	lines_count_t::lines_count_t(Score cnt)
+	{
+		l5 = cnt/kCount5;
+		cnt%=kCount5;
+
+		l4 = cnt/kCount4;
+		cnt%=kCount4;
+
+		l3 = cnt/kCount3;
+		cnt%=kCount3;
+
+		l2 = cnt/kCount2;
+		cnt%=kCount2;
+	}
+
+	void lines_count_t::operator+=(const lines_count_t& rhs)
+	{
+		l5 += rhs.l5;
+		l4 += rhs.l4;
+		l3 += rhs.l3;
+		l2 += rhs.l2;
+	}
+
+	void lines_count_t::operator-=(const lines_count_t& rhs)
+	{
+		l5 -= rhs.l5;
+		l4 -= rhs.l4;
+		l3 -= rhs.l3;
+		l2 -= rhs.l2;
+	}
+
+	Score lines_count_t::score() const
+	{
+		return l5*kScore5 + l4*kScore4 + l3*kScore3 + l2;
+	}
+
+	void lines_count_t::log_statistic() const
+	{
+		ObjectProgress::log_generator lg(true);
+		lg<<"l5="<<l5<<" l4="<<l4<<" l3="<<l3<<" l2="<<l2;
+	}
+
 	bool line5_t::adjust(Step new_color)
 	{
 		if (steps == 0)
@@ -212,7 +254,8 @@ namespace Gomoku { namespace State5
 		lines_field.clear();
 		scores_field.clear();
 		empty_points.clear();
-		field_score = 0;
+		field_krestik = lines_count_t();
+		field_nolik = lines_count_t();
 
 		field_t field;
 		for (const auto& st : steps)
@@ -245,8 +288,11 @@ namespace Gomoku { namespace State5
 		change_score(field,old_line,line,point(line_point.x + (2) * dx, line_point.y + (2) * dy));
 
 
-		field_score+= line.cur_cnt(st_krestik) - old_line.cur_cnt(st_krestik);
-		field_score-= line.cur_cnt(st_nolik) - old_line.cur_cnt(st_nolik);
+		field_krestik+=     line.cur_cnt(st_krestik);
+		field_krestik-= old_line.cur_cnt(st_krestik);
+
+		field_nolik+=     line.cur_cnt(st_nolik);
+		field_nolik-= old_line.cur_cnt(st_nolik);
 	}
 	
 	void field5_t::change_score(const field_t& field, const line5_t& old_line, const line5_t& new_line, const point& pt)
@@ -296,7 +342,8 @@ namespace Gomoku { namespace State5
 	void field5_t::apply_shapshot(const snapshot_t& snapshot)
 	{
 		snapshot.apply(lines_field, [this](const point& pt,const score_t& scr) {set_score(pt,scr);});
-		field_score = snapshot.field_score;
+		field_krestik = snapshot.field_krestik;
+		field_nolik = snapshot.field_nolik;
 	}
 
 	void field5_t::iterate_involved_lines(const point& pt, const line_visitor& visitor)
@@ -318,6 +365,33 @@ namespace Gomoku { namespace State5
 		}
 	}
 
+	Score field5_t::get_score(const point& p, Step move_color) const
+	{
+		Score ret = field_krestik.score() - field_nolik.score();
+		
+		auto p_scr = scores_field.get(p);
+
+		if (move_color == st_krestik)
+		{
+			lines_count_t move(p_scr.krestik_cnt);
+			move-= prev_cnt(p_scr.krestik_cnt);
+
+			lines_count_t opp(prev_cnt(p_scr.nolik_cnt));
+
+			ret+= move.score() + opp.score();
+		}
+		else
+		{
+			lines_count_t move(p_scr.nolik_cnt);
+			move-= prev_cnt(p_scr.nolik_cnt);
+
+			lines_count_t opp(prev_cnt(p_scr.krestik_cnt));
+
+			ret-= move.score() + opp.score();
+		}
+
+		return ret;
+	}
 
 	bool max_step_pr::operator()(const score_t& sa, const score_t& sb) const
 	{

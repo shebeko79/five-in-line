@@ -10,10 +10,14 @@ namespace Gomoku { namespace State5
 {
 	using Score = int;
 	
-	constexpr Score kCount2 = (1<<10);
-	constexpr Score kCount3 = (1<<18);
-	constexpr Score kCount4 = (1<<23);
-	constexpr Score kCount5 = (1<<27);
+	constexpr Score kCount2 = (1<<5);
+	constexpr Score kCount3 = (1<<10);
+	constexpr Score kCount4 = (1<<15);
+	constexpr Score kCount5 = (1<<20);
+
+	constexpr Score kScore3 = 6;
+	constexpr Score kScore4 = 17;
+	constexpr Score kScore5 = 33;
 
 	unsigned max_step(Score score);
 	Score prev_cnt(Score score);
@@ -36,16 +40,25 @@ namespace Gomoku { namespace State5
 		score_t() = default;
 		score_t(Score k, Score n) : krestik_cnt(k), nolik_cnt(n) {}
 		
-		inline Score total(Step move_color) const 
-		{
-			if(move_color == st_krestik)
-				return krestik_cnt-prev_cnt(krestik_cnt)+prev_cnt(nolik_cnt);
-			else
-				return -nolik_cnt+prev_cnt(nolik_cnt)-prev_cnt(krestik_cnt);
-		}
-
 		inline Score cnt(Step color) const {return color == st_krestik? krestik_cnt : nolik_cnt;}
 		inline Score& cnt(Step color) {return color == st_krestik? krestik_cnt : nolik_cnt;}
+	};
+
+	struct lines_count_t
+	{
+		Score l5 = 0;
+		Score l4 = 0;
+		Score l3 = 0;
+		Score l2 = 0;
+
+		lines_count_t() = default;
+		lines_count_t(Score cnt);
+
+		void operator+=(const lines_count_t& rhs);
+		void operator-=(const lines_count_t& rhs);
+		Score score() const;
+
+		void log_statistic() const;
 	};
 
 	struct lines5_t
@@ -77,13 +90,16 @@ namespace Gomoku { namespace State5
 		scores_t tbs;
 		scores_t bts;
 
-		Score field_score;
+		lines_count_t field_krestik;
+		lines_count_t field_nolik;
 
 		snapshot_t() = default;
-		snapshot_t(const step_t& _st, const matrix<lines5_t>& lines_field, const matrix<score_t>& scores_field, Score _field_score) : 
+		snapshot_t(const step_t& _st, const matrix<lines5_t>& lines_field, const matrix<score_t>& scores_field, 
+			const lines_count_t& _field_krestik, const lines_count_t& _field_nolik) : 
 			st(_st),
 			central_s(scores_field.get(_st)),
-			field_score(_field_score)
+			field_krestik(_field_krestik),
+			field_nolik(_field_nolik)
 		{
 			fill(lines_field); 
 			fill(scores_field); 
@@ -108,23 +124,25 @@ namespace Gomoku { namespace State5
 	public:
 		using line_visitor = std::function<void (const point& line_point,const line5_t& line, int dx, int dy)>;
 
-		snapshot_t make_snapshot(const step_t& st) const { return snapshot_t(st, lines_field, scores_field, field_score); }
+		snapshot_t make_snapshot(const step_t& st) const { return snapshot_t(st, lines_field, scores_field, field_krestik, field_nolik); }
 		void apply_shapshot(const snapshot_t& snapshot);
 		
 		void change_state(const field_t& field);
 		void set_steps(const field_t::steps_t& steps);
 		inline const matrix<score_t>& get_scores_field() const {return scores_field;}
 		inline const points_set_t& get_empty_points() const {return empty_points;}
+		inline const lines_count_t& get_field_krestik() const {return field_krestik;}
+		inline const lines_count_t& get_field_nolik() const {return field_nolik;}
 
 		void iterate_involved_lines(const point& pt, const line_visitor& visitor);
 		
-		inline Score get_score() const {return field_score;}
-		inline Score get_score(const point& p, Step move_color) const {return field_score + scores_field.get(p).total(move_color);}
+		Score get_score(const point& p, Step move_color) const;
 	private:
 		matrix<lines5_t> lines_field;
 		matrix<score_t> scores_field;
 		points_set_t empty_points;
-		Score field_score = 0;
+		lines_count_t field_krestik;
+		lines_count_t field_nolik;
 		
 		void change_state(const field_t& field, int dx, int dy);
 		void change_line(const field_t& field,Step color, const point& line_point, int dx, int dy);
