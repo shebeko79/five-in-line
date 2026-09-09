@@ -236,8 +236,10 @@ void node_t::process()
 	if(mark_unchecked_make_move(cut_rng))
 		return;
 
-	if (deep >= common_deep || prove_mode&&move_color==st_krestik)
+	if (deep >= common_deep)
 		deep_limit_reached = true;
+	else if(prove_mode&&move_color==st_krestik)
+		threat_deep = std::min(common_deep+2,threat_deep);
 
 	rng.first = rng.second;
 	rng.second = pts.end();

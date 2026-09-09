@@ -81,7 +81,7 @@ namespace Gomoku { namespace State5
 	public:
 		const step_t prev_step;
 		const unsigned deep;
-		const unsigned threat_deep;
+		unsigned threat_deep;
 		const Step move_color;
 
 		node_t(field_state_player_t& _player, const step_t& st, unsigned _deep, unsigned _threat_deep);
