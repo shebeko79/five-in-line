@@ -661,10 +661,9 @@ namespace Gomoku
 
 		if (!is_completed())
 		{
-			Step move_color = next_color(key.size());
 			auto sa = best_neutral_score();
 			auto sb = rhs.best_neutral_score();
-			return move_color==st_krestik? sa>sb : sa<sb;
+			return sa != sb;
 		}
 
 		if(is_win() != rhs.is_win())
