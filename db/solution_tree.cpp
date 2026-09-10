@@ -208,7 +208,14 @@ namespace Gomoku
 
 		set(st);
 
-		if(first_solving.get_sorted_key()==st.key)
+
+		steps_t sa = first_solving.key;
+		Symmetry::normalize(sa);
+		
+		steps_t sb = st.key;
+		Symmetry::normalize(sb);
+
+		if(sa == sb)
 		{
 			if(!rewind_to_not_solved(true,first_solving))
 				first_solving=last_solving;

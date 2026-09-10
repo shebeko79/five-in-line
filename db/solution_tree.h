@@ -55,13 +55,6 @@ namespace Gomoku
 
 		inline bool empty() const{return key.empty();}
 
-		steps_t get_sorted_key() const
-		{
-			steps_t ret=key;
-			sort_steps(ret);
-			return ret;
-		}
-
 		const ipoints_t& get_key_neutrals(size_t cur_key_size) const;
 		void trunc_to_key_size(size_t cur_key_size);
 		inline size_t get_root_key_size() const{return key.size()-neutrals.size();}
