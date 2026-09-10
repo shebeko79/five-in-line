@@ -289,6 +289,8 @@ namespace Gomoku
 		std::sort(begin(arr),end(arr),pr);
 	}
 
+	extern rect small_bound;
+
 }//namespace gomoku
 
 namespace std

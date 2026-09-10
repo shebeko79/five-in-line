@@ -388,19 +388,36 @@ namespace Gomoku
 
 		Step move_color = next_color(root_key.size());
 
-		ipoints_t::iterator it;
+		point move_point;
 
-		if (move_color == st_nolik || rand() % 100 == 0)
+		if (move_color == st_nolik)
 		{
-			it = base_st.neutrals.begin() + (rand()%base_st.neutrals.size());
+			move_point = base_st.neutrals[rand()%base_st.neutrals.size()];
 		}
 		else
 		{
-			it = std::min_element(base_st.neutrals.begin(), base_st.neutrals.end(), State5::fscore_pr(move_color));
+			auto frac = rand()%20;
+			bool point_selected = false;
+
+			if (frac == 0)
+			{
+				ipoints_t close_points(base_st.neutrals);
+				remove_if(close_points, [](const point& p) {return !(small_bound&p);});
+				
+				if (!close_points.empty())
+				{
+					move_point = close_points[rand() % close_points.size()];
+					point_selected = true;
+				}
+			}
+
+			if(!point_selected)
+				move_point = *std::min_element(base_st.neutrals.begin(), base_st.neutrals.end(), State5::fscore_pr(move_color));
 		}
+			
 
 		steps_t child_st = root_key;
-		child_st.push_back(step_t(move_color, *it));
+		child_st.push_back(step_t(move_color, move_point));
 
 		return get_ant_job(child_st, result_key);
     }

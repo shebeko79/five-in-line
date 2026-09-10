@@ -9,6 +9,9 @@
 
 namespace Gomoku
 {
+	rect small_bound(-5,-5,5,5);
+
+
 	field_t::field_t()
 	{
 		bound=rect_inverse_infinity();
