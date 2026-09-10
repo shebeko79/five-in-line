@@ -119,7 +119,7 @@ namespace Gomoku
 
         void scan_already_solved_neutrals(sol_state_t& base_st);
 		
-		bool get_root_first_deep(deep_solve_t& _val);
+		bool get_root_first_deep(deep_solve_t& _val, const steps_t& root_key);
 		bool get_first_deep(deep_solve_t& val,unsigned max_key_size);
 
         template<typename T>
@@ -132,9 +132,8 @@ namespace Gomoku
 
 		void init(const std::string& _base_dir);
 
-		bool get_job(steps_t& key);
-		bool get_ant_job(steps_t& key);
-        bool get_ant_job(const steps_t& base_st_key, steps_t& key);
+		bool get_job(const steps_t& root_key, steps_t& key);
+        bool get_ant_job(const steps_t& root_key, steps_t& key);
 		void save_job(const steps_t& key,const ipoints_t& neutrals,const npoints_t& win,const npoints_t& fails);
 
 		bool get(sol_state_t& res) const;

@@ -61,10 +61,10 @@ namespace Gomoku
 		return db.get_root_key();
 	}
 
-	bool solution_tree_t::get_root_first_deep(deep_solve_t& _val)
+	bool solution_tree_t::get_root_first_deep(deep_solve_t& _val, const steps_t& root_key)
 	{
 		deep_solve_t val;
-		val.key=get_root_key();
+		val.key=root_key;
 		if(val.key.empty())return false;
 		
 		if(!get_first_deep(val,(unsigned)-1))return false;
@@ -106,11 +106,21 @@ namespace Gomoku
 		return false;
 	}
 
-	bool solution_tree_t::get_job(steps_t& key)
+	bool solution_tree_t::get_job(const steps_t& root_key, steps_t& key)
 	{
+		if(last_solving.key.size() < root_key.size()||
+		  first_solving.key.size() < root_key.size()||
+		  !std::equal(root_key.begin(), root_key.end(),last_solving.key.begin())||
+		  !std::equal(root_key.begin(), root_key.end(),first_solving.key.begin())  )
+		{
+			first_solving = deep_solve_t();
+			last_solving  = deep_solve_t();
+		}
+
+
 		if(last_solving.empty())
 		{
-			if(!get_root_first_deep(last_solving))return false;
+			if(!get_root_first_deep(last_solving, root_key))return false;
 			first_solving=last_solving;
 			key=last_solving.key;
 
@@ -136,7 +146,7 @@ namespace Gomoku
 			return true;
 		}
 
-		if(!get_root_first_deep(last_solving))return false;
+		if(!get_root_first_deep(last_solving, root_key))return false;
 		first_solving=last_solving;
 		key=last_solving.key;
 
@@ -362,15 +372,10 @@ namespace Gomoku
             throw std::runtime_error("check_really_unique() failed: key="+print_steps(key)+" "+vals_name+"="+print_points(vals));
     }
 
-	bool solution_tree_t::get_ant_job(steps_t& key)
-	{
-        return get_ant_job(get_root_key(),key);
-	}
-    
-    bool solution_tree_t::get_ant_job(const steps_t& base_st_key, steps_t& result_key)
+    bool solution_tree_t::get_ant_job(const steps_t& root_key, steps_t& result_key)
     {
 		sol_state_t base_st;
-		base_st.key=base_st_key;
+		base_st.key=root_key;
 
 		if(!get(base_st))
 		{
@@ -381,7 +386,7 @@ namespace Gomoku
 		if(base_st.is_completed())
 			return false;
 
-		Step move_color = next_color(base_st_key.size());
+		Step move_color = next_color(root_key.size());
 
 		ipoints_t::iterator it;
 
@@ -394,7 +399,7 @@ namespace Gomoku
 			it = std::min_element(base_st.neutrals.begin(), base_st.neutrals.end(), State5::fscore_pr(move_color));
 		}
 
-		steps_t child_st = base_st_key;
+		steps_t child_st = root_key;
 		child_st.push_back(step_t(move_color, *it));
 
 		return get_ant_job(child_st, result_key);

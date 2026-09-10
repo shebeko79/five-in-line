@@ -30,13 +30,13 @@ namespace fs=std::filesystem;
 void print_use()
 {
 	printf("USE: \n");
-	printf("db <root_dir> get_job\n");
+	printf("db <root_dir> get_job [root_key]\n");
 	printf("db <root_dir> get_ant_job [root_key]\n");
 	printf("db <root_dir> save_job <file_name>\n");
 	printf("db <root_dir> get <key>\n");
 	printf("db <root_dir> view <printable_steps>\n");
 	printf("db <root_dir> view_root\n");
-	printf("db <root_dir> solve_level [iteration_count]\n");
+	printf("db <root_dir> solve_level [root_key] [iteration_count]\n");
 	printf("db <root_dir> solve_ant [root_key] [iteration_count]\n");
 	printf("db <root_dir> fix_zero_fails\n");
 	printf("db <root_dir> relax <key>\n");
@@ -104,7 +104,7 @@ void set_ctrl_handler()
 #endif
 }
 
-void self_solve(solution_tree_t& tr,size_t iteration_count,const steps_t& root_key=steps_t(),bool use_ant=false)
+void self_solve(solution_tree_t& tr,size_t iteration_count,const steps_t& root_key, bool use_ant=false)
 {
     scan_enviropment_variables();
 
@@ -133,12 +133,9 @@ void self_solve(solution_tree_t& tr,size_t iteration_count,const steps_t& root_k
 		steps_t key;
         bool r;
         if(use_ant)
-        {
-            if(!root_key.empty())r=tr.get_ant_job(root_key,key);
-            else r=tr.get_ant_job(key);
-
-        }
-        else r=tr.get_job(key);
+			r=tr.get_ant_job(root_key, key);
+        else
+			r=tr.get_job(root_key, key);
 
 		if(!r)
 		{
@@ -300,20 +297,15 @@ int main(int argc,char** argv)
 		if(cmd=="get_job" ||cmd=="get_ant_job")
 		{
 			steps_t key;
-            
+			steps_t root_key;
+			if (argc <4)
+				root_key = tr.get_root_key();
+			else
+				hex_or_str2points(argv[3],root_key);
             
             bool r;
-            if(cmd=="get_job") r=tr.get_job(key);
-            else
-            {
-                if(argc<4)r=tr.get_ant_job(key);
-                else
-                {
-                    steps_t root_key;
-                    hex_or_str2points(argv[3],root_key);
-                    r=tr.get_ant_job(root_key,key);
-                }
-            }
+            if(cmd=="get_job") r=tr.get_job(root_key,key);
+            else r=tr.get_ant_job(root_key,key);
 
 			if(!r)
 			{
@@ -414,14 +406,7 @@ int main(int argc,char** argv)
 			if(!show_state(tr,req))
 				return 1;
 		}
-		else if (cmd=="solve_level")
-		{
-			int iter_count=0;
-
-			if(argc>=4)iter_count=atol(argv[3]);
-			self_solve(tr,iter_count);
-		}
-		else if (cmd=="solve_ant")
+		else if (cmd=="solve_level" || cmd=="solve_ant")
 		{
 			int iter_count=0;
             steps_t root_key;
@@ -429,7 +414,7 @@ int main(int argc,char** argv)
             if(argc>=4)hex_or_str2points(argv[3],root_key);
             if(argc>=5)iter_count=atol(argv[4]);
 
-			self_solve(tr,iter_count,root_key,true);
+			self_solve(tr,iter_count,root_key, cmd=="solve_ant");
 		}
 		else if(cmd=="fix_zero_fails")
 		{
