@@ -29,9 +29,7 @@ std::string symmetry_test::minimize(const std::string& steps_str)
 {
 	steps_t steps = scan_steps(steps_str);
 
-	auto tr = Symmetry::minimal(steps);
-	Symmetry::transform(steps, tr);
-	sort_steps(steps);
+	Symmetry::normalize(steps);
 	return print_steps(steps);
 }
 

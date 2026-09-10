@@ -238,8 +238,7 @@ namespace Gomoku
 		}
 
 		steps_t min_child_key = child_st.key;
-		Symmetry::transform(min_child_key,Symmetry::minimal(min_child_key));
-		sort_steps(min_child_key);
+		Symmetry::normalize(min_child_key);
 
 		for(size_t i=0;i<child_st.key.size();i++)
 		{
@@ -264,8 +263,7 @@ namespace Gomoku
 				{
 					static_cast<point&>(scratch_key.back())=pn;
 					steps_t cmp_key = scratch_key;
-					Symmetry::transform(cmp_key,Symmetry::minimal(cmp_key));
-					sort_steps(cmp_key);
+					Symmetry::normalize(cmp_key);
 					if(cmp_key != min_child_key)
 						continue;
 
@@ -281,8 +279,7 @@ namespace Gomoku
 
 				static_cast<point&>(scratch_key.back())=pn;
 				steps_t cmp_key = scratch_key;
-				Symmetry::transform(cmp_key,Symmetry::minimal(cmp_key));
-				sort_steps(cmp_key);
+				Symmetry::normalize(cmp_key);
 				if(cmp_key != min_child_key)
 					continue;
 

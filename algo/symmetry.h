@@ -10,17 +10,6 @@ namespace Gomoku { namespace Symmetry
 
 	struct tr_agregate;
 
-	
-	tr_agregate minimal(const steps_t& steps);
-
-	template<typename T>
-	inline void transform(std::vector<T>& points, itrans& tr)
-	{
-		for(auto& p : points)
-			tr.transform(p);
-	}
-
-
 	struct itrans
 	{
 		virtual ~itrans() {}
@@ -35,6 +24,22 @@ namespace Gomoku { namespace Symmetry
 		itrans_ptr invert() const override;
 	};
 	
+	tr_agregate minimal(const steps_t& steps);
+
+	template<typename T>
+	inline void transform(std::vector<T>& points, itrans& tr)
+	{
+		for(auto& p : points)
+			tr.transform(p);
+	}
+
+	inline void normalize(steps_t& steps)
+	{
+		transform(steps, minimal(steps));
+		sort_steps(steps);
+	}
+
+
 	struct tr_flip_x : public itrans
 	{
 		void transform(point& p) const override {p.x = -p.x;}
