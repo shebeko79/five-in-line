@@ -181,25 +181,26 @@ namespace Gomoku
         }
     }
 
-    size_t normalize_marks_select_shift(std::vector<double>& marks)
+    npoints_t::const_iterator select_random_point(npoints_t& pts)
     {
-        double max_rate=std::accumulate(marks.begin(),marks.end(),0.0);
+        unsigned max_rate=0;
+		for(const auto& p : pts)
+			max_rate +=p.n;
 
-        double adj=0;
-        for(size_t i=0;i<marks.size();i++)
+		double r=static_cast<double>(rand())/RAND_MAX;
+
+		unsigned v=0;
+
+		for(npoints_t::const_iterator i = pts.begin(); i != pts.end(); ++i)
         {
-            double v=marks[i]/max_rate;
-            adj+=v;
-            marks[i]=adj;
+			const auto& p = *i;
+			
+			v+=p.n;
+			if(static_cast<double>(v)/max_rate >= r)
+				return i;
         }
 
-        double r=static_cast<double>(rand())/RAND_MAX;
-
-        std::vector<double>::const_iterator it=std::lower_bound(marks.begin(),marks.end(),r);
-        if(it==marks.end())
-            --it;
-
-        return it-marks.begin();
+		return pts.end();
     }
 
 	void reorder_to_proper_last_color(steps_t& steps)

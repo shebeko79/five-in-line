@@ -122,6 +122,8 @@ namespace Gomoku
 		bool get_root_first_deep(deep_solve_t& _val, const steps_t& root_key);
 		bool get_first_deep(deep_solve_t& val,unsigned max_key_size);
 
+		npoints_t get_sublings_wins(const steps_t& asking_key);
+
         template<typename T>
         static void check_really_unique(const steps_t& key,const std::vector<T>& vals,const std::string& vals_name);
 	public:

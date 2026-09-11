@@ -326,6 +326,64 @@ namespace Gomoku
 		}
 	}
 
+	npoints_t solution_tree_t::get_sublings_wins(const steps_t& asking_key)
+	{
+		points_t all_wins;
+
+		Step cur_step=last_color(asking_key.size());
+		
+		sol_state_t prev_st;
+
+		for(size_t i=0;i<asking_key.size();i++)
+		{
+			const step_t& st=asking_key[i];
+			if(st.step!=cur_step)continue;
+
+			prev_st.key=asking_key;
+			prev_st.key.erase(prev_st.key.begin()+i);
+
+			if(!get(prev_st))continue;
+
+			steps_t scratch_key = prev_st.key;
+			scratch_key.push_back(st);
+
+			for (const auto& p : prev_st.tree_fails)
+			{
+				static_cast<point&>(scratch_key.back())=p;
+
+				sol_state_t st;
+				st.key = scratch_key;
+				
+				if(!get(st))
+					continue;
+
+				all_wins.insert(all_wins.end(),st.tree_wins.begin(),st.tree_wins.end());
+			}
+		}
+
+		npoints_t ret;
+
+		if(all_wins.empty())
+			return ret;
+
+		sort(all_wins,less_point_pr());
+
+		auto it = all_wins.begin();
+		ret.push_back(npoint(*it,1));
+		
+		for (; it != all_wins.end();++it)
+		{
+			auto& p = ret.back();
+
+			if (static_cast<point&>(p) == *it)
+				++p.n;
+			else
+				ret.push_back(npoint(*it,1));
+		}
+
+		return ret;
+	}
+
     void solution_tree_t::scan_already_solved_neutrals(sol_state_t& base_st)
     {
 		Step next_step=next_color(base_st.key.size());
@@ -396,10 +454,10 @@ namespace Gomoku
 		}
 		else
 		{
-			auto frac = rand()%20;
+			auto rnd = rand();
 			bool point_selected = false;
 
-			if (frac == 0)
+			if (rnd%20 == 0)
 			{
 				ipoints_t close_points(base_st.neutrals);
 				remove_if(close_points, [](const point& p) {return !(small_bound&p);});
@@ -407,6 +465,23 @@ namespace Gomoku
 				if (!close_points.empty())
 				{
 					move_point = close_points[rand() % close_points.size()];
+					point_selected = true;
+				}
+			}
+			else if (rnd%11 == 0)
+			{
+				npoints_t sublings_wins = get_sublings_wins(root_key);
+
+				remove_if(sublings_wins, [&base_st](const point& p)
+					{
+						return std::find(base_st.neutrals.begin(),base_st.neutrals.end(),p) == base_st.neutrals.end();
+					});
+
+				auto it = select_random_point(sublings_wins);
+
+				if (it != sublings_wins.end())
+				{
+					move_point = *it;
 					point_selected = true;
 				}
 			}
