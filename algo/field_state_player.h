@@ -122,6 +122,8 @@ namespace Gomoku { namespace State5
 
 		void limit_to_p4_fork(const points_t& other_p4h);
 		void process_oposite_forked(points_range& rng);
+
+		void recalc_most_promising_neutrals();
 	};
 
 

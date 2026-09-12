@@ -236,6 +236,8 @@ void node_t::process()
 	if(mark_unchecked_make_move(cut_rng))
 		return;
 
+	auto old_threat_deep = threat_deep;
+
 	if (deep >= common_deep)
 		deep_limit_reached = true;
 	else if(prove_mode&&move_color==st_krestik)
@@ -246,6 +248,30 @@ void node_t::process()
 	cut_rng = rng;
 	process_oposite_forked(cut_rng);
 	if(mark_unchecked_make_move(cut_rng))
+		return;
+
+	if (deep < common_deep && prove_mode && move_color == st_krestik)
+	{
+		threat_deep = old_threat_deep;
+		recalc_most_promising_neutrals();
+	}
+}
+
+void node_t::recalc_most_promising_neutrals()
+{
+	auto it = neutrals.end();
+	if (neutrals.size() > 4)
+	{
+		it = neutrals.begin() + 4;
+		std::partial_sort(neutrals.begin(), it, neutrals.end(),fscore_pr(move_color));
+	}
+
+	points_t pts(neutrals.begin(), it);
+	neutrals.erase(neutrals.begin(), it);
+
+	auto rng = std::make_pair(pts.begin(),pts.end());
+	process_oposite_forked(rng);
+	if(mark_unchecked_make_move(rng))
 		return;
 }
 
