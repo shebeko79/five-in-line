@@ -459,16 +459,26 @@ namespace Gomoku
 
 			if (rnd%20 == 0)
 			{
-				ipoints_t close_points(base_st.neutrals);
+				npoints_t close_points(base_st.neutrals.begin(),base_st.neutrals.end());
 				remove_if(close_points, [](const point& p) {return !(small_bound&p);});
 				
-				if (!close_points.empty())
+				for (auto& p : close_points)
 				{
-					move_point = close_points[rand() % close_points.size()];
+					auto x = small_bound.x2 - std::abs(p.x);
+					auto y = small_bound.y2 - std::abs(p.y);
+
+					p.n = x * x + y * y;
+				}
+
+				auto it = select_random_point(close_points);
+
+				if (it != close_points.end())
+				{
+					move_point = *it;
 					point_selected = true;
 				}
 			}
-			else if (rnd%11 == 0)
+			else if (rnd%20 == 1)
 			{
 				npoints_t sublings_wins = get_sublings_wins(root_key);
 
