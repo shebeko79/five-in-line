@@ -712,14 +712,6 @@ namespace Gomoku
 		return ret;
 	}
 
-	unsigned get_max_n(const npoints_t& vals)
-	{
-		unsigned ret=0;
-		for(unsigned i=0;i<vals.size();i++)
-			if(vals[i].n>ret)ret=vals[i].n;
-		return ret;
-	}
-
 	unsigned sol_state_t::min_win_chain() const
 	{
 		unsigned a=get_min_n(solved_wins);
@@ -730,10 +722,34 @@ namespace Gomoku
 
 	unsigned sol_state_t::max_fail_chain() const
 	{
-		unsigned a=get_max_n(solved_fails);
-		unsigned b=get_max_n(tree_fails);
-		if(a>b)return a;
-		return b;
+		if(solved_fails.empty() && tree_fails.empty())
+			return 0;
+
+		npoints_t all_fails;
+		all_fails.reserve(solved_fails.size()+tree_fails.size());
+		all_fails.insert(all_fails.end(),solved_fails.begin(),solved_fails.end());
+		all_fails.insert(all_fails.end(),tree_fails.begin(),tree_fails.end());
+
+		sort(all_fails,less_point_pr());
+
+		auto it = all_fails.begin();
+		auto equal_it = it;
+		unsigned ret = equal_it->n;
+
+		for (++it; it != all_fails.end(); ++it)
+		{
+			if (static_cast<point&>(*equal_it) == *it)
+				equal_it->n = std::min(equal_it->n, it->n);
+			else
+			{
+				ret = std::max(ret, equal_it->n);
+				equal_it = it;
+			}
+		}
+
+		ret = std::max(ret, equal_it->n);
+
+		return ret;
 	}
 
 	int sol_state_t::best_neutral_score() const
