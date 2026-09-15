@@ -206,6 +206,8 @@ namespace Gomoku
 
 		sol_state_t st;
 		st.key=key;
+
+		reorder_state_to_game_order(st.key);
 		
 		if(get(st))
 			return;
@@ -434,6 +436,9 @@ namespace Gomoku
     {
 		sol_state_t base_st;
 		base_st.key=root_key;
+
+		//ObjectProgress::log_generator lg(true);
+		//lg<<"get_ant_job(): check "<<print_steps(root_key);
 
 		if(!get(base_st))
 		{
