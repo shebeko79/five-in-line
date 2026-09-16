@@ -40,16 +40,24 @@ namespace Gomoku { namespace State5
 			pts[0] = p;
 		}
 
-		inline void add(const point& p)
+		inline bool add(const point& p)
 		{
 			if(std::find(pts,pts+count,p) != pts+count)
-				return;
+				return true;
+			
 			if(count == 3)
-				throw std::out_of_range("fork_t() exceed space");
+				return false;
 
 			pts[count]=p;
 			++count;
+			return true;
 		}
+
+		inline void limit_to_move_point_only()
+		{
+			count = 1;
+		}
+
 
 		void merge(const fork_t& other)
 		{

@@ -368,21 +368,23 @@ void node_t::limit_to_p4_fork(const points_t& other_p4h)
 		auto count4 = scores_field.get(p).cnt(prev_step.step)/kCount4;
 
 		fork_t f(p);
-		if(count4 == 2) 
-		{
-			player.field5.iterate_involved_lines(p, [&](const point& line_point, const line5_t& line, int dx, int dy)
-				{
-					if(line.steps != 4 || line.color != prev_step.step)
-						return;
+		bool out_of_bound = false;
 
-					for (int i = -2; i <= 2; i++)
-					{
-						point p_empty(line_point.x + i * dx, line_point.y + i * dy);
-						if(player.field.at(p_empty) == st_empty)
-							f.add(p_empty);
-					}
-				});
-		}
+		player.field5.iterate_involved_lines(p, [&](const point& line_point, const line5_t& line, int dx, int dy)
+			{
+				if(line.steps != 4 || line.color != prev_step.step)
+					return;
+
+				for (int i = -2; i <= 2; i++)
+				{
+					point p_empty(line_point.x + i * dx, line_point.y + i * dy);
+					if(player.field.at(p_empty) == st_empty)
+						out_of_bound |= !f.add(p_empty);
+				}
+			});
+
+		if(out_of_bound)
+			f.limit_to_move_point_only();
 		
 		oposite_fork.merge(f);
 		if(oposite_fork.is_empty_set())
