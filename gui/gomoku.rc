@@ -96,6 +96,8 @@ BEGIN
     BEGIN
         MENUITEM "Copy state",                  ID_EDIT_COPYSTATE
         MENUITEM "Paste state",                 ID_EDIT_PASTESTATE
+        MENUITEM SEPARATOR
+        MENUITEM "Copy field",                  ID_EDIT_COPYFIELD
     END
     POPUP "View"
     BEGIN

@@ -58,8 +58,9 @@ BEGIN_MESSAGE_MAP(CgomokuDlg, CDialog)
 	ON_COMMAND(ID_TAPE_PLAY, OnTapePlay)
 	ON_COMMAND(ID_TAPE_FAST_FORWARD, OnTapeForward)
 	ON_COMMAND(ID_TAPE_END, OnTapeEnd)
-    ON_COMMAND(ID_EDIT_COPYSTATE, &CgomokuDlg::OnEditCopystate)
-    ON_COMMAND(ID_EDIT_PASTESTATE, &CgomokuDlg::OnEditPastestate)
+    ON_COMMAND(ID_EDIT_COPYSTATE, OnEditCopystate)
+    ON_COMMAND(ID_EDIT_COPYFIELD, OnEditCopyfield)
+    ON_COMMAND(ID_EDIT_PASTESTATE, OnEditPastestate)
 END_MESSAGE_MAP()
 
 
@@ -432,6 +433,28 @@ void CgomokuDlg::OnEditCopystate()
     }
 }
 
+void CgomokuDlg::OnEditCopyfield()
+{
+    try
+    {
+        std::wstring str;
+
+        Gomoku::steps_t steps=game.field().get_steps();
+        print_field(steps, str, true);
+    
+        HGLOBAL hMem =  GlobalAlloc(GMEM_MOVEABLE, (str.size()+1)*sizeof(wchar_t));
+        memcpy(GlobalLock(hMem), str.c_str(), (str.size()+1)*sizeof(wchar_t));
+        GlobalUnlock(hMem);
+        OpenClipboard();
+        EmptyClipboard();
+        SetClipboardData(CF_UNICODETEXT, hMem);
+        CloseClipboard();
+    }
+    catch(std::exception& e)
+    {
+        AfxMessageBox(e.what());
+    }
+}
 
 void CgomokuDlg::OnEditPastestate()
 {

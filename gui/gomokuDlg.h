@@ -90,5 +90,6 @@ public:
 	afx_msg void OnTapeEnd();
 	afx_msg void OnClose();
     afx_msg void OnEditCopystate();
+    afx_msg void OnEditCopyfield();
     afx_msg void OnEditPastestate();
 };

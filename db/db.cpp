@@ -195,7 +195,8 @@ bool show_state(solution_tree_t& tr,steps_t req)
 	std::string sf=print_points(st.solved_fails);
 	std::string tw=print_points(st.tree_wins);
 	std::string tf=print_points(st.tree_fails);
-	std::string field_str=print_field(req);
+	std::string field_str;
+	print_field(req, field_str);
 
 	printf("key: %s\nhex_key: %s\nneutrals: %s\nsolved wins: %s\ntree wins: %s\nsolved fails: %s\ntree fails: %s\nfield:\n%s",
         k.c_str(),h.c_str(),

@@ -125,21 +125,32 @@ std::string to_string(Step val)
     return std::string();
 }
 
-std::string print_field(const steps_t& val)
+	void print_field(const steps_t& val,std::string& ret, bool bound)
 	{
-		if(val.empty())return std::string();
+		ret.clear();
+		if(val.empty())
+			return;
+
 		rect rc=rect_inverse_infinity();
 		for(steps_t::const_iterator i=val.begin();i!=val.end();++i)
 			rc+=*i;
 
+		if (bound)
+		{
+			rc.x1-=1;
+			rc.y1-=1;
+			rc.x2+=1;
+			rc.y2+=1;
+		}
+
 		unsigned width=rc.x2-rc.x1+1;
 		unsigned height=rc.y2-rc.y1+1;
 
-		std::vector<char> data(width*height,'+');
+		std::vector<char> data(width*height,'.');
 		for(unsigned i=0;i<val.size();i++)
 		{
 			const step_t& v=val[i];
-			char sym='¤';
+			char sym='*';
 			switch(v.step)
 			{
 			case st_krestik:
@@ -154,13 +165,42 @@ std::string print_field(const steps_t& val)
 			data[width*(v.y-rc.y1)+(v.x-rc.x1)]=sym;
 		}
 
-		std::string ret;
 		std::vector<char>::iterator it=data.begin();
 		for(unsigned y=0;y<height;y++,it+=width)
 			ret+=std::string(it,it+width)+"\r\n";
-		return ret;
 	}
 
+	void print_field(const steps_t& val, std::wstring& ret, bool bound)
+	{
+		ret.clear();
+
+		std::string cstr;
+		print_field(val, cstr, bound);
+
+		for (char c : cstr)
+		{
+			switch (c)
+			{
+			case 'x':
+			case 'X':
+				ret += L"\U0001F534";
+				break;
+
+			case 'o':
+			case 'O':
+				ret += L"\U0001F535";
+				break;
+
+			case '.':
+				ret += L"\u2B1C";
+				break;
+
+			default:
+				ret += static_cast<wchar_t>(c);
+				break;
+			}
+		}
+	}
 	std::string print_point(const point& p)
     {
 		char tmp[256];
