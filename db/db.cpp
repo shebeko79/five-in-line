@@ -410,7 +410,7 @@ int main(int argc,char** argv)
 		else if (cmd=="solve_level" || cmd=="solve_ant")
 		{
 			int iter_count=0;
-            steps_t root_key;
+            steps_t root_key = tr.get_root_key();
 			
             if(argc>=4)hex_or_str2points(argv[3],root_key);
             if(argc>=5)iter_count=atol(argv[4]);

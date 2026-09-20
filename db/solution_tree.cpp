@@ -77,7 +77,7 @@ namespace Gomoku
 		sol_state_t ss;
 		ss.key=val.key;
 		
-		if(ss.key.size()>=max_key_size)
+		if(ss.key.size()>max_key_size)
 			return false;
 
 		if(!get(ss))
@@ -89,7 +89,8 @@ namespace Gomoku
 		Step move_step=next_color(val.key.size());
 		
 		val.key.push_back(step_t(move_step,0,0));
-		val.neutrals.push_back(ss.neutrals);
+
+		val.neutrals.push_back(unique_neutrals(ss.key,ss.neutrals));
 		
 		for(size_t i=0;i<ss.neutrals.size();i++)		
 		{
@@ -423,6 +424,40 @@ namespace Gomoku
 		}
     }
 
+	ipoints_t solution_tree_t::unique_neutrals(const steps_t& root, const ipoints_t& neutrals)
+	{
+		ipoints_t ret;
+
+		steps_t scrR(root);
+		scrR.push_back(step_t(next_color(root.size()),0,0));
+
+		steps_t scrP = scrR;
+
+		for (auto& p : neutrals)
+		{
+			static_cast<point&>(scrP.back())=p;
+
+			if (std::find_if(ret.begin(), ret.end(),[&p,&scrR,&scrP](const point& rp)
+				{
+					static_cast<point&>(scrR.back()) = rp;
+
+					steps_t sr = scrR;
+					steps_t sp = scrP;
+					
+					Symmetry::normalize(sr);
+					Symmetry::normalize(sp);
+
+					return sr == sp;
+
+				}) == ret.end())
+			{
+				ret.push_back(p);
+			}
+		}
+
+		return ret;
+	}
+
     template<typename T>
     void solution_tree_t::check_really_unique(const steps_t& key,const std::vector<T>& vals,const std::string& vals_name)
     {
@@ -459,50 +494,7 @@ namespace Gomoku
 		}
 		else
 		{
-			auto rnd = rand();
-			bool point_selected = false;
-
-			if (rnd%20 == 0)
-			{
-				npoints_t close_points(base_st.neutrals.begin(),base_st.neutrals.end());
-				remove_if(close_points, [](const point& p) {return !(small_bound&p);});
-				
-				for (auto& p : close_points)
-				{
-					auto x = small_bound.x2 - std::abs(p.x);
-					auto y = small_bound.y2 - std::abs(p.y);
-
-					p.n = x * x + y * y;
-				}
-
-				auto it = select_random_point(close_points);
-
-				if (it != close_points.end())
-				{
-					move_point = *it;
-					point_selected = true;
-				}
-			}
-			else if (rnd%20 == 1)
-			{
-				npoints_t sublings_wins = get_sublings_wins(root_key);
-
-				remove_if(sublings_wins, [&base_st](const point& p)
-					{
-						return std::find(base_st.neutrals.begin(),base_st.neutrals.end(),p) == base_st.neutrals.end();
-					});
-
-				auto it = select_random_point(sublings_wins);
-
-				if (it != sublings_wins.end())
-				{
-					move_point = *it;
-					point_selected = true;
-				}
-			}
-
-			if(!point_selected)
-				move_point = *std::min_element(base_st.neutrals.begin(), base_st.neutrals.end(), State5::fscore_pr(move_color));
+			move_point = select_krestik_move(root_key, base_st);
 		}
 			
 
@@ -511,6 +503,59 @@ namespace Gomoku
 
 		return get_ant_job(child_st, result_key);
     }
+
+	point solution_tree_t::select_krestik_move(const steps_t& root_key, sol_state_t& base_st)
+	{
+		point move_point;
+		Step move_color = next_color(root_key.size());
+
+		auto rnd = rand();
+		bool point_selected = false;
+
+		if (rnd%20 == 0)
+		{
+			npoints_t close_points(base_st.neutrals.begin(),base_st.neutrals.end());
+			remove_if(close_points, [](const point& p) {return !(small_bound&p);});
+				
+			for (auto& p : close_points)
+			{
+				auto x = small_bound.x2 - std::abs(p.x);
+				auto y = small_bound.y2 - std::abs(p.y);
+
+				p.n = x * x + y * y;
+			}
+
+			auto it = select_random_point(close_points);
+
+			if (it != close_points.end())
+			{
+				move_point = *it;
+				point_selected = true;
+			}
+		}
+		else if (rnd%20 == 1)
+		{
+			npoints_t sublings_wins = get_sublings_wins(root_key);
+
+			remove_if(sublings_wins, [&base_st](const point& p)
+				{
+					return std::find(base_st.neutrals.begin(),base_st.neutrals.end(),p) == base_st.neutrals.end();
+				});
+
+			auto it = select_random_point(sublings_wins);
+
+			if (it != sublings_wins.end())
+			{
+				move_point = *it;
+				point_selected = true;
+			}
+		}
+
+		if(!point_selected)
+			move_point = *std::min_element(base_st.neutrals.begin(), base_st.neutrals.end(), State5::fscore_pr(move_color));
+
+		return move_point;
+	}
     
     void solution_tree_t::depth_first_search(sol_state_visitor_pr& pr)
     {

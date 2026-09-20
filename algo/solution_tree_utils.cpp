@@ -165,11 +165,11 @@ namespace Gomoku
 
     void hex_or_str2points(const std::string& str,steps_t& pts)
     {
-	if(str.empty())
-	{
-	    pts.clear();
-	    return;
-	}
+		if(str.empty())
+		{
+			pts.clear();
+			return;
+		}
 
         if(str[0]=='(')pts=scan_steps(str);
         else

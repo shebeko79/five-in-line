@@ -123,6 +123,9 @@ namespace Gomoku
 		bool get_first_deep(deep_solve_t& val,unsigned max_key_size);
 
 		npoints_t get_sublings_wins(const steps_t& asking_key);
+		point select_krestik_move(const steps_t& root_key, sol_state_t& base_st);
+
+		static ipoints_t unique_neutrals(const steps_t& root, const ipoints_t& neutrals);
 
         template<typename T>
         static void check_really_unique(const steps_t& key,const std::vector<T>& vals,const std::string& vals_name);
