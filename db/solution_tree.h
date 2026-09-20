@@ -111,6 +111,7 @@ namespace Gomoku
 		isolution_tree_base_t& db;
 		mutable deep_solve_t first_solving;
 		mutable deep_solve_t last_solving;
+		solution_tree_t* hint_tree = nullptr;
 
 		void load_solve(deep_solve_t& val,const std::string& _file_name) const;
 		void save_solve(const deep_solve_t& val,const std::string& _file_name) const;
@@ -151,6 +152,8 @@ namespace Gomoku
         void depth_first_search(const steps_t& key,sol_state_visitor_pr& pr);
 
         void width_first_search_from_bottom_to_top(sol_state_width_pr& pr);
+
+		inline void set_hint_tree(solution_tree_t& tr) {hint_tree = &tr;}
 	};
 
 }//namespace

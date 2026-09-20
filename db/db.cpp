@@ -41,6 +41,7 @@ void print_use()
 	printf("db <root_dir> fix_zero_fails\n");
 	printf("db <root_dir> relax <key>\n");
     Gomoku::print_enviropment_variables_hint();
+	printf("hint_db  path (no default)\n");
 }
 
 void self_solve(solution_tree_t& tr,const steps_t& key)
@@ -294,6 +295,17 @@ int main(int argc,char** argv)
 			self_solve(tr, steps_t{step_t(st_krestik,0,0)});
 		}
 
+		std::unique_ptr<solution_tree_t> hint_tr;
+		const char* hint_db_path=getenv("hint_db");
+		if (hint_db_path != 0 && (*hint_db_path) != 0)
+		{
+			lg <<"hint_db="<<hint_db_path;
+			auto hint_db = std::make_shared<bin_index_solution_base_t>(hint_db_path);
+			hint_tr = std::make_unique<solution_tree_t>(hint_db);
+			hint_tr->init(hint_db_path);
+
+			tr.set_hint_tree(*hint_tr);
+		}
 
 		if(cmd=="get_job" ||cmd=="get_ant_job")
 		{

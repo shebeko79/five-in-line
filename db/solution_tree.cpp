@@ -551,9 +551,29 @@ namespace Gomoku
 			}
 		}
 
-		if(!point_selected)
-			move_point = *std::min_element(base_st.neutrals.begin(), base_st.neutrals.end(), State5::fscore_pr(move_color));
+		if(point_selected)
+			return move_point;
 
+		if (hint_tree)
+		{
+			sol_state_t hint_st;
+			hint_st.key = root_key;
+			if (hint_tree->get(hint_st))
+			{
+				npoints_t wins(hint_st.solved_wins);
+				wins.insert(wins.end(),hint_st.tree_wins.begin(),hint_st.tree_wins.end());
+				remove_if(wins, [&base_st](const point& p)
+					{
+						return std::find(base_st.neutrals.begin(), base_st.neutrals.end(),p) == base_st.neutrals.end();
+					});
+
+				if (!wins.empty())
+					return wins.front();
+					//return wins[rnd%wins.size()];
+			}
+		}
+
+		move_point = *std::min_element(base_st.neutrals.begin(), base_st.neutrals.end(), State5::fscore_pr(move_color));
 		return move_point;
 	}
     
