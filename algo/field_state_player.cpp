@@ -199,8 +199,15 @@ void node_t::process()
 
 	if (rng.first != rng.second)
 	{
-		wins.push_back(npoint(*rng.first,3));
-		return;
+		auto p = find_p4_fork_that_really_wins(rng);
+		if (p != rng.second)
+		{
+			wins.push_back(npoint(*rng.first, 3));
+			return;
+		}
+
+		if(mark_unchecked_make_move(rng))
+			return;
 	}
 
 	scr.cnt(move_color) = kCount4;
@@ -214,6 +221,7 @@ void node_t::process()
 	scr.cnt(prev_step.step) = kCount4*2;
 	rng = std::equal_range(rng.second,pts.end(), scr, pr);
 
+	//pts.begin() instead of rng.first because oposite fork move also might be higher move
 	points_t p4_pts(pts.begin(), rng.second);
 	remove_if(p4_pts, [&scores_field,cl = prev_step.step](const point& p)
 		{
@@ -365,10 +373,7 @@ void node_t::limit_to_p4_fork(const points_t& other_p4h)
 
 	for(const auto& p : other_p4h)
 	{
-		auto count4 = scores_field.get(p).cnt(prev_step.step)/kCount4;
-
 		fork_t f(p);
-		bool out_of_bound = false;
 
 		player.field5.iterate_involved_lines(p, [&](const point& line_point, const line5_t& line, int dx, int dy)
 			{
@@ -379,11 +384,14 @@ void node_t::limit_to_p4_fork(const points_t& other_p4h)
 				{
 					point p_empty(line_point.x + i * dx, line_point.y + i * dy);
 					if(player.field.at(p_empty) == st_empty)
-						out_of_bound |= !f.add(p_empty);
+						f.add(p_empty);
 				}
 			});
 
-		if(out_of_bound)
+		if(!f.is_complete())
+			continue;
+		
+		if(f.is_out_of_bound())
 			f.limit_to_move_point_only();
 		
 		oposite_fork.merge(f);
@@ -391,6 +399,35 @@ void node_t::limit_to_p4_fork(const points_t& other_p4h)
 			return;
 	}
 }
+
+points_t::const_iterator node_t::find_p4_fork_that_really_wins(const points_range& rng)
+{
+	const matrix<score_t>& scores_field = player.field5.get_scores_field();
+
+	for(auto p = rng.first; p != rng.second; ++p)
+	{
+		fork_t f(*p);
+
+		player.field5.iterate_involved_lines(*p, [&](const point& line_point, const line5_t& line, int dx, int dy)
+			{
+				if(line.steps != 4 || line.color != move_color)
+					return;
+
+				for (int i = -2; i <= 2; i++)
+				{
+					point p_empty(line_point.x + i * dx, line_point.y + i * dy);
+					if(player.field.at(p_empty) == st_empty)
+						f.add(p_empty);
+				}
+			});
+
+		if(f.is_complete())
+			return p;
+	}
+
+	return rng.second;
+}
+
 
 
 

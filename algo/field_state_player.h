@@ -40,17 +40,20 @@ namespace Gomoku { namespace State5
 			pts[0] = p;
 		}
 
-		inline bool add(const point& p)
+		inline void add(const point& p)
 		{
 			if(std::find(pts,pts+count,p) != pts+count)
-				return true;
+				return;
 			
-			if(count == 3)
-				return false;
+			if (count == 3)
+			{
+				out_of_bound = true;
+				return;
+			}
 
 			pts[count]=p;
 			++count;
-			return true;
+			return;
 		}
 
 		inline void limit_to_move_point_only()
@@ -77,9 +80,12 @@ namespace Gomoku { namespace State5
 		inline bool is_active() const {return active;}
 		inline bool is_empty_set() const {return active && count==0;}
 		inline bool inside(const point& p) const {return !active || std::find(pts,pts+count,p) != pts+count;}
+		inline bool	is_out_of_bound() const {return out_of_bound;}
+		inline bool	is_complete() const {return count == 3;}
 	private:
 		bool active = false;
 		unsigned count = 0;
+		bool out_of_bound = false;
 		point pts[3];
 	};
 
@@ -130,6 +136,8 @@ namespace Gomoku { namespace State5
 
 		void limit_to_p4_fork(const points_t& other_p4h);
 		void process_oposite_forked(points_range& rng);
+
+		points_t::const_iterator find_p4_fork_that_really_wins(const points_range& rng);
 
 		void recalc_most_promising_neutrals();
 	};
