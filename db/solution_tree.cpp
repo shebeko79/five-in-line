@@ -568,8 +568,7 @@ namespace Gomoku
 					});
 
 				if (!wins.empty())
-					return wins.front();
-					//return wins[rnd%wins.size()];
+					return *std::min_element(wins.begin(), wins.end(), less_n_pr());
 			}
 		}
 
