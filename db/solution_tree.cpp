@@ -15,6 +15,9 @@ namespace Gomoku
 	const char* solution_tree_t::first_solving_file_name="first_solving";
 	const char* solution_tree_t::last_solving_file_name="last_solving";
 
+	unsigned solution_tree_t::ant_rand_factor = 20;
+
+
 	void solution_tree_t::init(const std::string& _base_dir)
 	{
 		base_dir=_base_dir;
@@ -508,46 +511,49 @@ namespace Gomoku
 	{
 		point move_point;
 		Step move_color = next_color(root_key.size());
-
-		auto rnd = rand();
 		bool point_selected = false;
 
-		if (rnd%20 == 0)
+		if (ant_rand_factor > 0)
 		{
-			npoints_t close_points(base_st.neutrals.begin(),base_st.neutrals.end());
-			remove_if(close_points, [](const point& p) {return !(small_bound&p);});
-				
-			for (auto& p : close_points)
+			auto rnd = rand();
+
+			if (rnd % ant_rand_factor == 0)
 			{
-				auto x = small_bound.x2 - std::abs(p.x);
-				auto y = small_bound.y2 - std::abs(p.y);
+				npoints_t close_points(base_st.neutrals.begin(), base_st.neutrals.end());
+				remove_if(close_points, [](const point& p) {return !(small_bound & p); });
 
-				p.n = x * x + y * y;
-			}
-
-			auto it = select_random_point(close_points);
-
-			if (it != close_points.end())
-			{
-				move_point = *it;
-				point_selected = true;
-			}
-		}
-		else if (rnd%20 == 1)
-		{
-			npoints_t sublings_wins = get_sublings_wins(root_key);
-
-			remove_if(sublings_wins, [&base_st](const point& p)
+				for (auto& p : close_points)
 				{
-					return std::find(base_st.neutrals.begin(),base_st.neutrals.end(),p) == base_st.neutrals.end();
-				});
+					auto x = small_bound.x2 - std::abs(p.x);
+					auto y = small_bound.y2 - std::abs(p.y);
 
-			auto it = select_random_point(sublings_wins);
+					p.n = x * x + y * y;
+				}
 
-			if (it != sublings_wins.end())
+				auto it = select_random_point(close_points);
+
+				if (it != close_points.end())
+				{
+					move_point = *it;
+					point_selected = true;
+				}
+			}
+			else if (rnd % ant_rand_factor == 1)
 			{
-				move_point = *it;
-				point_selected = true;
+				npoints_t sublings_wins = get_sublings_wins(root_key);
+
+				remove_if(sublings_wins, [&base_st](const point& p)
+					{
+						return std::find(base_st.neutrals.begin(), base_st.neutrals.end(), p) == base_st.neutrals.end();
+					});
+
+				auto it = select_random_point(sublings_wins);
+
+				if (it != sublings_wins.end())
+				{
+					move_point = *it;
+					point_selected = true;
+				}
 			}
 		}
 

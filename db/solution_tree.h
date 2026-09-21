@@ -133,6 +133,8 @@ namespace Gomoku
 	public:
 		static const char* first_solving_file_name;
 		static const char* last_solving_file_name;
+
+		static unsigned ant_rand_factor;
 		
 		solution_tree_t(const isolution_tree_base_ptr _db_ptr) : db_ptr(_db_ptr),db(*_db_ptr){}
 
