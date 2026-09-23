@@ -36,7 +36,7 @@ add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 target_compile_features(solver PRIVATE cxx_std_17)
 
 if(NOT WIN32)
-      TARGET_LINK_LIBRARIES(solver boost_filesystem.a boost_signals.a boost_system.a)
+      TARGET_LINK_LIBRARIES(db boost_system)
 endif()
 
 link_directories($ENV{BOOST}/stage/lib)
