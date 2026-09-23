@@ -27,7 +27,7 @@ namespace Gomoku { namespace Symmetry
 	tr_agregate minimal(const steps_t& steps);
 
 	template<typename T>
-	inline void transform(std::vector<T>& points, itrans& tr)
+	inline void transform(std::vector<T>& points, const itrans& tr)
 	{
 		for(auto& p : points)
 			tr.transform(p);
