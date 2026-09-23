@@ -280,7 +280,7 @@ namespace Gomoku
 	points_t set_to_point(const points_set_t& points_set);
 
 	template<typename T, typename Pr>
-	inline void remove_if(std::vector<T>& arr, Pr& pr)
+	inline void remove_if(std::vector<T>& arr, const Pr& pr)
 	{
 		arr.erase(std::remove_if(arr.begin(),arr.end(),pr),arr.end());
 	}
