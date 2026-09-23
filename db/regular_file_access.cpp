@@ -43,7 +43,7 @@ file_offset_t regular_file_t::get_size()
 		throw std::runtime_error("get_size(): seek error at end: "+file_name);
 
 	file_offset_t ret=ftello(fd);
-	if(ret!=(off_t)-1)
+	if(ret==(off_t)-1)
 		throw std::runtime_error("get_size(): ftello() failed: "+file_name);
 
 	return ret;
@@ -111,7 +111,7 @@ file_offset_t regular_file_t::append(const data_t& res)
 		throw std::runtime_error("append(): seek error at end: "+file_name);
 
 	ret=ftello(fd);
-	if(ret!=(off_t)-1)
+	if(ret==(off_t)-1)
 		throw std::runtime_error("append(): ftello() failed: "+file_name);
 #endif
 
