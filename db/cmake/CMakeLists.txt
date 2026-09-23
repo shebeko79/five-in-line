@@ -38,7 +38,6 @@ target_compile_features(db PRIVATE cxx_std_17)
 if(NOT WIN32)
     add_definitions(-D_FILE_OFFSET_BITS=64)
     TARGET_LINK_LIBRARIES(db boost_filesystem boost_signals boost_system)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
 if( MSVC)
