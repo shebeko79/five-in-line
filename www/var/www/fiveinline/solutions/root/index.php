@@ -1,5 +1,5 @@
 ﻿<?php
-$DB_PATH='/home/shebeko/f5/root';
-$OWN_PATH='http://fiveinline.info/solutions/root/';
+$DB_PATH='/home/administrator/f5';
+$OWN_PATH='http://93.127.143.124/solutions/root/';
 include '../index.inc';
 ?>

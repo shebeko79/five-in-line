@@ -1,5 +1,5 @@
 <?php
-$DB_PATH='/home/shebeko/f5/root';
+$DB_PATH='/home/administrator/f5';
 $USE_ANT=true;
 
 include '../solve.inc';

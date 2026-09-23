@@ -8,8 +8,7 @@
 <body>
 <h3><a href="stat.php">Statistic</a>&nbsp;&nbsp;&nbsp;&nbsp;Participate in solving <a href="solver.zip">Windows</a> <a href="solver.tar.gz">Ubuntu</a></h3>
 <?php
-$EXEC_PATH='/home/shebeko/bin/db';
-putenv("mysql_db=f5");
+$EXEC_PATH='/home/administrator/f5_bin/db';
 $x1=-7;
 $y1=-7;
 $x2=7;

@@ -7,7 +7,7 @@
 </head>
 <body>
 <h1>Five-in-line solving tree project</h1>
-<p>Project sources on <a href="https://code.google.com/p/five-in-line/">https://code.google.com/p/five-in-line/</a></p>
+<p>Project sources on <a href="https://github.com/shebeko79/five-in-line">https://github.com/shebeko79/five-in-line</a></p>
 <table cellSpacing="8">
 <?php
 function add_solution($path_name)

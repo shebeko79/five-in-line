@@ -1,6 +1,5 @@
 <?php
-$EXEC_PATH='/home/shebeko/bin/db';
-putenv("mysql_db=f5");
+$EXEC_PATH='/home/administrator/f5_bin/db';
 
 if (count($_GET)>0) $HTTP_VARS=$_GET;
 else $HTTP_VARS=$_POST;
