@@ -286,7 +286,7 @@ namespace Gomoku
 	}
 
 	template<typename Cont, typename Pr>
-	inline void sort(Cont& arr, Pr& pr)
+	inline void sort(Cont& arr, const Pr& pr)
 	{
 		std::sort(begin(arr),end(arr),pr);
 	}
