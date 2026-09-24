@@ -1,15 +1,17 @@
 #!/bin/sh
-url=http://fiveinline.info/solutions/root/solve.php
+url=http://93.127.143.124/solutions/root/solve.php
 src_name=somebody
-set stored_deep=2
-set lookup_deep=3
 process_count=`cat /proc/cpuinfo | grep processor | wc -l`
+#set stored_deep=2
+#set threat_deep=8
+prove_mode=1
 
+export process_count
 export url
 export src_name
-export storeed_deep
-export lookup_deep
-export process_count
+#export stored_deep
+#export threat_deep
+export prove_mode
 
 cur_dir=`pwd`
 

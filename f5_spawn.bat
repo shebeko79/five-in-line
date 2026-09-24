@@ -1,10 +1,11 @@
 setlocal
-set url=http://fiveinline.info/solutions/root/solve.php
+set url=http://93.127.143.124/solutions/root/solve.php
 set src_name=somebody
-set stored_deep=2
-set lookup_deep=3
 set process_count=%NUMBER_OF_PROCESSORS%
-set own_root=
+;set stored_deep=2
+;set threat_deep=8
+set prove_mode=1
+;set own_root=
 
 @for /L %%i in (1,1,%process_count%) do (
 @mkdir spawn\%%i
