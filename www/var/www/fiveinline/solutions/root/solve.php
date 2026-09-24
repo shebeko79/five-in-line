@@ -1,5 +1,5 @@
 <?php
-$DB_PATH='/home/administrator/f5';
+$DB_PATH='/var/www/f5';
 $USE_ANT=true;
 
 include '../solve.inc';

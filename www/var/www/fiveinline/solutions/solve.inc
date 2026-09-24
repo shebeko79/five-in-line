@@ -1,5 +1,5 @@
 <?php
-$EXEC_PATH='/home/administrator/f5_bin/db';
+$EXEC_PATH='/var/www/f5_bin/db';
 
 if (count($_GET)>0) $HTTP_VARS=$_GET;
 else $HTTP_VARS=$_POST;
@@ -9,17 +9,17 @@ $cmd=$HTTP_VARS["cmd"];
 function write_result_file($file_name)
 {
 	$handle = fopen($file_name, "w");
-	for($i=0;array_key_exists("k".$i,$_POST);$i++)
+	if(array_key_exists("k",$_POST))
 	{
-		$k=$_POST["k".$i];
+		$k=$_POST["k"];
 		
-		if(array_key_exists("n".$i,$_POST))$n=$_POST["n".$i];
+		if(array_key_exists("n",$_POST))$n=$_POST["n"];
 		else $n="";
 		
-		if(array_key_exists("w".$i,$_POST))$w=$_POST["w".$i];
+		if(array_key_exists("w",$_POST))$w=$_POST["w"];
 		else $w="";
 
-		if(array_key_exists("f".$i,$_POST))$f=$_POST["f".$i];
+		if(array_key_exists("f",$_POST))$f=$_POST["f"];
 		else $f="";
 	
 		fwrite($handle,"$k;$n;$w;$f\n");
@@ -107,9 +107,9 @@ if($cmd=='get_job')
 }
 else if($cmd=='save_job')
 {
-	if(!array_key_exists("k0",$_POST))
+	if(!array_key_exists("k",$_POST))
 	{
-		echo 'post k0 does not exist<br>';
+		echo 'post k does not exist<br>';
 		exit(1);
 	}
 	
