@@ -6,15 +6,17 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </head>
 <body>
+<!---
 <h3><a href="stat.php">Statistic</a>&nbsp;&nbsp;&nbsp;&nbsp;Participate in solving <a href="solver.zip">Windows</a> <a href="solver.tar.gz">Ubuntu</a></h3>
+--->
 <?php
-$EXEC_PATH='/home/administrator/f5_bin/db';
+$EXEC_PATH='/var/www/f5_bin/db';
 $x1=-7;
 $y1=-7;
 $x2=7;
 $y2=7;
 
-$neitrals=array();
+$neutrals=array();
 $solved_wins=array();
 $solved_fails=array();
 $tree_wins=array();
@@ -226,59 +228,6 @@ function step2str($step,$small)
 	}
 }
 
-function estimate_neitrals()
-{
-	global $nestimate,$neitrals,$next_step,$hex_state,$EXEC_PATH,$DB_PATH,$min_rate,$max_rate;
-	$nestimate=array();
-	
-	foreach($neitrals as $key => $p)
-	{
-		$e=new point;
-		$e->x=0;
-		$e->y=0;
-		
-		$o=new step_t;
-		$o->x=$p->x;
-		$o->y=$p->y;
-		$o->step=$next_step;
-
-		$h=$hex_state.step2hex($o);
-		$cmd=$EXEC_PATH." ".$DB_PATH." "."view_hex ".escapeshellarg($h);
-		
-		$output=array();
-		exec($cmd,$output);
-		foreach($output as $s)
-		{
-			$ps=strpos($s,"wins_count=");
-			if($ps===false)
-				continue;
-
-			$ps1=strpos($s," fails_count=");
-			if($ps1===false)
-				continue;
-				
-			$e->x=intval(substr($s,$ps+11,$ps1-$ps-11));
-			$e->y=intval(substr($s,$ps1+13));
-		}
-		
-		$nestimate[$key]=$e;
-	}
-	
-	$min_rate=1.0;
-	$max_rate=1.0;
-
-	foreach($nestimate as $key => $e)
-	{
-		$rate=($e->y+1)/($e->x+1);
-		
-		if($rate<$min_rate)
-			$min_rate=$rate;
-
-		if($rate>$max_rate)
-			$max_rate=$rate;
-	}
-}
-
 if (count($_GET)>0) $HTTP_VARS=$_GET;
 else $HTTP_VARS=$_POST;
 
@@ -298,9 +247,8 @@ else
 {
 	$steps=hex2steps($hex_state);
 	
-	$cmd="view_hex ".escapeshellarg($hex_state);
+	$cmd="view ".escapeshellarg($hex_state);
 }
-
 $cmd=$EXEC_PATH." ".$DB_PATH." ".$cmd;
 exec($cmd,$output);
 
@@ -314,7 +262,7 @@ foreach($output as $s)
 			$hex_state=substr($s,strlen("hex_key: "));
 	}
 
-	fill_points_array("neitrals: ",$s,$neitrals);
+	fill_npoints_array("neutrals: ",$s,$neutrals);
 	fill_npoints_array("solved wins: ",$s,$solved_wins);
 	fill_npoints_array("solved fails: ",$s,$solved_fails);
 	fill_npoints_array("tree wins: ",$s,$tree_wins);
@@ -322,14 +270,14 @@ foreach($output as $s)
 }
 
 expand_bound($steps);
-expand_bound($neitrals);
+expand_bound($neutrals);
 expand_bound($solved_wins);
 expand_bound($solved_fails);
 expand_bound($tree_wins);
 expand_bound($tree_fails);
 
 $key_steps=make_point_key_array($steps);
-$neitrals=make_point_key_array($neitrals);
+$neutrals=make_point_key_array($neutrals);
 $solved_wins=make_point_key_array($solved_wins);
 $solved_fails=make_point_key_array($solved_fails);
 $tree_wins=make_point_key_array($tree_wins);
@@ -337,8 +285,6 @@ $tree_fails=make_point_key_array($tree_fails);
 
 if((count($steps)%2)==0)$next_step=st_krestik;
 else $next_step=st_nolik;
-
-estimate_neitrals();
 
 if(array_key_exists("godmode",$HTTP_VARS))
 {
@@ -350,6 +296,15 @@ if(array_key_exists("godmode",$HTTP_VARS))
 ?>
 <table border="1" cellpadding="0" cellspacing="0">
 <?php
+$win_color='green';
+$fail_color='red';
+
+if((count($steps)%2)!=0)
+{
+	$win_color='red';
+	$fail_color='green';
+}
+
 for($y=$y1;$y<=$y2;$y++)
 {
 	echo '<tr height="32">';
@@ -379,20 +334,17 @@ for($y=$y1;$y<=$y2;$y++)
 			$style="background-color:rgb(220,220,220);";
 			$cnt=step2str($p->step,$special);
 		}
-		else if(array_key_exists($skey,$neitrals))
+		else if(array_key_exists($skey,$neutrals))
 		{
-			$p=$neitrals[$skey];
+			$p=$neutrals[$skey];
 			
-			$e=$nestimate[$skey];
-			$rate=($e->y+1)/($e->x+1);
-
 			$o=new step_t;
 			$o->x=$p->x;
 			$o->y=$p->y;
 			$o->step=$next_step;
 		
 			$h=$hex_state.step2hex($o);
-			$title=sprintf("%.3lf=%d/%d",$rate,$e->y,$e->x);
+			$title=sprintf("%d",$p->n);
 			
 			$cnt='<a href="'.$OWN_PATH.'?st='.$h;
 			
@@ -401,14 +353,14 @@ for($y=$y1;$y<=$y2;$y++)
 			
 			$cnt=$cnt.'" title="'.$title.'">'.step2str($next_step,true).'</a>';
 			
-			if($rate<1.0)
+			$c = 255-min(abs($p->n)*4,255);
+			
+			if($p->n<1.0)
 			{
-				$c=255-intval((1.0-$rate)/(1.0-$min_rate)*255);
 				$style="background-color:rgb(255,$c,$c);";
 			}
-			else if($rate>1.0)
+			else if($p->n>1.0)
 			{
-				$c=255-intval(($rate-1.0)/($max_rate-1.0)*255);
 				$style="background-color:rgb($c,255,$c);";
 			}
 		}
@@ -416,13 +368,13 @@ for($y=$y1;$y<=$y2;$y++)
 		{
 			$p=$solved_wins[$skey];
 			$cnt=step2str($next_step,true).$p->n;
-			$style="background-color:rgb(220,220,220);color:green";
+			$style="background-color:rgb(220,220,220);color:".$win_color;
 		}
 		else if(array_key_exists($skey,$solved_fails))
 		{
 			$p=$solved_fails[$skey];
 			$cnt=step2str($next_step,true).$p->n;
-			$style="background-color:rgb(220,220,220);color:red";
+			$style="background-color:rgb(220,220,220);color:".$fail_color;
 		}
 		else if(array_key_exists($skey,$tree_wins))
 		{
@@ -434,7 +386,7 @@ for($y=$y1;$y<=$y2;$y++)
 			$o->step=$next_step;
 			
 			$h=$hex_state.step2hex($o);
-			$cnt='<a href="'.$OWN_PATH.'?st='.$h.'" style="color:green;">'.step2str($next_step,false).$p->n.'</a>';
+			$cnt='<a href="'.$OWN_PATH.'?st='.$h.'" style="color:'.$win_color.';">'.step2str($next_step,false).$p->n.'</a>';
 			$style="background-color:rgb(220,220,220);";
 		}
 		else if(array_key_exists($skey,$tree_fails))
@@ -447,7 +399,7 @@ for($y=$y1;$y<=$y2;$y++)
 			$o->step=$next_step;
 		
 			$h=$hex_state.step2hex($o);
-			$cnt='<a href="'.$OWN_PATH.'?st='.$h.'" style="color:red;">'.step2str($next_step,false).$p->n.'</a>';
+			$cnt='<a href="'.$OWN_PATH.'?st='.$h.'" style="color:'.$fail_color.';">'.step2str($next_step,false).$p->n.'</a>';
 			$style="background-color:rgb(220,220,220);";
 		}
 

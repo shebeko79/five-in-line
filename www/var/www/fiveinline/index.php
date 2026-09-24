@@ -26,8 +26,8 @@ function add_version($d,$m,$y)
 	echo "<tr><td>$d.$m.$y</td><td><a href=\"download/five_in_line$y$m$d.zip\">GUI Game</a><td><a href=\"download/db$y$m$d.zip\">Server</a></td></tr>";
 }
 
-add_version("22","10","2013");
-add_version("04","10","2013");
+//add_version("22","10","2013");
+//add_version("04","10","2013");
 ?>
   
 </table>
