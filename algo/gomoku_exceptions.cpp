@@ -1,6 +1,5 @@
 
 #include "gomoku_exceptions.h"
-#include <boost/lexical_cast.hpp>
 
 namespace Gomoku
 {
