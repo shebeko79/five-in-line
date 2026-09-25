@@ -1,8 +1,6 @@
 <?php
-$EXEC_PATH='/home/shebeko/bin/db';
-putenv("mysql_db=f5");
-putenv("stored_deep=1");
-putenv("ant_count=100");
+$EXEC_PATH='/var/www/f5_bin/db';
+putenv("threat_deep=4");
 
 if (count($_GET)>0) $HTTP_VARS=$_GET;
 else $HTTP_VARS=$_POST;

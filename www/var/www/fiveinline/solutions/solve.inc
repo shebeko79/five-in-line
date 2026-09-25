@@ -44,22 +44,18 @@ function get_job_from_list()
 	if($lst === false)
 	  return false;
   
+
 	$lst=explode("\n",trim($lst));
-	
 	while(count($lst)>0)
 	{
-		$k=mt_rand(0,count($lst)+1);
-		//force first state
-		if($k<2)$k=0;
-		else $k=$k-2;
+		$k=mt_rand(0,count($lst)-1);
 		
-		$v=$lst[$k];
-		
-		if(!v || v=='')
+		if(empty($lst[$k]))
 		  return false;
-		
+	  
+		$v=$lst[$k];
 		$cc=$cmd." ".escapeshellarg($v);
-		
+
 		$output=array();
 		exec($cc,$output);
 		
@@ -73,11 +69,11 @@ function get_job_from_list()
 		
 		unset($lst[$k]);
 		
-		$content = trim(implode("\n",$lst));
+		if(count($lst)==0) $content = "";
+		else $content = trim(implode("\n",$lst));
+		
 		file_put_contents($file_name, $content );
-		$lst=explode("\n",$content);
 	}
-	
 	return false;
 }
 
