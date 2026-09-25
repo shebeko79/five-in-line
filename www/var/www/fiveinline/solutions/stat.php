@@ -7,6 +7,7 @@
 </head>
 <body>
 <?php
+include 'cfg.inc';
 $conn=pg_connect("dbname=f5");
 if($conn === FALSE)
 {

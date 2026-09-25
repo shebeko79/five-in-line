@@ -1,5 +1,5 @@
 <?php
-$EXEC_PATH='/var/www/f5_bin/db';
+include 'cfg.inc';
 putenv("threat_deep=4");
 
 if (count($_GET)>0) $HTTP_VARS=$_GET;

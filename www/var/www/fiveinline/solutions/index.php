@@ -10,7 +10,7 @@
 <h3><a href="stat.php">Statistic</a>&nbsp;&nbsp;&nbsp;&nbsp;Participate in solving <a href="solver.zip">Windows</a> <a href="solver.tar.gz">Ubuntu</a></h3>
 --->
 <?php
-$EXEC_PATH='/var/www/f5_bin/db';
+include 'cfg.inc';
 $x1=-7;
 $y1=-7;
 $x2=7;
