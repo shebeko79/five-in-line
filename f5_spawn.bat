@@ -1,5 +1,5 @@
 setlocal
-set url=http://93.127.143.124/solutions/root/solve.php
+set url=http://93.127.143.124/solution/solve.php
 set src_name=somebody
 set process_count=%NUMBER_OF_PROCESSORS%
 ;set stored_deep=2

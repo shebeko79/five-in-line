@@ -9,27 +9,7 @@
 <h1>Five-in-line solving tree project</h1>
 <p>Project sources on <a href="https://github.com/shebeko79/five-in-line">https://github.com/shebeko79/five-in-line</a></p>
 <table cellSpacing="8">
-<?php
-function add_solution($path_name)
-{
-   echo "<tr><td><a href=\"solutions/$path_name/\"><img src=\"solutions/$path_name/avatar.png\"/ width=\"32\" height=\"32\"></a></p></td></tr>";
-}
-
-add_solution("root");
-?>
-  
-</table>
-<table cellSpacing="8">
-<?php
-function add_version($d,$m,$y)
-{
-	echo "<tr><td>$d.$m.$y</td><td><a href=\"download/five_in_line$y$m$d.zip\">GUI Game</a><td><a href=\"download/db$y$m$d.zip\">Server</a></td></tr>";
-}
-
-//add_version("22","10","2013");
-//add_version("04","10","2013");
-?>
-  
+<tr><td><a href="solution/"><img src="solution/avatar.png" width="32" height="32"></a></p></td></tr>
 </table>
 </body>
 </html>

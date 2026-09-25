@@ -73,7 +73,7 @@ while (($ln = fgets($handle, 4096)) !== false)
   $it->src_name=substr($it->src_name,0,$ps);
 
   $it->root_name=$req;
-  $ps=strpos($it->root_name,"/solutions/");
+  $ps=strpos($it->root_name,"/solution/");
   if($ps === false)
   {
     continue;

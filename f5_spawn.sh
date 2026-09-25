@@ -1,5 +1,5 @@
 #!/bin/sh
-url=http://93.127.143.124/solutions/root/solve.php
+url=http://93.127.143.124/solution/solve.php
 src_name=somebody
 process_count=`cat /proc/cpuinfo | grep processor | wc -l`
 #set stored_deep=2
