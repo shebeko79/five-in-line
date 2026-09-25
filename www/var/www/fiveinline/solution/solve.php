@@ -6,6 +6,8 @@ else $HTTP_VARS=$_POST;
 
 $cmd=$HTTP_VARS["cmd"];
 
+chdir(dirname($EXEC_PATH));
+
 function write_result_file($file_name)
 {
 	$handle = fopen($file_name, "w");
