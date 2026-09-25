@@ -27,15 +27,20 @@ if(!$st)
 	exit(1);
 }
 
-
 $file_name=$DB_PATH."/marked.txt";
 $lst=file_get_contents($file_name);
 
 if($lst === false)
   $lst=array();
 else
-  $lst=explode("\n",$lst);
-  
+{
+	$lst=trim($lst);
+	if($lst === '')
+		$lst=array();
+	else
+		$lst=explode("\n",$lst);
+}
+
 foreach ($lst as $k => $v) 
 {
   if($v==$st)
@@ -50,11 +55,14 @@ if(!array_key_exists("rm",$HTTP_VARS) || !$HTTP_VARS["rm"] )
 	array_unshift($lst,$st);
 }
 
-file_put_contents($file_name,implode("\n",$lst));
+if(count($lst)==0) $content = "";
+else $content = trim(implode("\n",$lst));
+
+file_put_contents($file_name,$content);
+
 
 foreach($lst as $v)
 {
 	echo '<a href="'.$OWN_PATH.'mark_state.php?rm=1&st='.$v.'&godmode='.$godmode_val.'">X</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="'.$OWN_PATH.'index.php?st='.$v.'&godmode='.$godmode_val.'">'.$v.'</a><br>';
 }
-
 ?>
