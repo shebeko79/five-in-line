@@ -278,7 +278,6 @@ void node_t::recalc_most_promising_neutrals()
 	neutrals.erase(neutrals.begin(), it);
 
 	auto rng = std::make_pair(pts.begin(),pts.end());
-	process_oposite_forked(rng);
 	if(mark_unchecked_make_move(rng))
 		return;
 }

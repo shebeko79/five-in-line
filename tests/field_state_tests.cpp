@@ -160,4 +160,17 @@ TEST_F(field_state_test, op_fork3)
 	ASSERT_EQ(points_t({ {-4,0}, {-2,0}, {-2,2} }), pts);
 }
 
+
+TEST_F(field_state_test, recalc_exclude)
+{
+	State5::common_deep=1;
+	State5::gl_threat_deep=1;
+
+	State5::node_t node = solve("(0,0:X);(-4,0:O);(1,-1:X);(-3,1:O);(1,0:X);(-2,2:O);(-1,3:X);(2,0:O);(1,1:X);(1,2:O);(-1,-1:X);(2,2:O);(0,-1:X);(2,-1:O)");
+	const auto& neutrals=node.get_neutrals();
+	points_t pts(neutrals.begin(),neutrals.end());
+
+	ASSERT_EQ(true, std::find(pts.begin(), pts.end(), point(1,-2)) != pts.end());
+}
+
 }//namespace
