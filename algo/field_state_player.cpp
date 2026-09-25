@@ -12,6 +12,7 @@ namespace Gomoku { namespace State5
 unsigned common_deep = 2;
 unsigned gl_threat_deep = 8;
 bool prove_mode = false;
+unsigned recalc_count = 4;
 
 
 void field_state_player_t::delegate_step()
@@ -267,16 +268,29 @@ void node_t::process()
 
 void node_t::recalc_most_promising_neutrals()
 {
-	auto it = neutrals.end();
-	if (neutrals.size() > 4)
+	if(recalc_count == 0)
+		return;
+
+	max_step_pr pr(player.field5.get_scores_field(), move_color);
+	//unnecessary now because they are already in sorted order, but who know
+	// anyway there is no measurable preformance hit by this sort
+	sort(neutrals, pr);
+
+	score_t scr;
+	scr.cnt(move_color) = kCount3*2;
+	scr.cnt(prev_step.step) = 0;
+
+	auto beg_it = std::upper_bound(neutrals.begin(), neutrals.end(), scr, pr);
+
+	auto end_it = neutrals.end();
+	if (end_it-beg_it > recalc_count)
 	{
-		it = neutrals.begin() + 4;
-		std::partial_sort(neutrals.begin(), it, neutrals.end(),fscore_pr(move_color));
+		end_it = beg_it + recalc_count;
+		std::partial_sort(beg_it, end_it, neutrals.end(),fscore_pr(move_color));
 	}
 
-	points_t pts(neutrals.begin(), it);
-	neutrals.erase(neutrals.begin(), it);
-
+	points_t pts(beg_it, end_it);
+	neutrals.erase(beg_it, end_it);
 	auto rng = std::make_pair(pts.begin(),pts.end());
 	if(mark_unchecked_make_move(rng))
 		return;
