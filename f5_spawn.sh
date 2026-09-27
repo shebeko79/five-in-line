@@ -1,16 +1,16 @@
 #!/bin/sh
 url=http://93.127.143.124/solution/solve.php
 src_name=somebody
-process_count=`cat /proc/cpuinfo | grep processor | wc -l`
-#set stored_deep=2
-#set threat_deep=8
+process_count=`nproc`
+#stored_deep=2
+threat_deep=12
 prove_mode=1
 
 export process_count
 export url
 export src_name
 #export stored_deep
-#export threat_deep
+export threat_deep
 export prove_mode
 
 cur_dir=`pwd`
