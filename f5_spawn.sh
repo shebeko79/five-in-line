@@ -1,17 +1,10 @@
 #!/bin/sh
-url=http://93.127.143.124/solution/solve.php
-src_name=somebody
-process_count=`nproc`
-#stored_deep=2
-threat_deep=12
-prove_mode=1
-
-export process_count
-export url
-export src_name
-#export stored_deep
-export threat_deep
-export prove_mode
+export url=http://93.127.143.124/solution/solve.php
+export src_name=somebody
+export process_count=`nproc`
+#export common_deep=2
+export threat_deep=12
+export prove_mode=1
 
 cur_dir=`pwd`
 
