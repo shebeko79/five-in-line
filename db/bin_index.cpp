@@ -735,7 +735,7 @@ namespace Gomoku
 			hex2bin(h,d);
 			if(d.size()!=parent.dir_key_len)
 				continue;
-			indexes.push_back(d);
+			indexes.push_back(std::move(d));
 		}
 
 		std::sort(indexes.begin(),indexes.end(),data_less_pr());
