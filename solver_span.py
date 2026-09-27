@@ -14,7 +14,7 @@ span_count = 0
 
 
 def get_job():
-    params = [db, db_path, 'get_ant_job']
+    params = [db, db_path, 'get_job']
     if base_state:
         params.append(base_state)
 
