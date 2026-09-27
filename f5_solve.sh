@@ -9,6 +9,6 @@ if [ "$key" = "" ]; then
 exit 1
 fi
 
-../../solver $key >solve_content 2>solver.log
+../../solver $key >solve_content 2>>solver.log
 wget -q -O result_file --post-file=solve_content $url'?src_name='$src_name'&cmd=save_job&key='$key'&pc='$process_count 2>save_job.log
 done
