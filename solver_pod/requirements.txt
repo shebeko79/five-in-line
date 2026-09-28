@@ -2,3 +2,4 @@
 # Add your packages here
 numpy>=1.24.0
 requests>=2.31.0
+joblib>=1.5

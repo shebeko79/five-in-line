@@ -1,10 +1,10 @@
-docker build --platform linux/amd64 -t fiveinline-solver:v1.2 .
-docker run --rm -it --platform linux/amd64 fiveinline-solver:v1.2 /bin/bash
-docker run --rm -it --platform linux/amd64 fiveinline-solver:v1.2
+docker build --platform linux/amd64 -t fiveinline-solver:v1.3 .
+docker run --rm -it --platform linux/amd64 fiveinline-solver:v1.3 /bin/bash
+docker run --rm -it --platform linux/amd64 fiveinline-solver:v1.3
 
 tar -pczf solver.tar.gz solver
 
 
-docker tag fiveinline-solver:v1.2 shebekoid/fiveinline-solver:v1.2
+docker tag fiveinline-solver:v1.3 shebekoid/fiveinline-solver:v1.3
 docker login
-docker push shebekoid/fiveinline-solver:v1.2
+docker push shebekoid/fiveinline-solver:v1.3
