@@ -5,7 +5,7 @@ import requests
 import joblib
 
 url = "http://93.127.143.124/solution/solve.php"
-solver = './solver.exe'
+solver = './solver'
 
 process_count = joblib.cpu_count()
 solvers = []
