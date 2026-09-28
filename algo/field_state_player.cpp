@@ -52,7 +52,7 @@ node_t field_state_player_t::solve()
 	lg<<"";
 	lg << "#" << field.size() + 1 << " " << print_steps(steps_t({ {root.move_color, p} }))
 		<<": time="<<perf<<" nodes="<<node_t::nodes_created<<" nps="<<nps;
-	lg<<" new_scores="<<field5.get_score(p,root.move_color);
+	lg<<"new_scores="<<field5.get_score(p,root.move_color);
 	root.log_statistic();
 	lg<<"Krestik:";
 	field5.get_field_krestik().log_statistic();
