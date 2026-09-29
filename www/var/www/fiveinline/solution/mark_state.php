@@ -21,11 +21,6 @@ if(!$access_verified)
 }
 
 $st=$HTTP_VARS["st"];
-if(!$st)
-{
-	echo "'st' is empty<br>";
-	exit(1);
-}
 
 $file_name=$DB_PATH."/marked.txt";
 $lst=file_get_contents($file_name);
@@ -39,6 +34,15 @@ else
 		$lst=array();
 	else
 		$lst=explode("\n",$lst);
+}
+
+if(!$st)
+{
+	foreach($lst as $v)
+	{
+		echo '<a href="'.$OWN_PATH.'mark_state.php?rm=1&st='.$v.'&godmode='.$godmode_val.'">X</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="'.$OWN_PATH.'index.php?st='.$v.'&godmode='.$godmode_val.'">'.$v.'</a><br>';
+	}
+	exit(0);
 }
 
 foreach ($lst as $k => $v) 
@@ -60,9 +64,6 @@ else $content = trim(implode("\n",$lst));
 
 file_put_contents($file_name,$content);
 
+header('Location: '.$OWN_PATH.'mark_state.php?godmode='.$godmode_val);
 
-foreach($lst as $v)
-{
-	echo '<a href="'.$OWN_PATH.'mark_state.php?rm=1&st='.$v.'&godmode='.$godmode_val.'">X</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="'.$OWN_PATH.'index.php?st='.$v.'&godmode='.$godmode_val.'">'.$v.'</a><br>';
-}
 ?>
