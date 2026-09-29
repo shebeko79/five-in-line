@@ -293,6 +293,11 @@ if(array_key_exists("godmode",$HTTP_VARS))
 	  $godmode_val=null;
 }
 
+$godmode_lnk='';
+if($godmode_val)
+  $godmode_lnk='&godmode='.$godmode_val;
+
+
 ?>
 <table border="1" cellpadding="0" cellspacing="0">
 <?php
@@ -347,10 +352,7 @@ for($y=$y1;$y<=$y2;$y++)
 			$title=sprintf("%d",$p->n);
 			
 			$cnt='<a href="'.$OWN_PATH.'?st='.$h;
-			
-			if($godmode_val)
-			  $cnt=$cnt.'&godmode='.$godmode_val;
-			
+			$cnt=$cnt.$godmode_lnk;
 			$cnt=$cnt.'" title="'.$title.'">'.step2str($next_step,true).'</a>';
 			
 			$c = 255-min(abs($p->n)*4,255);
@@ -386,7 +388,7 @@ for($y=$y1;$y<=$y2;$y++)
 			$o->step=$next_step;
 			
 			$h=$hex_state.step2hex($o);
-			$cnt='<a href="'.$OWN_PATH.'?st='.$h.'" style="color:'.$win_color.';">'.step2str($next_step,false).$p->n.'</a>';
+			$cnt='<a href="'.$OWN_PATH.'?st='.$h.$godmode_lnk.'" style="color:'.$win_color.';">'.step2str($next_step,false).$p->n.'</a>';
 			$style="background-color:rgb(220,220,220);";
 		}
 		else if(array_key_exists($skey,$tree_fails))
@@ -399,7 +401,7 @@ for($y=$y1;$y<=$y2;$y++)
 			$o->step=$next_step;
 		
 			$h=$hex_state.step2hex($o);
-			$cnt='<a href="'.$OWN_PATH.'?st='.$h.'" style="color:'.$fail_color.';">'.step2str($next_step,false).$p->n.'</a>';
+			$cnt='<a href="'.$OWN_PATH.'?st='.$h.$godmode_lnk.'" style="color:'.$fail_color.';">'.step2str($next_step,false).$p->n.'</a>';
 			$style="background-color:rgb(220,220,220);";
 		}
 
@@ -430,12 +432,12 @@ if($godmode_val)
 	}
 	
 	if (in_array($hex_state, $lst))
-		echo '<a href="'.$OWN_PATH.'mark_state.php?rm=1&st='.$hex_state.'&godmode='.$godmode_val.'">Unmark state</a>';
+		echo '<a href="'.$OWN_PATH.'mark_state.php?rm=1&st='.$hex_state.$godmode_lnk.'">Unmark state</a>';
 	else
-		echo '<a href="'.$OWN_PATH.'mark_state.php?st='.$hex_state.'&godmode='.$godmode_val.'">Mark state</a>';
+		echo '<a href="'.$OWN_PATH.'mark_state.php?st='.$hex_state.$godmode_lnk.'">Mark state</a>';
 	
 	echo '&nbsp;&nbsp;&nbsp;&nbsp;';
-	echo '<a href="'.$OWN_PATH.'explore_state.php?st='.$hex_state.'&godmode='.$godmode_val.'">Explore state</a>';
+	echo '<a href="'.$OWN_PATH.'explore_state.php?st='.$hex_state.$godmode_lnk.'">Explore state</a>';
 }
 ?>
 <?php
@@ -453,8 +455,7 @@ if($godmode_val)
 		if($i+1<count($steps))
 		{
 			echo '<a href="'.$OWN_PATH.'?st='.$h;
-			if($godmode_val)
-				echo '&godmode='.$godmode_val;
+			echo $godmode_lnk;
 			echo '">';
 		}
 		
