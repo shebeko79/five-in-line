@@ -438,7 +438,33 @@ if($godmode_val)
 	echo '<a href="'.$OWN_PATH.'explore_state.php?st='.$hex_state.'&godmode='.$godmode_val.'">Explore state</a>';
 }
 ?>
+<?php
+	$h = '';
+	echo '<p>';
+	for($i=0;$i<count($steps);$i++)
+	{
+		$p = $steps[$i];
+		
+		if ($i != 0)
+			echo ';';
 
+		$h=$h.step2hex($p);
+		
+		if($i+1<count($steps))
+		{
+			echo '<a href="'.$OWN_PATH.'?st='.$h;
+			if($godmode_val)
+				echo '&godmode='.$godmode_val;
+			echo '">';
+		}
+		
+		echo '('.$p->x.','.$p->y.':'.step2str($p->step,false).')';
+
+		if($i+1<count($steps))
+			echo '</a>';
+	}
+	echo '</p>';
+?>
 <pre>
 <?php
 passthru($cmd,$r);
