@@ -11,7 +11,7 @@ namespace Gomoku { namespace State5
 
 unsigned common_deep = 2;
 unsigned gl_threat_deep = 8;
-bool prove_mode = false;
+bool prove_mode = true;
 unsigned recalc_count = 4;
 
 
