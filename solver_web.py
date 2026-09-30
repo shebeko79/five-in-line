@@ -70,17 +70,26 @@ def wait_cycle():
                 except subprocess.TimeoutExpired as e:
                     continue
 
-                s['err'].close()
                 if s['p'].returncode != 0:
                     raise Exception(f'solver failed {i=} key={s["key"]}')
                 else:
                     solver_str = s['p'].communicate()[0].decode("utf-8")
                     save_job_str = solver_str
-                    save_job(s['key'], save_job_str)
+                    try:
+                        save_job(s['key'], save_job_str)
+                    except Exception as ex:
+                        print(ex)
+                        break
 
-            s['pause'] = True
+                s['err'].close()
+                s['pause'] = True
 
-            hex_key = get_job()
+            try:
+                hex_key = get_job()
+            except Exception as ex:
+                print(ex)
+                break
+
             if key_exists(hex_key):
                 print(f'key={hex_key} already processing')
             else:
