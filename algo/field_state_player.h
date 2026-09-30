@@ -127,6 +127,7 @@ namespace Gomoku { namespace State5
 		npoints_t fails;
 		
 		bool deep_limit_reached = false;
+		bool expect_all_fails = false;
 		unsigned forced_max_fail = 0;
 
 		fork_t oposite_fork;

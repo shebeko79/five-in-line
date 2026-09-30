@@ -248,7 +248,10 @@ void node_t::process()
 	auto old_threat_deep = threat_deep;
 
 	if (deep >= common_deep)
+	{
 		deep_limit_reached = true;
+		expect_all_fails = prove_mode && move_color == st_nolik && !fails.empty() && neutrals.empty();
+	}
 	else if(prove_mode&&move_color==st_krestik)
 		threat_deep = std::min(common_deep+2,threat_deep);
 
@@ -317,7 +320,7 @@ void node_t::process_oposite_forked(points_range& rng)
 
 bool node_t::mark_unchecked_make_move(const points_range& rng)
 {
-	if (deep_limit_reached)
+	if (deep_limit_reached && !expect_all_fails)
 	{
 		for(auto p = rng.first; p != rng.second; ++p)
 			neutrals.emplace_back(*p, player.field5.get_score(*p, move_color));
@@ -333,6 +336,12 @@ bool node_t::make_move_find_win(const points_range& rng)
 {
 	for(auto p = rng.first; p != rng.second; ++p)
 	{
+		if (expect_all_fails && !neutrals.empty())
+		{
+			neutrals.emplace_back(*p, player.field5.get_score(*p, move_color));
+			continue;
+		}
+
 		make_move(*p);
 		if(!wins.empty())
 			return true;
