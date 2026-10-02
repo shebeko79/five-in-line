@@ -1,3 +1,29 @@
+apt-get update
+
+Replace cmake3 by cmake4:
+Opt 1.
+snap install cmake --classic
+
+Opt 2.
+apt install python3-pip python3-venv
+pip install cmake --upgrade
+hash -r
+cmake --version
+
+
+Boost
+apt-get install libboost-all-dev
+
+
+git clone https://github.com/shebeko79/five-in-line.git
+
+
 cmake -DCMAKE_BUILD_TYPE=Release .
+or (no real difference in speed actually)
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-march=native" .
+
 make
+
+make VERBOSE=1
+
 
