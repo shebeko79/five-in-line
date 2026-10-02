@@ -28,8 +28,8 @@ namespace Gomoku { namespace State5
 
         int thinking = 0;
 
-		void squeeze_win(node_t& root);
-		void squeeze_fail(node_t& root);
+		void squeeze_win(node_t& root, size_t solved_nodes_count);
+		void squeeze_fail(node_t& root, size_t solved_nodes_count);
 	};
 
 	class fork_t
@@ -119,6 +119,7 @@ namespace Gomoku { namespace State5
 		inline const npoints_t& get_fails() const {return fails;}
 
 		static size_t nodes_created;
+		static size_t max_nodes;
 	private:
 		field_state_player_t& player;
 

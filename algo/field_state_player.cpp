@@ -5,6 +5,7 @@
 #include "../extern/binary_find.h"
 #include "../extern/object_progress.hpp"
 #include "algo_utils.h"
+#include <limits>
 
 namespace Gomoku { namespace State5
 {
@@ -31,6 +32,8 @@ node_t field_state_player_t::solve()
 	field=game().field();
 	field5.set_steps(field.get_steps());
 
+	node_t::max_nodes = std::numeric_limits<size_t>::max();
+
 	node_t root(*this, field.back(),0,gl_threat_deep);
 
 	ObjectProgress::log_generator lg(true);
@@ -45,6 +48,8 @@ node_t field_state_player_t::solve()
         hld_thinking.reset();
         throw;
 	}
+
+	auto solved_nodes_count = node_t::nodes_created;
 
 	point p=root.get_next_step();
 
@@ -61,14 +66,14 @@ node_t field_state_player_t::solve()
 	lg<<"empty_count="<<field5.get_empty_points().size();
 
 	
-	squeeze_win(root);
-	squeeze_fail(root);
+	squeeze_win(root, solved_nodes_count);
+	squeeze_fail(root, solved_nodes_count);
 	lg<<"total_time="<<perf;
 
 	return root;
 }
 
-void field_state_player_t::squeeze_win(node_t& root)
+void field_state_player_t::squeeze_win(node_t& root, size_t solved_nodes_count)
 {
 	const npoint* pmin_win = root.get_min_win();
 	if (!pmin_win)
@@ -81,25 +86,34 @@ void field_state_player_t::squeeze_win(node_t& root)
 	for (unsigned td = gl_threat_deep - 1; td >= 2; td--)
 	{
 		lg<<"Squeeze win: threat_deep="<<td;
+		ObjectProgress::perfomance perf;
+
+		node_t::nodes_created = 0;
+		node_t::max_nodes = solved_nodes_count * 4;
 
 		node_t dist_root(*this, field.back(),0,td);
 
 		dist_root.process();
 
 		const npoint* dist_win = dist_root.get_min_win();
-		if(!dist_win)
+		if (!dist_win)
+		{
+			lg<<"No win. nodes="<<node_t::nodes_created<<" time="<<perf;
 			break;
+		}
 
 		if (dist_win->n < min_win.n)
 		{
 			root.replace_shorter_wins(dist_root);
 			min_win = *dist_win;
-			lg << "Better win: " << print_points(npoints_t({ min_win}));
+			lg << "Better win: " << print_points(npoints_t({ min_win}))<<" nodes="<<node_t::nodes_created<<" time="<<perf;
 		}
+		else
+			lg<<"Same win. nodes="<<node_t::nodes_created<<" time="<<perf;
 	}
 }
 
-void field_state_player_t::squeeze_fail(node_t& root)
+void field_state_player_t::squeeze_fail(node_t& root, size_t solved_nodes_count)
 {
 	const npoint* pmax_fail = root.get_max_fail();
 
@@ -113,14 +127,21 @@ void field_state_player_t::squeeze_fail(node_t& root)
 	for (unsigned td = gl_threat_deep - 1; td >= 2; td--)
 	{
 		lg<<"Squeeze fail: threat_deep="<<td;
+		ObjectProgress::perfomance perf;
+
+		node_t::nodes_created = 0;
+		node_t::max_nodes = solved_nodes_count * 4;
 
 		node_t dist_root(*this, field.back(),0,td);
 
 		dist_root.process();
 
 		const npoint* dist_fail = dist_root.get_max_fail();
-		if(!dist_fail)
+		if (!dist_fail)
+		{
+			lg<<"No fail. nodes="<<node_t::nodes_created<<" time="<<perf;
 			break;
+		}
 		
 		if(dist_root.get_min_win()!= nullptr)
 			throw std::runtime_error("squeeze_fail(): win found");
@@ -132,8 +153,10 @@ void field_state_player_t::squeeze_fail(node_t& root)
 		{
 			root.replace_shorter_fails(dist_root);
 			max_fail = *dist_fail;
-			lg << "Better fail: " << print_points(npoints_t({ max_fail}));
+			lg << "Better fail: " << print_points(npoints_t({ max_fail}))<<" nodes="<<node_t::nodes_created<<" time="<<perf;
 		}
+		else
+			lg<<"Same fail. nodes="<<node_t::nodes_created<<" time="<<perf;
 	}
 }
 
@@ -142,6 +165,7 @@ void field_state_player_t::squeeze_fail(node_t& root)
 // node_t
 //
 size_t node_t::nodes_created=0;
+size_t node_t::max_nodes=std::numeric_limits<size_t>::max();
 
 node_t::node_t(field_state_player_t& _player, const step_t& st, unsigned _deep, unsigned _threat_deep) :
 	prev_step(st),
@@ -191,7 +215,8 @@ void node_t::process()
 		return;
 	}
 
-	if (deep >= threat_deep)
+	if (deep >= threat_deep || 
+		deep >=common_deep && nodes_created>=max_nodes)
 		deep_limit_reached = true;
 
 	scr.cnt(move_color) = kCount4*2;
