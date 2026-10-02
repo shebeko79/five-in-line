@@ -250,7 +250,7 @@ void node_t::process()
 	if (deep >= common_deep)
 	{
 		deep_limit_reached = true;
-		expect_all_fails = prove_mode && move_color == st_nolik && !fails.empty() && neutrals.empty();
+		expect_all_fails = !fails.empty() && neutrals.empty();
 	}
 	else if(prove_mode&&move_color==st_krestik)
 		threat_deep = std::min(common_deep+2,threat_deep);
