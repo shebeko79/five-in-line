@@ -472,39 +472,59 @@ namespace Gomoku
 
     bool solution_tree_t::get_ant_job(const steps_t& root_key, steps_t& result_key)
     {
-		sol_state_t base_st;
-		base_st.key=root_key;
+		size_t old_neutrals_size = 0;
+		ObjectProgress::log_generator lg(true);
 
-		//ObjectProgress::log_generator lg(true);
-		//lg<<"get_ant_job(): check "<<print_steps(root_key);
-
-		if(!get(base_st))
+		while (true)
 		{
-            result_key=base_st.key;
-			return true;
+			sol_state_t base_st;
+			base_st.key = root_key;
+
+			if (!get(base_st))
+			{
+				result_key = base_st.key;
+				return true;
+			}
+
+			if (base_st.is_completed())
+				return false;
+
+			if (old_neutrals_size != 0 && base_st.neutrals.size() >= old_neutrals_size)
+			{
+				lg<<"get_ant_job(): inconsistent state doesn't change: old_neutrals_size="<<old_neutrals_size
+					<<"neutrals_size"<<base_st.neutrals.size();
+				throw std::runtime_error("get_ant_job(): inconsistent state doesn't change: "+print_steps(root_key));
+			}
+
+
+			Step move_color = next_color(root_key.size());
+			point move_point;
+
+			if (move_color == st_nolik)
+				move_point = base_st.neutrals[rand() % base_st.neutrals.size()];
+			else
+				move_point = select_krestik_move(root_key, base_st);
+
+
+			steps_t child_key = root_key;
+			child_key.push_back(step_t(move_color, move_point));
+
+			if (get_ant_job(child_key, result_key))
+				return true;
+
+			lg << "get_ant_job(): unexpected complete state: child=" << print_steps(child_key)
+				<< " root=" << print_steps(root_key);
+
+			old_neutrals_size = base_st.neutrals.size();
+
+			sol_state_t child_st;
+			child_st.key = child_key;
+
+			if (!get(child_st))
+				throw std::runtime_error("get_ant_job(): can't load child to fix: "+print_steps(child_key));
+
+			relax(child_st);
 		}
-
-		if(base_st.is_completed())
-			return false;
-
-		Step move_color = next_color(root_key.size());
-
-		point move_point;
-
-		if (move_color == st_nolik)
-		{
-			move_point = base_st.neutrals[rand()%base_st.neutrals.size()];
-		}
-		else
-		{
-			move_point = select_krestik_move(root_key, base_st);
-		}
-			
-
-		steps_t child_st = root_key;
-		child_st.push_back(step_t(move_color, move_point));
-
-		return get_ant_job(child_st, result_key);
     }
 
 	point solution_tree_t::select_krestik_move(const steps_t& root_key, sol_state_t& base_st)
