@@ -90,7 +90,7 @@ namespace Gomoku
 	struct near_point_pr : public less_point_pr
 	{
 		point c;
-		near_point_pr(const point& _c) : c(_c){}
+		near_point_pr(const point& _c = point(0,0)) : c(_c){}
 		int dist(const point& a) const
 		{
 			int rx=a.x-c.x;if(rx<0)rx=-rx;
@@ -100,7 +100,7 @@ namespace Gomoku
 
 		inline bool operator()(const point& a,const point& b) const
 		{
-		  int da=dist(a);
+			int da=dist(a);
 			int db=dist(b);
 			if(da!=db)return da<db;
 			return less_point_pr::operator()(a,b);
@@ -119,17 +119,6 @@ namespace Gomoku
 		}
 	};
 
-	struct maxn_near_point_pr : public near_point_pr
-	{
-		maxn_near_point_pr(const point& _c) : near_point_pr(_c){}
-		inline bool operator()(const npoint& a,const npoint& b) const
-		{
-			if(a.n!=b.n)return a.n>b.n;
-			return near_point_pr::operator()(a,b);
-		}
-
-	};
-    
     template<class Value>
 	class matrix
 	{

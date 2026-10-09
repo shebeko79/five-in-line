@@ -154,7 +154,7 @@ namespace Gomoku { namespace State5
 	};
 
 	
-	struct score_pr
+	struct score_pr : near_point_pr
 	{
 		const field5_t& field;
 		const Step move_color;
@@ -171,7 +171,10 @@ namespace Gomoku { namespace State5
 		{
 			Score sa = field.get_score(pa, move_color);
 			Score sb = field.get_score(pb, move_color);
-			return k*sa > k*sb;
+			if(sa != sb)
+				return k*sa > k*sb;
+
+			return near_point_pr::operator()(pa,pb);
 		}
 	};
 
@@ -179,7 +182,7 @@ namespace Gomoku { namespace State5
 	{
 		const int k;
 		
-		fscore_pr(Step move_color) : near_point_pr(point(0,0)), k(move_color==st_krestik? 1:-1){}
+		fscore_pr(Step move_color) : k(move_color==st_krestik? 1:-1){}
 		inline bool operator()(const ipoint& pa, const ipoint& pb) const
 		{
 			if(pa.i != pb.i)
