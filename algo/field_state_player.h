@@ -11,7 +11,6 @@ namespace Gomoku { namespace State5
 	extern unsigned gl_threat_deep;
 	extern unsigned lookup_threat_deep;
 	extern bool prove_mode;
-	extern unsigned recalc_count;
 
 	extern size_t max_nodes;
 	extern size_t lookup_nodes;
@@ -150,7 +149,7 @@ namespace Gomoku { namespace State5
 
 		points_t::const_iterator find_p4_fork_that_really_wins(const points_range& rng);
 
-		void recalc_most_promising_neutrals();
+		//void recalc_most_promising_neutrals();
 	};
 
 

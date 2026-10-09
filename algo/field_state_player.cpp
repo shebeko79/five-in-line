@@ -13,7 +13,6 @@ unsigned common_deep = 2;
 unsigned gl_threat_deep = 8;
 unsigned lookup_threat_deep = 14;
 bool prove_mode = true;
-unsigned recalc_count = 4;
 
 size_t max_nodes = 60000000;
 size_t lookup_nodes = 1000000;
@@ -277,8 +276,6 @@ void node_t::process(points_t& pts)
 	if(mark_unchecked_make_move(cut_rng))
 		return;
 
-	auto old_threat_deep = threat_deep;
-
 	if (deep >= common_deep)
 	{
 		deep_limit_reached = true;
@@ -293,12 +290,6 @@ void node_t::process(points_t& pts)
 	process_oposite_forked(cut_rng);
 	if(mark_unchecked_make_move(cut_rng))
 		return;
-
-	if (deep < common_deep && prove_mode && move_color == st_krestik)
-	{
-		threat_deep = old_threat_deep;
-		recalc_most_promising_neutrals();
-	}
 }
 
 void node_t::process_or_recalc()
@@ -317,6 +308,7 @@ void node_t::process_or_recalc()
 	process(pts);
 }
 
+#if 0
 void node_t::recalc_most_promising_neutrals()
 {
 	if(recalc_count == 0)
@@ -346,6 +338,7 @@ void node_t::recalc_most_promising_neutrals()
 	if(mark_unchecked_make_move(rng))
 		return;
 }
+#endif
 
 void node_t::process_oposite_forked(points_range& rng)
 {
