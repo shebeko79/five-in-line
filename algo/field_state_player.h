@@ -9,8 +9,12 @@ namespace Gomoku { namespace State5
 
 	extern unsigned common_deep;
 	extern unsigned gl_threat_deep;
+	extern unsigned lookup_threat_deep;
 	extern bool prove_mode;
 	extern unsigned recalc_count;
+
+	extern size_t max_nodes;
+	extern size_t lookup_nodes;
 
 	class field_state_player_t : public iplayer_t
 	{
@@ -102,11 +106,13 @@ namespace Gomoku { namespace State5
 		node_t(field_state_player_t& _player, const step_t& st, unsigned _deep, unsigned _threat_deep);
 
 		void process();
+		void process_or_recalc();
 
 		point get_next_step() const;
 
 		void log_statistic() const;
 
+		inline bool is_complete() const {return !wins.empty() || neutrals.empty();}
 		const npoint* get_min_win() const;
 		const npoint* get_max_fail() const;
 		int best_neutral_score() const;
@@ -132,6 +138,8 @@ namespace Gomoku { namespace State5
 		unsigned forced_max_fail = 0;
 
 		fork_t oposite_fork;
+
+		void process(points_t& pts);
 
 		bool mark_unchecked_make_move(const points_range& rng);
 		bool make_move_find_win(const points_range& rng);

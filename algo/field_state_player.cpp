@@ -5,15 +5,18 @@
 #include "../extern/binary_find.h"
 #include "../extern/object_progress.hpp"
 #include "algo_utils.h"
-#include <limits>
 
 namespace Gomoku { namespace State5
 {
 
 unsigned common_deep = 2;
 unsigned gl_threat_deep = 8;
+unsigned lookup_threat_deep = 14;
 bool prove_mode = true;
 unsigned recalc_count = 4;
+
+size_t max_nodes = 60000000;
+size_t lookup_nodes = 1000000;
 
 
 void field_state_player_t::delegate_step()
@@ -165,7 +168,7 @@ void field_state_player_t::squeeze_fail(node_t& root, size_t solved_nodes_count)
 // node_t
 //
 size_t node_t::nodes_created=0;
-size_t node_t::max_nodes=std::numeric_limits<size_t>::max();
+size_t node_t::max_nodes=State5::max_nodes;
 
 node_t::node_t(field_state_player_t& _player, const step_t& st, unsigned _deep, unsigned _threat_deep) :
 	prev_step(st),
@@ -180,7 +183,11 @@ node_t::node_t(field_state_player_t& _player, const step_t& st, unsigned _deep, 
 void node_t::process()
 {
 	points_t pts = set_to_point(player.field5.get_empty_points());
+	process(pts);
+}
 
+void node_t::process(points_t& pts)
+{
 	auto& scores_field = player.field5.get_scores_field();
 	max_step_pr pr(scores_field, move_color);
 
@@ -292,6 +299,22 @@ void node_t::process()
 		threat_deep = old_threat_deep;
 		recalc_most_promising_neutrals();
 	}
+}
+
+void node_t::process_or_recalc()
+{
+	if (neutrals.empty())
+	{
+		if(!wins.empty() || !fails.empty() || forced_max_fail != 0)
+			return;
+
+		process();
+		return;
+	}
+
+	points_t pts(neutrals.begin(), neutrals.end());
+	neutrals.clear();
+	process(pts);
 }
 
 void node_t::recalc_most_promising_neutrals()
