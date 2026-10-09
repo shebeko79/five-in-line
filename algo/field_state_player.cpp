@@ -56,7 +56,6 @@ node_t field_state_player_t::solve()
 	point p=root.get_next_step();
 
 	auto nps = node_t::nodes_created/(perf.delay()/1000000.0);
-	lg<<"";
 	lg << "#" << field.size() + 1 << " " << print_steps(steps_t({ {root.move_color, p} }))
 		<<": time="<<perf<<" nodes="<<node_t::nodes_created<<" nps="<<nps;
 	lg<<"new_scores="<<field5.get_score(p,root.move_color);
@@ -71,6 +70,7 @@ node_t field_state_player_t::solve()
 	squeeze_win(root, solved_nodes_count);
 	squeeze_fail(root, solved_nodes_count);
 	lg<<"total_time="<<perf;
+	lg<<"";
 
 	return root;
 }
