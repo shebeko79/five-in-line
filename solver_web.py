@@ -79,7 +79,6 @@ def wait_cycle():
                         save_job(s['key'], save_job_str)
                     except Exception as ex:
                         print(ex)
-                        break
 
                 s['err'].close()
                 s['pause'] = True
