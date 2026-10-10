@@ -216,8 +216,12 @@ void node_t::process(points_t& pts)
 
 			return;
 		}
-
-		make_move(*rng.first);
+		
+		if (deep >= threat_deep)
+			neutrals.emplace_back(*rng.first, player.field5.get_score(*rng.first, move_color));
+		else
+			make_move(*rng.first);
+		
 		return;
 	}
 
