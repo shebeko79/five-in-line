@@ -336,7 +336,7 @@ for($y=$y1;$y<=$y2;$y++)
 				}
 			}
 			
-			$style="background-color:rgb(220,220,220);";
+			$style="background-color:rgb(200,235,240);";
 			$cnt=step2str($p->step,$special);
 		}
 		else if(array_key_exists($skey,$neutrals))
