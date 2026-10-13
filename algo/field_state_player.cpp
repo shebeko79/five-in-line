@@ -283,7 +283,7 @@ void node_t::process(points_t& pts)
 	if (deep >= common_deep)
 	{
 		deep_limit_reached = true;
-		expect_all_fails = !fails.empty() && neutrals.empty();
+		expect_all_fails = fails_exists() && neutrals.empty();
 	}
 	else if(prove_mode&&move_color==st_krestik)
 		threat_deep = std::min(common_deep+2,threat_deep);
@@ -300,7 +300,7 @@ void node_t::process_or_recalc()
 {
 	if (neutrals.empty())
 	{
-		if(!wins.empty() || !fails.empty() || forced_max_fail != 0)
+		if(!wins.empty() || fails_exists())
 			return;
 
 		process();

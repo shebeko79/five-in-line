@@ -112,6 +112,7 @@ namespace Gomoku { namespace State5
 		void log_statistic() const;
 
 		inline bool is_complete() const {return !wins.empty() || neutrals.empty();}
+		inline bool fails_exists() const {return !fails.empty() || forced_max_fail != 0 ;}
 		const npoint* get_min_win() const;
 		const npoint* get_max_fail() const;
 		int best_neutral_score() const;
