@@ -68,7 +68,6 @@ node_t field_state_player_t::solve()
 	{
 		p=root.get_next_step();
 
-		lg << "";
 		lg << "Lookup: "<< print_steps(steps_t({ {root.move_color, p} }))
 			<<": time="<<lookup_perf<<" nodes="<<node_t::nodes_created;
 		root.log_statistic();
@@ -329,19 +328,45 @@ bool node_t::process_lookup()
 
 	auto end_it = std::upper_bound(neutrals.begin(), neutrals.end(), scr, pr);
 
-	if(end_it == neutrals.begin())
-		return false;
+	points_t high_pts(neutrals.begin(), end_it);
+	points_t low_pts(end_it, neutrals.end());
 
-	points_t pts(neutrals.begin(), end_it);
-	neutrals.erase(neutrals.begin(), end_it);
+	neutrals.clear();
+	
+	ObjectProgress::log_generator lg(true);
 
-	threat_deep = lookup_threat_deep;
-	nodes_created = 0;
-	max_nodes = lookup_nodes;
-	process(pts);
+	if (!high_pts.empty())
+	{
+		lg << "High lookup";
+		threat_deep = lookup_threat_deep;
+		nodes_created = 0;
+		max_nodes = lookup_nodes;
+		reset_intermediate_state();
+		process(high_pts);
+	}
+
+	if (!low_pts.empty())
+	{
+		lg << "Low lookup";
+		threat_deep = lookup_threat_deep;
+		nodes_created = 0;
+		max_nodes = lookup_nodes;
+
+		points_range rng(low_pts.begin(), low_pts.end());
+		std::sort(rng.first, rng.second, score_pr(player.field5, move_color));
+		make_move_find_win(rng);
+	}
 
 	return true;
 }
+
+void node_t::reset_intermediate_state()
+{
+	oposite_fork = fork_t();
+	deep_limit_reached = false;
+	expect_all_fails = false;
+}
+
 
 void node_t::process_oposite_forked(points_range& rng)
 {

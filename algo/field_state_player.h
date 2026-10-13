@@ -147,6 +147,7 @@ namespace Gomoku { namespace State5
 
 		void limit_to_p4_fork(const points_t& other_p4h);
 		void process_oposite_forked(points_range& rng);
+		void reset_intermediate_state();
 
 		points_t::const_iterator find_p4_fork_that_really_wins(const points_range& rng);
 	};
