@@ -31,8 +31,8 @@ namespace Gomoku { namespace State5
 
         int thinking = 0;
 
-		void squeeze_win(node_t& root, size_t solved_nodes_count);
-		void squeeze_fail(node_t& root, size_t solved_nodes_count);
+		void squeeze_win(node_t& root, size_t nodes_budget, unsigned from_deep, unsigned to_deep);
+		void squeeze_fail(node_t& root, size_t nodes_budget, unsigned from_deep, unsigned to_deep);
 	};
 
 	class fork_t
@@ -105,7 +105,7 @@ namespace Gomoku { namespace State5
 		node_t(field_state_player_t& _player, const step_t& st, unsigned _deep, unsigned _threat_deep);
 
 		void process();
-		void process_or_recalc();
+		bool process_lookup();
 
 		point get_next_step() const;
 
@@ -149,8 +149,6 @@ namespace Gomoku { namespace State5
 		void process_oposite_forked(points_range& rng);
 
 		points_t::const_iterator find_p4_fork_that_really_wins(const points_range& rng);
-
-		//void recalc_most_promising_neutrals();
 	};
 
 

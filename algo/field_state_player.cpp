@@ -10,8 +10,8 @@ namespace Gomoku { namespace State5
 {
 
 unsigned common_deep = 2;
-unsigned gl_threat_deep = 8;
-unsigned lookup_threat_deep = 14;
+unsigned gl_threat_deep = 12;
+unsigned lookup_threat_deep = 16;
 bool prove_mode = true;
 
 size_t max_nodes = 60000000;
@@ -51,31 +51,48 @@ node_t field_state_player_t::solve()
         throw;
 	}
 
-	auto solved_nodes_count = node_t::nodes_created;
+	auto squeeze_nodes_budget = node_t::nodes_created * 4;
+	unsigned from_squeeze = common_deep;
+	unsigned to_squeeze = gl_threat_deep;
 
 	point p=root.get_next_step();
 
 	auto nps = node_t::nodes_created/(perf.delay()/1000000.0);
 	lg << "#" << field.size() + 1 << " " << print_steps(steps_t({ {root.move_color, p} }))
 		<<": time="<<perf<<" nodes="<<node_t::nodes_created<<" nps="<<nps;
-	lg<<"new_scores="<<field5.get_score(p,root.move_color);
 	root.log_statistic();
-	lg<<"Krestik:";
-	field5.get_field_krestik().log_statistic();
-	lg<<"Nolik:";
-	field5.get_field_nolik().log_statistic();
-	lg<<"empty_count="<<field5.get_empty_points().size();
 
+	ObjectProgress::perfomance lookup_perf;
+
+	if (root.process_lookup())
+	{
+		p=root.get_next_step();
+
+		lg << "";
+		lg << "Lookup: "<< print_steps(steps_t({ {root.move_color, p} }))
+			<<": time="<<lookup_perf<<" nodes="<<node_t::nodes_created;
+		root.log_statistic();
+		
+		squeeze_nodes_budget = lookup_nodes;
+		from_squeeze = gl_threat_deep;
+		to_squeeze = lookup_threat_deep;
+	}
+
+	//lg<<"Krestik:";
+	//field5.get_field_krestik().log_statistic();
+	//lg<<"Nolik:";
+	//field5.get_field_nolik().log_statistic();
+	lg<<"empty_count="<<field5.get_empty_points().size();
 	
-	squeeze_win(root, solved_nodes_count);
-	squeeze_fail(root, solved_nodes_count);
+	squeeze_win(root, squeeze_nodes_budget, from_squeeze, to_squeeze);
+	squeeze_fail(root, squeeze_nodes_budget, from_squeeze, to_squeeze);
 	lg<<"total_time="<<perf;
 	lg<<"";
 
 	return root;
 }
 
-void field_state_player_t::squeeze_win(node_t& root, size_t solved_nodes_count)
+void field_state_player_t::squeeze_win(node_t& root, size_t nodes_budget, unsigned from_deep, unsigned to_deep)
 {
 	const npoint* pmin_win = root.get_min_win();
 	if (!pmin_win)
@@ -85,13 +102,13 @@ void field_state_player_t::squeeze_win(node_t& root, size_t solved_nodes_count)
 
 	ObjectProgress::log_generator lg(true);
 
-	for (unsigned td = gl_threat_deep - 1; td >= 2; td--)
+	for (unsigned td = to_deep - 1; td > from_deep; td--)
 	{
 		lg<<"Squeeze win: threat_deep="<<td;
 		ObjectProgress::perfomance perf;
 
 		node_t::nodes_created = 0;
-		node_t::max_nodes = solved_nodes_count * 4;
+		node_t::max_nodes = nodes_budget;
 
 		node_t dist_root(*this, field.back(),0,td);
 
@@ -115,7 +132,7 @@ void field_state_player_t::squeeze_win(node_t& root, size_t solved_nodes_count)
 	}
 }
 
-void field_state_player_t::squeeze_fail(node_t& root, size_t solved_nodes_count)
+void field_state_player_t::squeeze_fail(node_t& root, size_t nodes_budget, unsigned from_deep, unsigned to_deep)
 {
 	const npoint* pmax_fail = root.get_max_fail();
 
@@ -126,13 +143,13 @@ void field_state_player_t::squeeze_fail(node_t& root, size_t solved_nodes_count)
 
 	ObjectProgress::log_generator lg(true);
 
-	for (unsigned td = gl_threat_deep - 1; td >= 2; td--)
+	for (unsigned td = to_deep - 1; td > from_deep; td--)
 	{
 		lg<<"Squeeze fail: threat_deep="<<td;
 		ObjectProgress::perfomance perf;
 
 		node_t::nodes_created = 0;
-		node_t::max_nodes = solved_nodes_count * 4;
+		node_t::max_nodes = nodes_budget;
 
 		node_t dist_root(*this, field.back(),0,td);
 
@@ -296,53 +313,35 @@ void node_t::process(points_t& pts)
 		return;
 }
 
-void node_t::process_or_recalc()
+bool node_t::process_lookup()
 {
-	if (neutrals.empty())
-	{
-		if(!wins.empty() || fails_exists())
-			return;
-
-		process();
-		return;
-	}
-
-	points_t pts(neutrals.begin(), neutrals.end());
-	neutrals.clear();
-	process(pts);
-}
-
-#if 0
-void node_t::recalc_most_promising_neutrals()
-{
-	if(recalc_count == 0)
-		return;
+	if(is_complete())
+		return false;
 
 	max_step_pr pr(player.field5.get_scores_field(), move_color);
 	//unnecessary now because they are already in sorted order, but who know
-	// anyway there is no measurable preformance hit by this sort
+	// anyway there is no measurable performance hit by this sort
 	sort(neutrals, pr);
 
 	score_t scr;
 	scr.cnt(move_color) = kCount3*2;
 	scr.cnt(prev_step.step) = 0;
 
-	auto beg_it = std::upper_bound(neutrals.begin(), neutrals.end(), scr, pr);
+	auto end_it = std::upper_bound(neutrals.begin(), neutrals.end(), scr, pr);
 
-	auto end_it = neutrals.end();
-	if (end_it-beg_it > recalc_count)
-	{
-		end_it = beg_it + recalc_count;
-		std::partial_sort(beg_it, end_it, neutrals.end(),fscore_pr(move_color));
-	}
+	if(end_it == neutrals.begin())
+		return false;
 
-	points_t pts(beg_it, end_it);
-	neutrals.erase(beg_it, end_it);
-	auto rng = std::make_pair(pts.begin(),pts.end());
-	if(mark_unchecked_make_move(rng))
-		return;
+	points_t pts(neutrals.begin(), end_it);
+	neutrals.erase(neutrals.begin(), end_it);
+
+	threat_deep = lookup_threat_deep;
+	nodes_created = 0;
+	max_nodes = lookup_nodes;
+	process(pts);
+
+	return true;
 }
-#endif
 
 void node_t::process_oposite_forked(points_range& rng)
 {
