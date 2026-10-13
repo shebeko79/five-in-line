@@ -381,7 +381,8 @@ bool node_t::make_move_find_win(const points_range& rng)
 {
 	for(auto p = rng.first; p != rng.second; ++p)
 	{
-		if (expect_all_fails && !neutrals.empty())
+		if (( expect_all_fails || prove_mode && move_color == st_nolik && deep >= common_deep ) 
+			&& !neutrals.empty())
 		{
 			neutrals.emplace_back(*p, player.field5.get_score(*p, move_color));
 			continue;
