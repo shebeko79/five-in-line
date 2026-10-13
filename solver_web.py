@@ -18,7 +18,7 @@ def get_job():
     if src_name is not None:
         req_url += "&src_name=" + src_name
 
-    result = requests.get(req_url)
+    result = requests.get(req_url, timeout=30)
     if result.status_code != 200:
         result.raise_for_status()
     return result.text
@@ -37,7 +37,7 @@ def save_job(hex_key, content):
         req_url += "&src_name=" + src_name
 
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-    result = requests.post(req_url, data=content, headers=headers)
+    result = requests.post(req_url, data=content, headers=headers, timeout=30)
     if not result.ok:
         result.raise_for_status()
 
@@ -66,7 +66,7 @@ def wait_cycle():
             s = solvers[i]
             if not s['pause']:
                 try:
-                    s['p'].wait(0)
+                    s['p'].wait(0.01)
                 except subprocess.TimeoutExpired as e:
                     continue
 
@@ -97,7 +97,11 @@ def wait_cycle():
             solvers[i] = s
 
         if len(solvers) < process_count:
-            hex_key = get_job()
+            try:
+                hex_key = get_job()
+            except Exception as ex:
+                print(ex)
+                continue
             if key_exists(hex_key):
                 print(f'key={hex_key} already processing')
             else:
