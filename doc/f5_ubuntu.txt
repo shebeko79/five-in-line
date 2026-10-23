@@ -15,8 +15,7 @@ apt install python-is-python3
 or
 alias python=python3
 
-pip install joblib
-pip install requests
+pip install joblib && pip install requests
 
 
 
@@ -36,3 +35,18 @@ make
 make VERBOSE=1
 
 
+
+############################
+#vast.ai NVIDIA CUDA
+
+apt-get update --yes && \
+    DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends \
+        wget \
+        curl \
+		daemon \
+    && rm -rf /var/lib/apt/lists/*
+
+
+pip install joblib && pip install requests
+
+wget -q http://93.127.143.124/solver.tar.gz && tar -pxzf solver.tar.gz -C . && cd solver
