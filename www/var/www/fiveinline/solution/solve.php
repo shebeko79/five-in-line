@@ -52,24 +52,25 @@ function get_job_from_list()
 	{
 		$k=mt_rand(0,count($lst)-1);
 		
-		if(empty($lst[$k]))
-		  return false;
-	  
-		$v=$lst[$k];
-		$cc=$cmd." ".escapeshellarg($v);
-
-		$output=array();
-		exec($cc,$output);
-		
-		$output=implode("\n",$output);
-		
-		if(strpos($output,"no job anymore") === false)
+		if(!empty($lst[$k]))
 		{
-			echo $output;
-			return true;
+			$v=$lst[$k];
+			$cc=$cmd." ".escapeshellarg($v);
+
+			$output=array();
+			exec($cc,$output);
+			
+			$output=implode("\n",$output);
+			
+			if(strpos($output,"no job anymore") === false)
+			{
+				echo $output;
+				return true;
+			}
 		}
 		
 		unset($lst[$k]);
+		$lst = array_values($lst);
 		
 		if(count($lst)==0) $content = "";
 		else $content = trim(implode("\n",$lst));
