@@ -37,6 +37,17 @@ make VERBOSE=1
 
 
 ############################
+#runpod.io
+docker build --platform linux/amd64 -t fiveinline-solver:v1.3 .
+docker run --rm -it --platform linux/amd64 fiveinline-solver:v1.3 /bin/bash
+docker run --rm -it --platform linux/amd64 fiveinline-solver:v1.3
+
+docker tag fiveinline-solver:v1.3 shebekoid/fiveinline-solver:v1.3
+docker login
+docker push shebekoid/fiveinline-solver:v1.3
+
+
+############################
 #vast.ai NVIDIA CUDA
 
 apt-get update --yes && \
@@ -50,3 +61,10 @@ apt-get update --yes && \
 pip install joblib && pip install requests
 
 wget -q http://93.127.143.124/solver.tar.gz && tar -pxzf solver.tar.gz -C . && cd solver
+
+
+##############################
+#misc
+
+tar -pczf solver.tar.gz solver
+zip -r f5.zip f5

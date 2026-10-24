@@ -6,10 +6,9 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </head>
 <body>
-<h1>Five-in-line solving tree project</h1>
+<h1>Five-in-line ("Five-in-a-Row", "Free style Gomoku") solving project</h1>
 <p>Project sources on <a href="https://github.com/shebeko79/five-in-line">https://github.com/shebeko79/five-in-line</a></p>
-<table cellSpacing="8">
-<tr><td><a href="solution/"><img src="solution/avatar.png" width="32" height="32"></a></p></td></tr>
-</table>
+<p><a href="solved/">Solved tree</a></p>
+<p><a href="solution/">Working tree</a></p>
 </body>
 </html>
