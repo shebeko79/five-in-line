@@ -175,12 +175,6 @@ bool show_state(solution_tree_t& tr,steps_t req)
 
 	st.key=req;
 
-	if(!tr.get(st))
-	{
-		printf("%s does not exist\n",print_steps(req).c_str());
-		return false;
-	}
-				
 	points2bin(st.key,bin);
 
 	std::string h_key;
@@ -193,6 +187,20 @@ bool show_state(solution_tree_t& tr,steps_t req)
 	std::string h_sorted_key;
 	bin2hex(bin,h_sorted_key);
 
+	std::string field_str;
+	print_field(req, field_str);
+
+	std::string k=print_steps(st.key);
+
+	if(!tr.get(st))
+	{
+		printf("State does not exist\n");
+		printf("key: %s\nhex_key: %s\nsorted_key: %s\nfield:\n%s",
+			k.c_str(),h_key.c_str(),h_sorted_key.c_str(),
+			field_str.c_str());
+
+		return false;
+	}
 	
 	sort(st.neutrals,fscore_pr(next_color(st.key.size())));
 
@@ -201,14 +209,11 @@ bool show_state(solution_tree_t& tr,steps_t req)
 	sort(st.tree_wins,less_n_pr());
 	sort(st.tree_fails,greater_n_pr());
 
-	std::string k=print_steps(st.key);
 	std::string n=print_points(st.neutrals);
 	std::string sw=print_points(st.solved_wins);
 	std::string sf=print_points(st.solved_fails);
 	std::string tw=print_points(st.tree_wins);
 	std::string tf=print_points(st.tree_fails);
-	std::string field_str;
-	print_field(req, field_str);
 
 	printf("key: %s\nhex_key: %s\nsorted_key: %s\nneutrals: %s\nsolved wins: %s\ntree wins: %s\nsolved fails: %s\ntree fails: %s\nfield:\n%s",
         k.c_str(),h_key.c_str(),h_sorted_key.c_str(),
