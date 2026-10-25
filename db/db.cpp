@@ -40,6 +40,8 @@ void print_use()
 	printf("db <root_dir> solve_ant [root_key] [iteration_count]\n");
 	printf("db <root_dir> fix_zero_fails\n");
 	printf("db <root_dir> relax <key>\n");
+	printf("db <root_dir> dump\n");
+	printf("db <root_dir> dump_complete\n");
     Gomoku::print_enviropment_variables_hint();
 	printf("hint_db  path (no default)\n");
 	printf("ant_rand_factor (default: %u)\n",solution_tree_t::ant_rand_factor);
@@ -260,6 +262,66 @@ void save_job(solution_tree_t& tr,const std::string& file_name)
 	}
 }
 
+
+void dump(solution_tree_t& tr, bool complete_only)
+{
+	struct pr : public sol_state_width_pr
+	{
+		const bool complete_only;
+		pr(bool _complete_only) : complete_only(_complete_only){}
+		bool is_canceled() override{return need_break;}
+
+		bool on_enter_node(sol_state_t& val) override
+		{
+			if(complete_only && !val.is_completed())
+				return false;
+			
+			std::string str;
+			data_t bin;
+
+			std::string state_str;
+
+			points2bin(val.key,bin);
+			bin2hex(bin,str);
+			state_str+=str;
+			state_str+=";";
+
+			ipoints_t neutrals = val.neutrals;
+
+			Step move_color = next_color(val.key.size());
+
+			int win_est = move_color == st_krestik? 1000:-1000;
+			int fail_est = -win_est;
+
+
+			for (const auto& p : val.tree_wins)
+				neutrals.push_back(ipoint(p,win_est));
+
+			for (const auto& p : val.tree_fails)
+				neutrals.push_back(ipoint(p,fail_est));
+
+			points2bin(neutrals,bin);
+			bin2hex(bin,str);
+			state_str+=str;
+			state_str+=";";
+
+			points2bin(val.solved_wins,bin);
+			bin2hex(bin,str);
+			state_str+=str;
+			state_str+=";";
+
+			points2bin(val.solved_fails,bin);
+			bin2hex(bin,str);
+			state_str+=str;
+
+			printf("%s\n",state_str.c_str());
+			return false;
+		}
+	};
+
+	tr.width_first_search_from_bottom_to_top(pr(complete_only));
+}
+
 int main(int argc,char** argv)
 {
 	if(argc<3)
@@ -470,6 +532,10 @@ int main(int argc,char** argv)
 				throw std::runtime_error("state not found");
 
 			tr.relax(st);
+		}
+		else if (cmd == "dump" || cmd == "dump_complete")
+		{
+			dump(tr, cmd == "dump_complete");
 		}
 		else 
 		{

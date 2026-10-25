@@ -1,1 +1,1 @@
-db\cmake\Release\db.exe %*
+@db\cmake\Release\db.exe %*
