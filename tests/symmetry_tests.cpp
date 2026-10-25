@@ -61,5 +61,12 @@ TEST_F(symmetry_test, lowest_chain)
 	ASSERT_EQ(0, tr.sub.size());
 }
 
+TEST_F(symmetry_test, binary_one_1bit_instead_2bits)
+{
+	std::string found           = minimize("(0,0:X);(0,1:O);(0,2:O);(0,3:O);(0,4:O);(0,5:X);(1,2:O);(1,3:X);(1,4:X);(2,2:X);(2,3:X)");
+	std::string flipy_not_found = minimize("(0,0:X);(0,1:O);(0,2:O);(0,3:O);(0,4:O);(1,1:X);(1,2:X);(1,3:O);(2,2:X);(2,3:X);(0,5:X)");
+
+	ASSERT_EQ(found, flipy_not_found);
+}
 
 }//namespace

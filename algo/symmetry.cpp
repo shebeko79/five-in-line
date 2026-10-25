@@ -40,18 +40,18 @@ namespace Gomoku { namespace Symmetry
 		if (bbox.x1 != 0 || bbox.y1 != 0)
 			tr.sub.push_back(std::make_shared<tr_translate>(point(-bbox.x1,-bbox.y1)));
 
-		row_width = ((bbox.width()+1)+63)/64;
+		row_width = ((bbox.width()+1)*2+63)/64;
 
 		chunks.resize(row_width*(bbox.height()+1),0);
 
 		for (step_t p : steps)
 		{
 			tr.transform(p);
-			unsigned offset = row_width*p.y+p.x/64;
+			unsigned offset = row_width*p.y+p.x*2/64;
 			chunk& ck = chunks[offset];
 
 			chunk v = p.step==st_krestik? 1:2;
-			ck |= v<<(p.x%64);
+			ck |= v<<((p.x*2)%64);
 		}
 	}
 
