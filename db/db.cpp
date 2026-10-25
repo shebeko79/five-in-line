@@ -18,6 +18,7 @@
 #include "../algo/field_state_player.h"
 #include "../algo/env_variables.h"
 #include "bin_index_solution_base.h"
+#include "../algo/symmetry.h"
 
 using namespace Gomoku;
 using namespace Gomoku::State5;
@@ -180,12 +181,19 @@ bool show_state(solution_tree_t& tr,steps_t req)
 		return false;
 	}
 				
-	data_t bin_key;
-	points2bin(st.key,bin_key);
+	points2bin(st.key,bin);
 
-	std::string h;
-	bin2hex(bin_key,h);
+	std::string h_key;
+	bin2hex(bin,h_key);
 
+	steps_t sorted_key = st.key;
+	Symmetry::normalize(sorted_key);
+	points2bin(sorted_key,bin);
+	
+	std::string h_sorted_key;
+	bin2hex(bin,h_sorted_key);
+
+	
 	sort(st.neutrals,fscore_pr(next_color(st.key.size())));
 
 	sort(st.solved_wins,less_n_pr());
@@ -202,8 +210,8 @@ bool show_state(solution_tree_t& tr,steps_t req)
 	std::string field_str;
 	print_field(req, field_str);
 
-	printf("key: %s\nhex_key: %s\nneutrals: %s\nsolved wins: %s\ntree wins: %s\nsolved fails: %s\ntree fails: %s\nfield:\n%s",
-        k.c_str(),h.c_str(),
+	printf("key: %s\nhex_key: %s\nsorted_key: %s\nneutrals: %s\nsolved wins: %s\ntree wins: %s\nsolved fails: %s\ntree fails: %s\nfield:\n%s",
+        k.c_str(),h_key.c_str(),h_sorted_key.c_str(),
 		n.c_str(),
 		sw.c_str(),tw.c_str(),
 		sf.c_str(),tf.c_str(),
