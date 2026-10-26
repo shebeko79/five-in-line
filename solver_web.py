@@ -32,12 +32,11 @@ def key_exists(key):
 
 
 def save_job(hex_key, content):
-    req_url = url+f"?&cmd=save_job&key={hex_key}"
+    req_url = url+f"?cmd=save_job&key={hex_key}"
     if src_name is not None:
         req_url += "&src_name=" + src_name
 
-    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-    result = requests.post(req_url, data=content, headers=headers, timeout=30)
+    result = requests.post(req_url, data=content, timeout=30)
     if not result.ok:
         result.raise_for_status()
 
@@ -54,36 +53,6 @@ def span_solver(hex_key, idx):
     ret = {'err': log_file, 'key': hex_key, 'pause': False}
     ret['p'] = subprocess.Popen([solver, hex_key], stdout=subprocess.PIPE, stderr=ret['err'])
 
-    return ret
-
-
-def solver_output2url(res_str):
-    parts = res_str.split('&')
-
-    ret = ''
-
-    if parts[0] != ''
-
-    k = ''
-    n = ''
-    w = ''
-    f = ''
-
-    for p in parts:
-        eq=p.split('=')
-        if len(eq) !=2:
-            continue
-
-        if eq[0] == 'k':
-            k = eq[1]
-        elif eq[0] == 'n':
-            n = eq[1]
-        elif eq[0] == 'w':
-            w = eq[1]
-        elif eq[0] == 'f':
-            f = eq[1]
-
-    ret = f'{k};{n};{w};{f}'
     return ret
 
 

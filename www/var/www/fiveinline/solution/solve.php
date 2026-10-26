@@ -1,8 +1,7 @@
 <?php
 include 'cfg.inc';
 
-if (count($_GET)>0) $HTTP_VARS=$_GET;
-else $HTTP_VARS=$_POST;
+$HTTP_VARS=$_GET;
 
 $cmd=$HTTP_VARS["cmd"];
 
@@ -10,24 +9,8 @@ chdir(dirname($EXEC_PATH));
 
 function write_result_file($file_name)
 {
-	$handle = fopen($file_name, "w");
-	if(array_key_exists("k",$_POST))
-	{
-		$k=$_POST["k"];
-		
-		if(array_key_exists("n",$_POST))$n=$_POST["n"];
-		else $n="";
-		
-		if(array_key_exists("w",$_POST))$w=$_POST["w"];
-		else $w="";
-
-		if(array_key_exists("f",$_POST))$f=$_POST["f"];
-		else $f="";
-	
-		fwrite($handle,"$k;$n;$w;$f\n");
-	}
-	
-	fclose($handle);
+	$content = file_get_contents('php://input');
+	file_put_contents($file_name, $content);
 }
 
 function get_job_from_list()
@@ -106,9 +89,9 @@ if($cmd=='get_job')
 }
 else if($cmd=='save_job')
 {
-	if(!array_key_exists("k",$_POST))
+	if($_SERVER['REQUEST_METHOD'] != 'POST')
 	{
-		echo 'post k does not exist<br>';
+		echo 'expect POST<br>';
 		exit(1);
 	}
 	
