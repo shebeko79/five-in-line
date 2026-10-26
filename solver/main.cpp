@@ -32,28 +32,22 @@ std::string print_state(const node_t& r,const steps_t& key)
 
 	points2bin(key,bin);
 	bin2hex(bin,str);
-	ret+="k="+str;
+	ret+=str;
+	ret+=";";
 
-	if(!neutrals.empty())
-	{
-		points2bin(neutrals,bin);
-		bin2hex(bin,str);
-		ret+="&n="+str;
-	}
+	points2bin(neutrals,bin);
+	bin2hex(bin,str);
+	ret+=str;
+	ret+=";";
 
-	if(!wins.empty())
-	{
-		points2bin(wins,bin);
-		bin2hex(bin,str);
-		ret+="&w="+str;
-	}
+	points2bin(wins,bin);
+	bin2hex(bin,str);
+	ret+=str;
+	ret+=";";
 
-	if(!fails.empty())
-	{
-		points2bin(fails,bin);
-		bin2hex(bin,str);
-		ret+="&f="+str;
-	}
+	points2bin(fails,bin);
+	bin2hex(bin,str);
+	ret+=str;
 
 	return ret;
 }

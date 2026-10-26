@@ -57,6 +57,36 @@ def span_solver(hex_key, idx):
     return ret
 
 
+def solver_output2url(res_str):
+    parts = res_str.split('&')
+
+    ret = ''
+
+    if parts[0] != ''
+
+    k = ''
+    n = ''
+    w = ''
+    f = ''
+
+    for p in parts:
+        eq=p.split('=')
+        if len(eq) !=2:
+            continue
+
+        if eq[0] == 'k':
+            k = eq[1]
+        elif eq[0] == 'n':
+            n = eq[1]
+        elif eq[0] == 'w':
+            w = eq[1]
+        elif eq[0] == 'f':
+            f = eq[1]
+
+    ret = f'{k};{n};{w};{f}'
+    return ret
+
+
 def wait_cycle():
     global solvers
     global process_count
@@ -66,7 +96,7 @@ def wait_cycle():
             s = solvers[i]
             if not s['pause']:
                 try:
-                    s['p'].wait(0.01)
+                    s['p'].wait(0)
                 except subprocess.TimeoutExpired as e:
                     continue
 
@@ -107,7 +137,16 @@ def wait_cycle():
             else:
                 solvers.append(span_solver(hex_key, len(solvers)))
 
-        time.sleep(1)
+        time.sleep(0.1)
+
+
+def kill_all():
+    global solvers
+
+    for s in solvers:
+        if not s['pause']:
+            print(f'kill key={s["key"]}')
+            s['p'].kill()
 
 
 src_name = os.getenv("src_name")
@@ -117,10 +156,7 @@ try:
 except Exception as e:
     print(e)
 
-for s in solvers:
-    if not s['pause']:
-        print(f'kill key={s["key"]}')
-        s['p'].kill()
+kill_all()
 
 
 

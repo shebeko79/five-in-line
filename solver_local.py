@@ -45,34 +45,13 @@ def span_solver(hex_key, idx):
     span_count += 1
 
     print(f'span_solver() {idx=} {span_count=} {hex_key=}')
-    ret = {'err': open(f'solver{idx}.log', "wb"), 'key': hex_key, 'pause': False}
+    log_file = open(f'solver{idx}.log', "ab")
+    log_file.write(f'\n\nhex_key: {hex_key}\n'.encode("utf-8"))
+    log_file.close()
+    log_file = open(f'solver{idx}.log', "ab")
+    ret = {'err': log_file, 'key': hex_key, 'pause': False}
     ret['p'] = subprocess.Popen([solver, hex_key], stdout=subprocess.PIPE, stderr=ret['err'])
 
-    return ret
-
-
-def solver_output2save_job(res_str):
-    parts = res_str.split('&')
-    k = ''
-    n = ''
-    w = ''
-    f = ''
-
-    for p in parts:
-        eq=p.split('=')
-        if len(eq) !=2:
-            continue
-
-        if eq[0] == 'k':
-            k = eq[1]
-        elif eq[0] == 'n':
-            n = eq[1]
-        elif eq[0] == 'w':
-            w = eq[1]
-        elif eq[0] == 'f':
-            f = eq[1]
-
-    ret = f'{k};{n};{w};{f}'
     return ret
 
 
@@ -94,8 +73,7 @@ def wait_cycle():
                     raise Exception(f'solver failed {i=} key={s["key"]}')
                 else:
                     solver_str = s['p'].communicate()[0].decode("utf-8")
-                    save_job_str = solver_output2save_job(solver_str)
-                    save_job(save_job_str)
+                    save_job(solver_str)
 
             s['pause'] = True
 
@@ -114,7 +92,16 @@ def wait_cycle():
             else:
                 solvers.append(span_solver(hex_key, len(solvers)))
 
-        time.sleep(1)
+        time.sleep(0.1)
+
+
+def kill_all():
+    global solvers
+
+    for s in solvers:
+        if not s['pause']:
+            print(f'kill key={s["key"]}')
+            s['p'].kill()
 
 
 if len(sys.argv) >= 2:
@@ -125,10 +112,4 @@ try:
 except Exception as e:
     print(e)
 
-for s in solvers:
-    if not s['pause']:
-        print(f'kill key={s["key"]}')
-        s['p'].kill()
-
-
-
+kill_all()
