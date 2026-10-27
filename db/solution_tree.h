@@ -45,24 +45,6 @@ namespace Gomoku
 		static void unpack(const data_t& bin,ipoints_t& pts,size_t& from);
 	};
 
-	struct deep_solve_t
-	{
-		steps_t key;
-		std::vector<ipoints_t> neutrals;
-
-		void pack(data_t& bin) const;
-		void unpack(const data_t& bin);
-
-		inline bool empty() const{return key.empty();}
-
-		const ipoints_t& get_key_neutrals(size_t cur_key_size) const;
-		void trunc_to_key_size(size_t cur_key_size);
-		inline size_t get_root_key_size() const{return key.size()-neutrals.size();}
-	};
-
-    typedef std::pair<point,steps_t*> state_ref_t;
-    typedef std::vector<state_ref_t> state_refs_t;
-
     struct sol_state_width_pr
     {
         virtual ~sol_state_width_pr(){}
@@ -109,20 +91,10 @@ namespace Gomoku
 		std::string base_dir;
 		isolution_tree_base_ptr db_ptr;
 		isolution_tree_base_t& db;
-		mutable deep_solve_t first_solving;
-		mutable deep_solve_t last_solving;
 		solution_tree_t* hint_tree = nullptr;
-
-		void load_solve(deep_solve_t& val,const std::string& _file_name) const;
-		void save_solve(const deep_solve_t& val,const std::string& _file_name) const;
-
-        bool rewind_to_not_solved(bool first_rewind,deep_solve_t& key);
 
         void scan_already_solved_neutrals(sol_state_t& base_st);
 		
-		bool get_root_first_deep(deep_solve_t& _val, const steps_t& root_key);
-		bool get_first_deep(deep_solve_t& val,unsigned max_key_size);
-
 		npoints_t get_sublings_wins(const steps_t& asking_key);
 		point select_krestik_move(const steps_t& root_key, sol_state_t& base_st);
 
@@ -140,7 +112,7 @@ namespace Gomoku
 
 		void init(const std::string& _base_dir);
 
-		bool get_job(const steps_t& root_key, steps_t& key);
+		bool get_job(const steps_t& root_key, steps_t& key) {return get_ant_job(root_key, key);}
         bool get_ant_job(const steps_t& root_key, steps_t& key);
 		void save_job(const steps_t& key,const ipoints_t& neutrals,const npoints_t& win,const npoints_t& fails);
 

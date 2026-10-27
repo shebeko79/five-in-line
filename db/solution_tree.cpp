@@ -21,32 +21,6 @@ namespace Gomoku
 	void solution_tree_t::init(const std::string& _base_dir)
 	{
 		base_dir=_base_dir;
-
-		load_solve(first_solving,first_solving_file_name);
-		load_solve(last_solving,last_solving_file_name);
-	}
-
-	void solution_tree_t::load_solve(deep_solve_t& val,const std::string& _file_name) const
-	{
-		val=deep_solve_t();
-
-		fs::path file_name=fs::path(base_dir)/_file_name;
-		if(!fs::exists(file_name))
-			return;
-
-        
-		data_t bin;
-		load_file(file_name,bin);
-		val.unpack(bin);
-	}
-
-	void solution_tree_t::save_solve(const deep_solve_t& val,const std::string& _file_name) const
-	{
-		fs::path file_name=fs::path(base_dir)/_file_name;
-
-		data_t bin;
-		val.pack(bin);
-		save_file(file_name,bin);
 	}
 
 	bool solution_tree_t::get(sol_state_t& res) const
@@ -62,144 +36,6 @@ namespace Gomoku
 	steps_t solution_tree_t::get_root_key() const
 	{
 		return db.get_root_key();
-	}
-
-	bool solution_tree_t::get_root_first_deep(deep_solve_t& _val, const steps_t& root_key)
-	{
-		deep_solve_t val;
-		val.key=root_key;
-		if(val.key.empty())return false;
-		
-		if(!get_first_deep(val,(unsigned)-1))return false;
-		_val=val;
-		return true;
-	}
-	
-	bool solution_tree_t::get_first_deep(deep_solve_t& val,unsigned max_key_size)
-	{
-		sol_state_t ss;
-		ss.key=val.key;
-		
-		if(ss.key.size()>max_key_size)
-			return false;
-
-		if(!get(ss))
-			return true;
-
-		if(ss.is_completed())
-			return false;
-
-		Step move_step=next_color(val.key.size());
-		
-		val.key.push_back(step_t(move_step,0,0));
-
-		val.neutrals.push_back(unique_neutrals(ss.key,ss.neutrals));
-		
-		for(size_t i=0;i<ss.neutrals.size();i++)		
-		{
-			const point& p=ss.neutrals[i];
-			static_cast<point&>(val.key.back())=p;
-			
-			if(get_first_deep(val,max_key_size))
-				return true;
-		}
-		
-		val.key.pop_back();
-		val.neutrals.pop_back();
-		
-		return false;
-	}
-
-	bool solution_tree_t::get_job(const steps_t& root_key, steps_t& key)
-	{
-		if(last_solving.key.size() < root_key.size()||
-		  first_solving.key.size() < root_key.size()||
-		  !std::equal(root_key.begin(), root_key.end(),last_solving.key.begin())||
-		  !std::equal(root_key.begin(), root_key.end(),first_solving.key.begin())  )
-		{
-			first_solving = deep_solve_t();
-			last_solving  = deep_solve_t();
-		}
-
-
-		if(last_solving.empty())
-		{
-			if(!get_root_first_deep(last_solving, root_key))return false;
-			first_solving=last_solving;
-			key=last_solving.key;
-
-			save_solve(first_solving,first_solving_file_name);
-			save_solve(last_solving,last_solving_file_name);
-
-			return true;
-		}
-
-		if(rewind_to_not_solved(true,last_solving))
-		{
-			key=last_solving.key;
-			save_solve(last_solving,last_solving_file_name);
-			return true;
-		}
-
-		last_solving=first_solving;
-
-		if(rewind_to_not_solved(false,last_solving))
-		{
-			key=last_solving.key;
-			save_solve(last_solving,last_solving_file_name);
-			return true;
-		}
-
-		if(!get_root_first_deep(last_solving, root_key))return false;
-		first_solving=last_solving;
-		key=last_solving.key;
-
-		save_solve(first_solving,first_solving_file_name);
-		save_solve(last_solving,last_solving_file_name);
-
-		return true;
-	}
-	
-	bool solution_tree_t::rewind_to_not_solved(bool first_rewind,deep_solve_t& key)
-	{
-		if(!first_rewind)
-		{
-			sol_state_t st;
-			st.key=key.key;
-			if(!get(st))
-				return true;
-		}
-
-		steps_t p;
-
-		for(steps_t k=key.key;k.size()>key.get_root_key_size();k=p)
-		{
-			p=steps_t(k.begin(),k.end()-1);
-
-			const auto& n=key.get_key_neutrals(p.size());
-
-			auto it=std::find(n.begin(),n.end(),k.back());
-			if(it==n.end())throw std::runtime_error("rewind_to_not_solved(): neutral does not exist: "+print_steps(k)+" of "+print_steps(key.key));
-
-            for(++it;it!=n.end();++it)
-			{
-				deep_solve_t child=key;
-				child.trunc_to_key_size(k.size());
-				child.key=p;
-				
-				Step move_step=last_color(k.size());
-				child.key.push_back(step_t(move_step,it->x,it->y));
-                
-
-				if(get_first_deep(child,key.key.size()))
-				{
-					key=child;
-					return true;
-				}
-			}
-		}
-        
-		return false;
 	}
 
 	void solution_tree_t::save_job(const steps_t& key,const ipoints_t& neutrals,const npoints_t& win,const npoints_t& fails)
@@ -223,20 +59,6 @@ namespace Gomoku
         scan_already_solved_neutrals(st);
 
 		set(st);
-
-
-		steps_t sa = first_solving.key;
-		Symmetry::normalize(sa);
-		
-		steps_t sb = st.key;
-		Symmetry::normalize(sb);
-
-		if(sa == sb)
-		{
-			if(!rewind_to_not_solved(true,first_solving))
-				first_solving=last_solving;
-			save_solve(first_solving,first_solving_file_name);
-		}
 
 		relax(st);
 	}
@@ -871,51 +693,4 @@ namespace Gomoku
 			return max_fail_chain() != rhs.max_fail_chain();
 	}
 
-
-
-
-	void deep_solve_t::pack(data_t& bin) const
-	{
-		bin.resize(0);
-
-		sol_state_t::pack(key,bin);
-
-		size_t neutrals_counts=neutrals.size();
-        const unsigned char* p=reinterpret_cast<const unsigned char*>(&neutrals_counts);
-		bin.insert(bin.end(),p,p+sizeof(neutrals_counts));
-
-		for(size_t i=0;i<neutrals_counts;i++)
-			sol_state_t::pack(neutrals[i],bin);
-	}
-
-	void deep_solve_t::unpack(const data_t& bin)
-	{
-		size_t from=0;
-		sol_state_t::unpack(bin,key,from);
-
-		size_t neutrals_counts=0;
-		if(from+sizeof(neutrals_counts)>bin.size())
-			throw std::runtime_error("deep_solve_t::unpack(): unpack neutrals_counts failed");
-		neutrals_counts=*(const size_t*)(&bin[from]);
-		from+=sizeof(neutrals_counts);
-
-		neutrals.resize(neutrals_counts);
-
-		for(size_t i=0;i<neutrals_counts;i++)
-			sol_state_t::unpack(bin,neutrals[i],from);
-	}
-
-	const ipoints_t& deep_solve_t::get_key_neutrals(size_t cur_key_size) const
-	{
-		unsigned idx=neutrals.size()-(key.size()-cur_key_size);
-		if(idx>=neutrals.size())throw std::runtime_error("get_key_neutrals(): invalid neutrals index");
-		return neutrals[idx];
-	}
-
-	void deep_solve_t::trunc_to_key_size(size_t cur_key_size)
-	{
-		unsigned idx=neutrals.size()-(key.size()-cur_key_size);
-		if(idx>neutrals.size())throw std::runtime_error("get_key_neutrals(): invalid neutrals index");
-		neutrals.erase(neutrals.begin()+idx,neutrals.end());
-	}
 }//namespace
