@@ -435,11 +435,7 @@ int main(int argc,char** argv)
 			}
 
 			sol_state_t st;
-			data_t bin;
-			std::string str;
-
-			hex2bin(argv[3],bin);
-			bin2points(bin,st.key);
+            hex_or_str2points(argv[3],st.key);
 
 			if(!tr.get(st))
 			{
@@ -447,35 +443,40 @@ int main(int argc,char** argv)
 				return 1;
 			}
 
+			data_t bin;
+			std::string str;
+			std::string state_str;
+
 			points2bin(st.key,bin);
 			bin2hex(bin,str);
-			if(str.empty())str="empty";
-			printf("%s\n",str.c_str());
+			state_str+=str;
+			state_str+=";";
 
 			points2bin(st.neutrals,bin);
 			bin2hex(bin,str);
-			if(str.empty())str="empty";
-			printf("%s\n",str.c_str());
+			state_str+=str;
+			state_str+=";";
 
 			points2bin(st.solved_wins,bin);
 			bin2hex(bin,str);
-			if(str.empty())str="empty";
-			printf("%s\n",str.c_str());
+			state_str+=str;
+			state_str+=";";
 
 			points2bin(st.solved_fails,bin);
 			bin2hex(bin,str);
-			if(str.empty())str="empty";
-			printf("%s\n",str.c_str());
+			state_str+=str;
+			state_str+=";";
 
 			points2bin(st.tree_wins,bin);
 			bin2hex(bin,str);
-			if(str.empty())str="empty";
-			printf("%s\n",str.c_str());
+			state_str+=str;
+			state_str+=";";
 
 			points2bin(st.tree_fails,bin);
 			bin2hex(bin,str);
-			if(str.empty())str="empty";
-			printf("%s\n",str.c_str());
+			state_str+=str;
+
+			printf("%s",state_str.c_str());
 		}
 		else if(cmd=="view")
 		{
