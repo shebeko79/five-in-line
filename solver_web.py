@@ -61,6 +61,7 @@ def wait_cycle():
     global process_count
 
     while True:
+        save_job_str = ''
         for i in range(0, len(solvers)):
             s = solvers[i]
             if not s['pause']:
@@ -73,14 +74,21 @@ def wait_cycle():
                     raise Exception(f'solver failed {i=} key={s["key"]}')
                 else:
                     solver_str = s['p'].communicate()[0].decode("utf-8")
-                    save_job_str = solver_str
-                    try:
-                        save_job(s['key'], save_job_str)
-                    except Exception as ex:
-                        print(ex)
+                    save_job_str += solver_str + "\n"
 
                 s['err'].close()
                 s['pause'] = True
+
+        if save_job_str != '':
+            try:
+                save_job(s['key'], save_job_str)
+            except Exception as ex:
+                print(ex)
+
+        for i in range(0, len(solvers)):
+            s = solvers[i]
+            if not s['pause']:
+                continue
 
             try:
                 hex_key = get_job()
