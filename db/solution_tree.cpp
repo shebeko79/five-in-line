@@ -18,11 +18,6 @@ namespace Gomoku
 	unsigned solution_tree_t::ant_rand_factor = 20;
 
 
-	void solution_tree_t::init(const std::string& _base_dir)
-	{
-		base_dir=_base_dir;
-	}
-
 	bool solution_tree_t::get(sol_state_t& res) const
 	{
 		return db.get(res);

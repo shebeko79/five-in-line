@@ -287,7 +287,6 @@ TEST_F(avl_tree, DISABLED_generate_index_data)
 
 	isolution_tree_base_ptr db(new bin_index_solution_base_t(index_dir));
 	solution_tree_t tr(db);
-	tr.init(index_dir);
 
 	std::string str("(-1,0:O);(-1,1:X);(-1,2:X);(0,0:X);(0,1:X);(0,2:O);(1,1:O);(1,2:X);(2,2:O)");
     steps_t steps;

@@ -88,7 +88,6 @@ namespace Gomoku
     class solution_tree_t
 	{
 	private:
-		std::string base_dir;
 		isolution_tree_base_ptr db_ptr;
 		isolution_tree_base_t& db;
 		solution_tree_t* hint_tree = nullptr;
@@ -109,8 +108,6 @@ namespace Gomoku
 		static unsigned ant_rand_factor;
 		
 		solution_tree_t(const isolution_tree_base_ptr _db_ptr) : db_ptr(_db_ptr),db(*_db_ptr){}
-
-		void init(const std::string& _base_dir);
 
 		bool get_job(const steps_t& root_key, steps_t& key) {return get_ant_job(root_key, key);}
         bool get_ant_job(const steps_t& root_key, steps_t& key);

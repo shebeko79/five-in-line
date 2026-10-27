@@ -362,7 +362,6 @@ int main(int argc,char** argv)
 		auto db = std::make_shared<bin_index_solution_base_t>(root_dir.string());
 		 
 		solution_tree_t tr(db);
-		tr.init(root_dir.string());
 
 		if(!fs::exists(root_dir))
 		{
@@ -377,7 +376,6 @@ int main(int argc,char** argv)
 			lg <<"hint_db="<<hint_db_path;
 			auto hint_db = std::make_shared<bin_index_solution_base_t>(hint_db_path);
 			hint_tr = std::make_unique<solution_tree_t>(hint_db);
-			hint_tr->init(hint_db_path);
 
 			tr.set_hint_tree(*hint_tr);
 		}
