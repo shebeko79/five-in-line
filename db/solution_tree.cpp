@@ -611,6 +611,25 @@ namespace Gomoku
 		from+=sz;
 	}
 
+	void sol_mark_t::pack(data_t& bin) const
+	{
+		sol_state_t::pack(key, bin);
+
+		const unsigned char* p=reinterpret_cast<const unsigned char*>(&mark_time);
+		bin.insert(bin.end(),p,p+sizeof(mark_time));
+	}
+
+	void sol_mark_t::unpack(const data_t& bin, size_t& from)
+	{
+		sol_state_t::unpack(bin, key, from);
+
+		if(from+sizeof(mark_time)>bin.size())
+			throw std::runtime_error("sol_mark_t::unpack(): unpack size failed");
+
+		mark_time=*reinterpret_cast<const time_t*>(&bin[from]);
+		from+=sizeof(mark_time);
+	}
+
 	unsigned get_min_n(const npoints_t& vals)
 	{
 		unsigned ret=(unsigned)-1;

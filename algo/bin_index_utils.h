@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <filesystem>
+#include <set>
 
 
 namespace Gomoku
@@ -42,6 +43,36 @@ inline void unpack_raw(const data_t& bin,T& val,size_t& from,const char* throw_m
 	
     val=*(const T*)(&bin[from]);
 	from+=sizeof(T);
+}
+
+template<typename T, typename Pr, typename Alloc>
+void pack(const std::set<T,Pr,Alloc>& container, data_t& bin)
+{
+	size_t cnt=container.size();
+	const unsigned char* pcnt=reinterpret_cast<const unsigned char*>(&cnt);
+	bin.insert(bin.end(),pcnt,pcnt+sizeof(cnt));
+
+	for(const auto& v : container)
+		v.pack(bin);
+}
+
+template<typename T, typename Pr, typename Alloc>
+void unpack(std::set<T,Pr,Alloc>& container, const data_t& bin, size_t& from)
+{
+	container.clear();
+
+	if(from+sizeof(size_t)>bin.size())
+		throw std::runtime_error(__FUNCTION__": unpack size failed");
+
+	size_t cnt=*reinterpret_cast<const size_t*>(&bin[from]);
+	from+=sizeof(size_t);
+
+	for (size_t i = 0; i < cnt; i++)
+	{
+		T val;
+		val.unpack(bin,from);
+		container.insert(val);
+	}
 }
 
 }//namespace

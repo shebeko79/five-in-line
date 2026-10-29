@@ -1,8 +1,34 @@
 #include "bin_index_solution_base.h"
 #include "../algo/symmetry.h"
 
+namespace fs=std::filesystem;
+
 namespace Gomoku
 {
+
+bin_index_solution_base_t::bin_index_solution_base_t(const std::string& base_dir) : 
+	indexes(base_dir,3),
+	marks_filename((fs::path(base_dir)/"inprogress.bin").string())
+{
+}
+
+bin_index_solution_base_t::~bin_index_solution_base_t()
+{
+    try
+    {
+        save_marks();
+    }
+	catch(std::exception& e)
+	{
+		ObjectProgress::log_generator lg(true);
+		lg<<__FILE__<<": "<<__LINE__<<" std::exception: "<<e.what();
+	}
+	catch(...)
+	{
+		ObjectProgress::log_generator lg(true);
+		lg<<__FILE__<<": "<<__LINE__<<" unknown exception";
+	}
+}
 
 bool bin_index_solution_base_t::get(sol_state_t& res) const
 {
@@ -110,5 +136,76 @@ size_t bin_index_solution_base_t::retreive_max_level() const
     return ret;
 }
 
+bool bin_index_solution_base_t::get_mark(sol_mark_t& mrk) const
+{
+	load_marks();
+	
+	Symmetry::normalize(mrk.key);
+	auto it = marks.find(mrk);
+	if(it == marks.end())
+		return false;
+
+	mrk = *it;
+	return true;
+}
+
+void bin_index_solution_base_t::mark(const sol_mark_t& _mrk)
+{
+	load_marks();
+	
+	sol_mark_t mrk(_mrk);
+	Symmetry::normalize(mrk.key);
+	marks.insert(mrk);
+	mark_state = ms_dirty;
+}
+
+void bin_index_solution_base_t::visit_marks(mark_visitor_pr& pr)
+{
+	load_marks();
+
+	for (auto it = marks.begin(); it != marks.end();)
+	{
+		if(pr.is_canceled())
+			throw e_cancel();
+
+		if (pr.on_enter_node(*it))
+		{
+			it = marks.erase(it);
+			mark_state = ms_dirty;
+		}
+		else
+			++it;
+	}
+}
+
+void bin_index_solution_base_t::load_marks() const
+{
+	if(mark_state != ms_unloaded)
+		return;
+	
+	data_t bin;
+	load_file(marks_filename, bin);
+
+	size_t from = 0;
+	unpack(marks, bin, from);
+	mark_state = ms_loaded;
+}
+
+void bin_index_solution_base_t::save_marks()
+{
+	if(mark_state != ms_dirty)
+		return;
+
+	data_t bin;
+	pack(marks, bin);
+	save_file(marks_filename, bin);
+
+	mark_state = ms_loaded;
+}
+
+bool bin_index_solution_base_t::mark_pr::operator()(const sol_mark_t& a, const sol_mark_t& b) const
+{
+	return std::lexicographical_compare(a.key.begin(),a.key.end(),b.key.begin(),b.key.end(),pr);
+}
 
 }//namespace

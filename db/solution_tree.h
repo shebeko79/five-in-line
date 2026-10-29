@@ -45,7 +45,16 @@ namespace Gomoku
 		static void unpack(const data_t& bin,ipoints_t& pts,size_t& from);
 	};
 
-    struct sol_state_width_pr
+	struct sol_mark_t
+	{
+		steps_t key;
+		time_t mark_time = 0;
+
+		void pack(data_t& bin) const;
+		void unpack(const data_t& bin,size_t& from);
+	};
+
+	struct sol_state_width_pr
     {
         virtual ~sol_state_width_pr(){}
 
@@ -72,6 +81,15 @@ namespace Gomoku
         virtual bool is_canceled(){return false;}
     };
 
+	struct mark_visitor_pr
+	{
+		virtual ~mark_visitor_pr() {}
+
+		//return true if mark should be deleted
+		virtual bool on_enter_node(const sol_mark_t& mrk){return false;}
+        virtual bool is_canceled(){return false;}
+	};
+
 	class isolution_tree_base_t
 	{
 	public:
@@ -81,6 +99,10 @@ namespace Gomoku
 		virtual void set(const sol_state_t& val) = 0;
 		virtual steps_t get_root_key() const=0;
         virtual void width_first_search_from_bottom_to_top(sol_state_width_pr& pr) = 0;
+
+		virtual bool get_mark(sol_mark_t& mrk) const = 0;
+		virtual void mark(const sol_mark_t& mrk) = 0;
+		virtual void visit_marks(mark_visitor_pr& pr) = 0;
 	};
 
 	typedef std::shared_ptr<isolution_tree_base_t> isolution_tree_base_ptr;

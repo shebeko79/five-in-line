@@ -420,9 +420,10 @@ class bin_indexes_t : public ibin_indexes_t
 public:
   typedef std::shared_ptr<bin_index_t> item_ptr;
   typedef std::map<unsigned,item_ptr> indexes_t;
-private:
+public:
   const std::string base_dir;
   const size_t len_per_level;
+private:
   indexes_t indexes;
 public:
   bin_indexes_t(const std::string& _base_dir,size_t _len_per_level) : base_dir(_base_dir),len_per_level(_len_per_level) {}
