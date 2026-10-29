@@ -159,6 +159,17 @@ void bin_index_solution_base_t::mark(const sol_mark_t& _mrk)
 	mark_state = ms_dirty;
 }
 
+void bin_index_solution_base_t::unmark(const sol_mark_t& _mrk)
+{
+	load_marks();
+	
+	sol_mark_t mrk(_mrk);
+	Symmetry::normalize(mrk.key);
+	marks.erase(mrk);
+	mark_state = ms_dirty;
+}
+
+
 void bin_index_solution_base_t::visit_marks(mark_visitor_pr& pr)
 {
 	load_marks();

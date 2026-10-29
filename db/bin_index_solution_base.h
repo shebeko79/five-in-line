@@ -46,6 +46,7 @@ namespace Gomoku
 
 		bool get_mark(sol_mark_t& mrk) const override;
 		void mark(const sol_mark_t& mrk) override;
+		void unmark(const sol_mark_t& mrk) override;
 		void visit_marks(mark_visitor_pr& pr) override;
 	};
 

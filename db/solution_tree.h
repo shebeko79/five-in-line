@@ -102,6 +102,7 @@ namespace Gomoku
 
 		virtual bool get_mark(sol_mark_t& mrk) const = 0;
 		virtual void mark(const sol_mark_t& mrk) = 0;
+		virtual void unmark(const sol_mark_t& mrk) = 0;
 		virtual void visit_marks(mark_visitor_pr& pr) = 0;
 	};
 
