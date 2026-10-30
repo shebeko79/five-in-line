@@ -35,7 +35,6 @@ namespace Gomoku
 		unsigned n = 1;
 		npoint() = default;
 		npoint(const point& rhs,unsigned _n=1) : point(rhs){n=_n;}
-		inline void operator=(const point& rhs){static_cast<point&>(*this)=rhs;}
 		inline bool is_same_point(const point& p) const{return static_cast<const point&>(*this)==p;}
 	};
 
@@ -46,7 +45,6 @@ namespace Gomoku
 		int i = 0;
 		ipoint() = default;
 		ipoint(const point& rhs,int _i) : point(rhs), i(_i){}
-		inline void operator=(const point& rhs){static_cast<point&>(*this)=rhs;}
 		inline bool is_same_point(const point& p) const{return static_cast<const point&>(*this)==p;}
 	};
 

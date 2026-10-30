@@ -136,13 +136,12 @@ void self_solve(solution_tree_t& tr,size_t iteration_count,const steps_t& root_k
 		}
 
 		steps_t key;
-        bool r;
         if(use_ant)
-			r=tr.get_ant_job(root_key, key);
+			key=tr.get_ant_job(root_key, 0);
         else
-			r=tr.get_job(root_key, key);
+			key=tr.get_job(root_key, 0);
 
-		if(!r)
+		if(key.empty())
 		{
 			printf("no job anymore\n");
 			return;
@@ -390,6 +389,8 @@ int main(int argc,char** argv)
 
 		if(cmd=="get_job" ||cmd=="get_ant_job")
 		{
+			tr.check_marks_timeout();
+
 			steps_t key;
 			steps_t root_key;
 			if (argc <4)
@@ -397,11 +398,10 @@ int main(int argc,char** argv)
 			else
 				hex_or_str2points(argv[3],root_key);
             
-            bool r;
-            if(cmd=="get_job") r=tr.get_job(root_key,key);
-            else r=tr.get_ant_job(root_key,key);
+            if(cmd=="get_job") key=tr.get_job(root_key,0);
+            else key=tr.get_ant_job(root_key,0);
 
-			if(!r)
+			if(key.empty())
 			{
 				printf("no job anymore\n");
 				return 1;
@@ -503,6 +503,8 @@ int main(int argc,char** argv)
 		}
 		else if (cmd=="solve_level" || cmd=="solve_ant")
 		{
+			tr.check_marks_timeout();
+
 			int iter_count=0;
             steps_t root_key = tr.get_root_key();
 			
@@ -513,7 +515,9 @@ int main(int argc,char** argv)
 		}
 		else if(cmd=="fix_zero_fails")
 		{
-            set_ctrl_handler();
+			tr.check_marks_timeout();
+
+			set_ctrl_handler();
             fix_zero_deep_fails_impls pr(tr);
 
             try
@@ -529,6 +533,8 @@ int main(int argc,char** argv)
 		}
 		else if(cmd=="relax")
 		{
+			tr.check_marks_timeout();
+
 			if(argc!=4)
 			{
 				print_use();

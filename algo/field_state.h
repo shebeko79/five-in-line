@@ -18,6 +18,7 @@ namespace Gomoku { namespace State5
 	constexpr Score kScore3 = 6;
 	constexpr Score kScore4 = 17;
 	constexpr Score kScore5 = 33;
+	constexpr Score kScoreInf = 1000;
 
 	unsigned max_step(Score score);
 	Score prev_cnt(Score score);

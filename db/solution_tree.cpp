@@ -12,9 +12,6 @@ namespace fs=std::filesystem;
 
 namespace Gomoku
 {
-	const char* solution_tree_t::first_solving_file_name="first_solving";
-	const char* solution_tree_t::last_solving_file_name="last_solving";
-
 	unsigned solution_tree_t::ant_rand_factor = 20;
 
 
@@ -55,6 +52,7 @@ namespace Gomoku
 
 		set(st);
 
+		db.unmark(sol_mark_t(st.key));
 		relax(st);
 	}
 
@@ -287,10 +285,11 @@ namespace Gomoku
             throw std::runtime_error("check_really_unique() failed: key="+print_steps(key)+" "+vals_name+"="+print_points(vals));
     }
 
-    bool solution_tree_t::get_ant_job(const steps_t& root_key, steps_t& result_key)
-    {
+    steps_t solution_tree_t::get_ant_job(const steps_t& root_key, unsigned root_score)
+	{
 		size_t old_neutrals_size = 0;
 		ObjectProgress::log_generator lg(true);
+		Step move_color = next_color(root_key.size());
 
 		while (true)
 		{
@@ -299,12 +298,22 @@ namespace Gomoku
 
 			if (!get(base_st))
 			{
-				result_key = base_st.key;
-				return true;
+				sol_mark_t mrk(root_key);
+				if (!db.get_mark(mrk))
+				{
+					mrk.old_score = root_score;
+					mrk.mark_time = time(0);
+					db.mark(mrk);
+					
+					base_st.neutrals.push_back(ipoint(point(0,0),move_color==st_krestik? -State5::kScoreInf:State5::kScoreInf));
+					relax(base_st);
+				}
+
+				return root_key;
 			}
 
 			if (base_st.is_completed())
-				return false;
+				return steps_t();
 
 			if (old_neutrals_size != 0 && base_st.neutrals.size() >= old_neutrals_size)
 			{
@@ -313,12 +322,12 @@ namespace Gomoku
 				throw std::runtime_error("get_ant_job(): inconsistent state doesn't change: "+print_steps(root_key));
 			}
 
+			read_marked_scores(base_st);
 
-			Step move_color = next_color(root_key.size());
-			point move_point;
+			ipoint move_point;
 
 			if (move_color == st_nolik)
-				move_point = base_st.neutrals[rand() % base_st.neutrals.size()];
+				move_point = *std::min_element(base_st.neutrals.begin(), base_st.neutrals.end(), State5::fscore_pr(move_color));
 			else
 				move_point = select_krestik_move(root_key, base_st);
 
@@ -326,8 +335,9 @@ namespace Gomoku
 			steps_t child_key = root_key;
 			child_key.push_back(step_t(move_color, move_point));
 
-			if (get_ant_job(child_key, result_key))
-				return true;
+			auto ret = get_ant_job(child_key, move_point.i);
+			if (!ret.empty())
+				return ret;
 
 			lg << "get_ant_job(): unexpected complete state: child=" << print_steps(child_key)
 				<< " root=" << print_steps(root_key);
@@ -344,9 +354,9 @@ namespace Gomoku
 		}
     }
 
-	point solution_tree_t::select_krestik_move(const steps_t& root_key, sol_state_t& base_st)
+	ipoint solution_tree_t::select_krestik_move(const steps_t& root_key, sol_state_t& base_st)
 	{
-		point move_point;
+		ipoint move_point;
 		Step move_color = next_color(root_key.size());
 		bool point_selected = false;
 
@@ -371,8 +381,12 @@ namespace Gomoku
 
 				if (it != close_points.end())
 				{
-					move_point = *it;
-					point_selected = true;
+					auto jt = std::find(base_st.neutrals.begin(), base_st.neutrals.end(), *it);
+					if (jt != base_st.neutrals.end())
+					{
+						move_point = *jt;
+						point_selected = true;
+					}
 				}
 			}
 			else if (rnd % ant_rand_factor == 1)
@@ -388,8 +402,12 @@ namespace Gomoku
 
 				if (it != sublings_wins.end())
 				{
-					move_point = *it;
-					point_selected = true;
+					auto jt = std::find(base_st.neutrals.begin(), base_st.neutrals.end(), *it);
+					if (jt != base_st.neutrals.end())
+					{
+						move_point = *jt;
+						point_selected = true;
+					}
 				}
 			}
 		}
@@ -411,7 +429,16 @@ namespace Gomoku
 					});
 
 				if (!wins.empty())
-					return *std::min_element(wins.begin(), wins.end(), less_n_pr());
+				{
+					auto p = *std::min_element(wins.begin(), wins.end(), less_n_pr());
+
+					auto jt = std::find(base_st.neutrals.begin(), base_st.neutrals.end(), p);
+					if (jt != base_st.neutrals.end())
+					{
+						move_point = *jt;
+						point_selected = true;
+					}
+				}
 			}
 		}
 
@@ -480,6 +507,47 @@ namespace Gomoku
     {
 		return db.width_first_search_from_bottom_to_top(pr);
     }
+
+	void solution_tree_t::check_marks_timeout()
+	{
+		struct pr : public mark_visitor_pr
+		{
+			time_t t = time(0);
+			solution_tree_t& tr;
+
+			pr(solution_tree_t& _tr) : tr(_tr) {}
+
+			bool on_enter_node(const sol_mark_t& mrk) override
+			{
+				if(t-mrk.mark_time < mark_timeout)
+					return false;
+
+				sol_state_t st;
+				st.key = mrk.key;
+				st.neutrals.push_back(ipoint(point(0,0),mrk.old_score));
+				
+				tr.relax(st);
+				return true;
+			}
+		};
+
+		db.visit_marks(pr(*this));
+	}
+
+	void solution_tree_t::read_marked_scores(sol_state_t& st)
+	{
+		Step move_color = next_color(st.key.size());
+
+		sol_mark_t mrk(st.key);
+		mrk.key.push_back(step_t(move_color,0,0));
+
+		for (auto& p : st.neutrals)
+		{
+			static_cast<point&>(mrk.key.back()) = p;
+			if (db.get_mark(mrk))
+				p.i = move_color==st_krestik? -State5::kScoreInf : State5::kScoreInf;
+		}
+	}
 
 /////////////////////////////////////////////////////////////////////////////////
 //
@@ -617,6 +685,9 @@ namespace Gomoku
 
 		const unsigned char* p=reinterpret_cast<const unsigned char*>(&mark_time);
 		bin.insert(bin.end(),p,p+sizeof(mark_time));
+
+		p=reinterpret_cast<const unsigned char*>(&old_score);
+		bin.insert(bin.end(),p,p+sizeof(old_score));
 	}
 
 	void sol_mark_t::unpack(const data_t& bin, size_t& from)
@@ -628,6 +699,12 @@ namespace Gomoku
 
 		mark_time=*reinterpret_cast<const time_t*>(&bin[from]);
 		from+=sizeof(mark_time);
+
+		if(from+sizeof(old_score)>bin.size())
+			throw std::runtime_error("sol_mark_t::unpack(): unpack size failed");
+
+		old_score=*reinterpret_cast<const int*>(&bin[from]);
+		from+=sizeof(old_score);
 	}
 
 	unsigned get_min_n(const npoints_t& vals)

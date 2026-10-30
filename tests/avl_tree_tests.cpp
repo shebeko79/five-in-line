@@ -309,8 +309,8 @@ TEST_F(avl_tree, DISABLED_generate_index_data)
 
 	for(int i=0;i<1000000;i++)
 	{
-		steps_t key;
-        if(!tr.get_job(tr.get_root_key(), key))
+		steps_t key = tr.get_job(tr.get_root_key(), 0);
+        if(key.empty())
 		{
 			printf("no job anymore\n");
 			break;

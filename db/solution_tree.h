@@ -49,6 +49,10 @@ namespace Gomoku
 	{
 		steps_t key;
 		time_t mark_time = 0;
+		int old_score = 0;
+
+		sol_mark_t() = default;
+		sol_mark_t(const steps_t& _key) : key(_key) {}
 
 		void pack(data_t& bin) const;
 		void unpack(const data_t& bin,size_t& from);
@@ -118,22 +122,22 @@ namespace Gomoku
         void scan_already_solved_neutrals(sol_state_t& base_st);
 		
 		npoints_t get_sublings_wins(const steps_t& asking_key);
-		point select_krestik_move(const steps_t& root_key, sol_state_t& base_st);
+		ipoint select_krestik_move(const steps_t& root_key, sol_state_t& base_st);
 
 		static ipoints_t unique_neutrals(const steps_t& root, const ipoints_t& neutrals);
 
         template<typename T>
         static void check_really_unique(const steps_t& key,const std::vector<T>& vals,const std::string& vals_name);
-	public:
-		static const char* first_solving_file_name;
-		static const char* last_solving_file_name;
 
+		void read_marked_scores(sol_state_t& st);
+	public:
 		static unsigned ant_rand_factor;
+		static constexpr time_t mark_timeout = 300;
 		
 		solution_tree_t(const isolution_tree_base_ptr _db_ptr) : db_ptr(_db_ptr),db(*_db_ptr){}
 
-		bool get_job(const steps_t& root_key, steps_t& key) {return get_ant_job(root_key, key);}
-        bool get_ant_job(const steps_t& root_key, steps_t& key);
+		steps_t get_job(const steps_t& root_key, unsigned root_score) {return get_ant_job(root_key, root_score);}
+        steps_t get_ant_job(const steps_t& root_key, unsigned root_score);
 		void save_job(const steps_t& key,const ipoints_t& neutrals,const npoints_t& win,const npoints_t& fails);
 
 		bool get(sol_state_t& res) const;
@@ -146,6 +150,8 @@ namespace Gomoku
         void depth_first_search(const steps_t& key,sol_state_visitor_pr& pr);
 
         void width_first_search_from_bottom_to_top(sol_state_width_pr& pr);
+
+		void check_marks_timeout();
 
 		inline void set_hint_tree(solution_tree_t& tr) {hint_tree = &tr;}
 	};
