@@ -6,7 +6,6 @@
 #include <boost/lexical_cast.hpp>
 #include "../extern/pair_comparator.h"
 #include "../algo/symmetry.h"
-#include "../algo/field_state.h"
 
 namespace fs=std::filesystem;
 
@@ -324,7 +323,7 @@ namespace Gomoku
 				throw std::runtime_error("get_ant_job(): inconsistent state doesn't change: "+print_steps(root_key));
 			}
 
-			ipoint move_point;
+			ppoint move_point;
 
 			if (move_color == st_nolik)
 				move_point = base_st.neutrals[rand() % base_st.neutrals.size()];
@@ -354,9 +353,9 @@ namespace Gomoku
 		}
     }
 
-	ipoint solution_tree_t::select_krestik_move(const steps_t& root_key, sol_state_t& base_st)
+	ppoint solution_tree_t::select_krestik_move(const steps_t& root_key, sol_state_t& base_st)
 	{
-		ipoint move_point;
+		ppoint move_point;
 		Step move_color = next_color(root_key.size());
 		bool point_selected = false;
 
@@ -442,10 +441,61 @@ namespace Gomoku
 			}
 		}
 
-		move_point = *std::min_element(base_st.neutrals.begin(), base_st.neutrals.end(), State5::fscore_pr(move_color));
+		move_point = *std::min_element(base_st.neutrals.begin(), base_st.neutrals.end(), fscore_pr(move_color));
 		return move_point;
 	}
     
+	steps_t solution_tree_t::get_job(const steps_t& root_key)
+	{
+		size_t old_neutrals_size = 0;
+		ObjectProgress::log_generator lg(true);
+		Step move_color = next_color(root_key.size());
+
+		while (true)
+		{
+			sol_state_t base_st;
+			base_st.key = root_key;
+
+			if (!get(base_st))
+			{
+				mark(root_key);
+				return root_key;
+			}
+
+			if (base_st.is_completed())
+				return steps_t();
+
+			if (old_neutrals_size != 0 && base_st.neutrals.size() >= old_neutrals_size)
+			{
+				lg<<"get_job(): inconsistent state doesn't change: old_neutrals_size="<<old_neutrals_size
+					<<"neutrals_size"<<base_st.neutrals.size();
+				throw std::runtime_error("get_job(): inconsistent state doesn't change: "+print_steps(root_key));
+			}
+
+			ppoint move_point = *std::min_element(base_st.neutrals.begin(),base_st.neutrals.end(),proof_pr(move_color));
+
+			steps_t child_key = root_key;
+			child_key.push_back(step_t(move_color, move_point));
+
+			auto ret = get_job(child_key);
+			if (!ret.empty())
+				return ret;
+
+			lg << "get_job(): unexpected complete state: child=" << print_steps(child_key)
+				<< " root=" << print_steps(root_key);
+
+			old_neutrals_size = base_st.neutrals.size();
+
+			sol_state_t child_st;
+			child_st.key = child_key;
+
+			if (!get(child_st))
+				throw std::runtime_error("get_job(): can't load child to fix: "+print_steps(child_key));
+
+			relax(child_st);
+		}
+	}
+
     void solution_tree_t::depth_first_search(sol_state_visitor_pr& pr)
     {
         return depth_first_search(get_root_key(),pr);
@@ -785,7 +835,7 @@ namespace Gomoku
 		if(neutrals.empty())
 			throw std::runtime_error("best_neutral_score(): neutrals is empty");
 		Step move_color = next_color(key.size());
-		return std::min_element(neutrals.begin(), neutrals.end(), State5::fscore_pr(move_color))->i;
+		return std::min_element(neutrals.begin(), neutrals.end(), fscore_pr(move_color))->i;
 	}
 
 	bool sol_state_t::state_changed(sol_state_t& rhs) const

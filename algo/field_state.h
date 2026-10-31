@@ -178,20 +178,6 @@ namespace Gomoku { namespace State5
 		}
 	};
 
-	struct fscore_pr : near_point_pr
-	{
-		const int k;
-		
-		fscore_pr(Step move_color) : k(move_color==st_krestik? 1:-1){}
-		inline bool operator()(const ipoint& pa, const ipoint& pb) const
-		{
-			if(pa.i != pb.i)
-				return pa.i*k > pb.i*k;
-
-			return near_point_pr::operator()(pa,pb);
-		}
-	};
-
 	struct max_step_pr
 	{
 		const matrix<score_t>& scores_field;

@@ -127,7 +127,7 @@ namespace Gomoku
         void scan_already_solved_neutrals(sol_state_t& base_st);
 		
 		npoints_t get_sublings_wins(const steps_t& asking_key);
-		ipoint select_krestik_move(const steps_t& root_key, sol_state_t& base_st);
+		ppoint select_krestik_move(const steps_t& root_key, sol_state_t& base_st);
 
 		static ipoints_t unique_neutrals(const steps_t& root, const ipoints_t& neutrals);
 
@@ -142,7 +142,7 @@ namespace Gomoku
 		
 		solution_tree_t(const isolution_tree_base_ptr _db_ptr) : db_ptr(_db_ptr),db(*_db_ptr){}
 
-		steps_t get_job(const steps_t& root_key) {return get_ant_job(root_key);}
+		steps_t get_job(const steps_t& root_key);
         steps_t get_ant_job(const steps_t& root_key);
 		void save_job(const steps_t& key,const ipoints_t& neutrals,const npoints_t& win,const npoints_t& fails);
 

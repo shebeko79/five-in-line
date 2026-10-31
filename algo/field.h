@@ -116,6 +116,32 @@ namespace Gomoku
 		}
 	};
 
+	struct fscore_pr : near_point_pr
+	{
+		const int k;
+		
+		fscore_pr(Step move_color) : k(move_color==st_krestik? 1:-1){}
+		inline bool operator()(const ipoint& pa, const ipoint& pb) const
+		{
+			if(pa.i != pb.i)
+				return pa.i*k > pb.i*k;
+
+			return near_point_pr::operator()(pa,pb);
+		}
+	};
+
+	struct proof_pr : fscore_pr
+	{
+		proof_pr(Step move_color) : fscore_pr(move_color) {}
+		inline bool operator()(const ppoint& pa, const ppoint& pb) const
+		{
+			if(pa.proof != pb.proof)
+				return pa.proof  < pb.proof;
+
+			return fscore_pr::operator()(pa,pb);
+		}
+	};
+
 	class step_kind_pr
 	{
         Step cl;
