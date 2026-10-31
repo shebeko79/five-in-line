@@ -521,12 +521,15 @@ namespace Gomoku
 			{
 				if(t-mrk.mark_time < mark_timeout)
 					return false;
+				
+				ObjectProgress::log_generator lg(true);
+				lg<<"check_marks_timeout(): key="<<print_steps(mrk.key)<<" dt="<<(t-mrk.mark_time);
 
-				//sol_state_t st;
-				//st.key = mrk.key;
-				//st.neutrals.push_back(ipoint(point(0,0),0));
-				//
-				//tr.relax(st);
+				sol_state_t st;
+				st.key = mrk.key;
+				st.neutrals.push_back(ppoint());
+
+				tr.relax(st);
 				return true;
 			}
 		};
@@ -542,6 +545,16 @@ namespace Gomoku
 
 		mrk.mark_time = time(0);
 		db.mark(mrk);
+
+		ppoint pt;
+		pt.proof = max_proof;
+		pt.disproof = max_proof;
+
+		sol_state_t st;
+		st.key = key;
+		st.neutrals.push_back(pt);
+
+		relax(st);
 	}
 
 /////////////////////////////////////////////////////////////////////////////////
