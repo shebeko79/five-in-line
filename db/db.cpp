@@ -35,8 +35,7 @@ void print_use()
 	printf("db <root_dir> get_ant_job [root_key]\n");
 	printf("db <root_dir> save_job <file_name>\n");
 	printf("db <root_dir> get <key>\n");
-	printf("db <root_dir> view <printable_steps>\n");
-	printf("db <root_dir> view_root\n");
+	printf("db <root_dir> view [<printable_steps>]\n");
 	printf("db <root_dir> solve_level [root_key] [iteration_count]\n");
 	printf("db <root_dir> solve_ant [root_key] [iteration_count]\n");
 	printf("db <root_dir> fix_zero_fails\n");
@@ -201,7 +200,7 @@ bool show_state(solution_tree_t& tr,steps_t req)
 		return false;
 	}
 	
-	sort(st.neutrals,fscore_pr(next_color(st.key.size())));
+	sort(st.neutrals,proof_pr(next_color(st.key.size())));
 
 	sort(st.solved_wins,less_n_pr());
 	sort(st.solved_fails,greater_n_pr());
@@ -484,25 +483,12 @@ int main(int argc,char** argv)
 		}
 		else if(cmd=="view")
 		{
-			if(argc!=4)
-			{
-				print_use();
-				return 1;
-			}
-
 			steps_t req;
-            hex_or_str2points(argv[3],req);
-			if(!show_state(tr,req))
-				return 1;
-		}
-		else if(cmd=="view_root")
-		{
-			steps_t req=tr.get_root_key();
-			if(req.empty())
-			{
-				printf("no root exists\n");
-				return 1;
-			}
+
+			if (argc < 4)
+				req = tr.get_root_key();
+			else
+				hex_or_str2points(argv[3],req);
 
 			if(!show_state(tr,req))
 				return 1;
