@@ -137,9 +137,9 @@ void self_solve(solution_tree_t& tr,size_t iteration_count,const steps_t& root_k
 
 		steps_t key;
         if(use_ant)
-			key=tr.get_ant_job(root_key, 0);
+			key=tr.get_ant_job(root_key);
         else
-			key=tr.get_job(root_key, 0);
+			key=tr.get_job(root_key);
 
 		if(key.empty())
 		{
@@ -398,8 +398,8 @@ int main(int argc,char** argv)
 			else
 				hex_or_str2points(argv[3],root_key);
             
-            if(cmd=="get_job") key=tr.get_job(root_key,0);
-            else key=tr.get_ant_job(root_key,0);
+            if(cmd=="get_job") key=tr.get_job(root_key);
+            else key=tr.get_ant_job(root_key);
 
 			if(key.empty())
 			{

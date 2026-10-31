@@ -285,7 +285,7 @@ namespace Gomoku
             throw std::runtime_error("check_really_unique() failed: key="+print_steps(key)+" "+vals_name+"="+print_points(vals));
     }
 
-    steps_t solution_tree_t::get_ant_job(const steps_t& root_key, unsigned root_score)
+    steps_t solution_tree_t::get_ant_job(const steps_t& root_key)
 	{
 		size_t old_neutrals_size = 0;
 		ObjectProgress::log_generator lg(true);
@@ -298,17 +298,7 @@ namespace Gomoku
 
 			if (!get(base_st))
 			{
-				sol_mark_t mrk(root_key);
-				if (!db.get_mark(mrk))
-				{
-					mrk.old_score = root_score;
-					mrk.mark_time = time(0);
-					db.mark(mrk);
-					
-					base_st.neutrals.push_back(ipoint(point(0,0),move_color==st_krestik? -State5::kScoreInf:State5::kScoreInf));
-					relax(base_st);
-				}
-
+				mark(root_key);
 				return root_key;
 			}
 
@@ -322,12 +312,10 @@ namespace Gomoku
 				throw std::runtime_error("get_ant_job(): inconsistent state doesn't change: "+print_steps(root_key));
 			}
 
-			read_marked_scores(base_st);
-
 			ipoint move_point;
 
 			if (move_color == st_nolik)
-				move_point = *std::min_element(base_st.neutrals.begin(), base_st.neutrals.end(), State5::fscore_pr(move_color));
+				move_point = base_st.neutrals[rand() % base_st.neutrals.size()];
 			else
 				move_point = select_krestik_move(root_key, base_st);
 
@@ -335,7 +323,7 @@ namespace Gomoku
 			steps_t child_key = root_key;
 			child_key.push_back(step_t(move_color, move_point));
 
-			auto ret = get_ant_job(child_key, move_point.i);
+			auto ret = get_ant_job(child_key);
 			if (!ret.empty())
 				return ret;
 
@@ -522,11 +510,11 @@ namespace Gomoku
 				if(t-mrk.mark_time < mark_timeout)
 					return false;
 
-				sol_state_t st;
-				st.key = mrk.key;
-				st.neutrals.push_back(ipoint(point(0,0),mrk.old_score));
-				
-				tr.relax(st);
+				//sol_state_t st;
+				//st.key = mrk.key;
+				//st.neutrals.push_back(ipoint(point(0,0),0));
+				//
+				//tr.relax(st);
 				return true;
 			}
 		};
@@ -534,19 +522,14 @@ namespace Gomoku
 		db.visit_marks(pr(*this));
 	}
 
-	void solution_tree_t::read_marked_scores(sol_state_t& st)
+	void solution_tree_t::mark(const steps_t& key)
 	{
-		Step move_color = next_color(st.key.size());
+		sol_mark_t mrk(key);
+		if (db.get_mark(mrk))
+			return;
 
-		sol_mark_t mrk(st.key);
-		mrk.key.push_back(step_t(move_color,0,0));
-
-		for (auto& p : st.neutrals)
-		{
-			static_cast<point&>(mrk.key.back()) = p;
-			if (db.get_mark(mrk))
-				p.i = move_color==st_krestik? -State5::kScoreInf : State5::kScoreInf;
-		}
+		mrk.mark_time = time(0);
+		db.mark(mrk);
 	}
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -685,9 +668,6 @@ namespace Gomoku
 
 		const unsigned char* p=reinterpret_cast<const unsigned char*>(&mark_time);
 		bin.insert(bin.end(),p,p+sizeof(mark_time));
-
-		p=reinterpret_cast<const unsigned char*>(&old_score);
-		bin.insert(bin.end(),p,p+sizeof(old_score));
 	}
 
 	void sol_mark_t::unpack(const data_t& bin, size_t& from)
@@ -699,12 +679,6 @@ namespace Gomoku
 
 		mark_time=*reinterpret_cast<const time_t*>(&bin[from]);
 		from+=sizeof(mark_time);
-
-		if(from+sizeof(old_score)>bin.size())
-			throw std::runtime_error("sol_mark_t::unpack(): unpack size failed");
-
-		old_score=*reinterpret_cast<const int*>(&bin[from]);
-		from+=sizeof(old_score);
 	}
 
 	unsigned get_min_n(const npoints_t& vals)

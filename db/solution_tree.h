@@ -49,7 +49,6 @@ namespace Gomoku
 	{
 		steps_t key;
 		time_t mark_time = 0;
-		int old_score = 0;
 
 		sol_mark_t() = default;
 		sol_mark_t(const steps_t& _key) : key(_key) {}
@@ -129,15 +128,16 @@ namespace Gomoku
         template<typename T>
         static void check_really_unique(const steps_t& key,const std::vector<T>& vals,const std::string& vals_name);
 
-		void read_marked_scores(sol_state_t& st);
+		void mark(const steps_t& key);
+
 	public:
 		static unsigned ant_rand_factor;
 		static constexpr time_t mark_timeout = 300;
 		
 		solution_tree_t(const isolution_tree_base_ptr _db_ptr) : db_ptr(_db_ptr),db(*_db_ptr){}
 
-		steps_t get_job(const steps_t& root_key, unsigned root_score) {return get_ant_job(root_key, root_score);}
-        steps_t get_ant_job(const steps_t& root_key, unsigned root_score);
+		steps_t get_job(const steps_t& root_key) {return get_ant_job(root_key);}
+        steps_t get_ant_job(const steps_t& root_key);
 		void save_job(const steps_t& key,const ipoints_t& neutrals,const npoints_t& win,const npoints_t& fails);
 
 		bool get(sol_state_t& res) const;
