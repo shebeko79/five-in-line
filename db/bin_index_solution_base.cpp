@@ -136,16 +136,20 @@ size_t bin_index_solution_base_t::retreive_max_level() const
     return ret;
 }
 
-bool bin_index_solution_base_t::get_mark(sol_mark_t& mrk) const
+bool bin_index_solution_base_t::get_mark(sol_mark_t& _mrk) const
 {
 	load_marks();
 	
+	sol_mark_t mrk(_mrk);
 	Symmetry::normalize(mrk.key);
 	auto it = marks.find(mrk);
 	if(it == marks.end())
 		return false;
 
+	auto old_key = _mrk.key;
 	mrk = *it;
+	mrk.key = std::move(old_key);
+
 	return true;
 }
 
@@ -193,12 +197,16 @@ void bin_index_solution_base_t::load_marks() const
 {
 	if(mark_state != ms_unloaded)
 		return;
-	
-	data_t bin;
-	load_file(marks_filename, bin);
 
-	size_t from = 0;
-	unpack(marks, bin, from);
+	if (fs::exists(marks_filename))
+	{
+		data_t bin;
+		load_file(marks_filename, bin);
+
+		size_t from = 0;
+		unpack(marks, bin, from);
+	}
+
 	mark_state = ms_loaded;
 }
 
