@@ -8,7 +8,8 @@
 
 namespace Gomoku
 {
-	
+	constexpr unsigned max_proof = 1000000;
+
 	struct sol_state_t
 	{
 		steps_t key;
@@ -33,6 +34,9 @@ namespace Gomoku
 		int best_neutral_score() const;
 
 		bool state_changed(sol_state_t& rhs) const;
+
+		unsigned proof() const;
+		unsigned disproof() const;
 
 	public:
 		static void pack(const points_t& pts,data_t& bin);

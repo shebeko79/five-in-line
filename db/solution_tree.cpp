@@ -69,6 +69,8 @@ namespace Gomoku
 
 		unsigned n = 0;
 		int best_score = 0;
+		unsigned proof = 1;
+		unsigned disproof = 1;
 
 		if (child_st.is_completed())
 		{
@@ -78,6 +80,8 @@ namespace Gomoku
 		else
 		{
 			best_score = child_st.best_neutral_score();
+			proof = child_st.proof();
+			disproof = child_st.disproof();
 		}
 
 		steps_t min_child_key = child_st.key;
@@ -141,7 +145,10 @@ namespace Gomoku
 				}
 				else
 				{
-					prev_st.neutrals[j].i = best_score;
+					auto& p = prev_st.neutrals[j];
+					p.i = best_score;
+					p.proof = proof;
+					p.disproof = disproof;
 				}
 			}
 
@@ -788,5 +795,56 @@ namespace Gomoku
 		else
 			return max_fail_chain() != rhs.max_fail_chain();
 	}
+
+	unsigned sol_state_t::proof() const
+	{
+		Step move_color = next_color(key.size());
+
+		if (is_completed())
+		{
+			return (move_color == st_krestik) == is_win()? 0 : max_proof;
+		}
+
+		if (move_color == st_krestik)
+		{
+			return std::min_element(neutrals.begin(), neutrals.end(), [](const ppoint& a, const ppoint& b)
+				{
+					return a.proof < b.proof;
+				})->proof;
+		}
+		else
+		{
+			return std::accumulate(neutrals.begin(), neutrals.end(), 0u, [](unsigned a, const ppoint& b)
+				{
+					return a+b.proof;
+				});
+		}
+	}
+
+	unsigned sol_state_t::disproof() const
+	{
+		Step move_color = next_color(key.size());
+
+		if (is_completed())
+		{
+			return (move_color == st_krestik) == is_win()? max_proof : 0;
+		}
+
+		if (move_color == st_krestik)
+		{
+			return std::accumulate(neutrals.begin(), neutrals.end(), 0u, [](unsigned a, const ppoint& b)
+				{
+					return a+b.disproof;
+				});
+		}
+		else
+		{
+			return std::min_element(neutrals.begin(), neutrals.end(), [](const ppoint& a, const ppoint& b)
+				{
+					return a.disproof < b.disproof;
+				})->disproof;
+		}
+	}
+
 
 }//namespace
