@@ -847,7 +847,14 @@ namespace Gomoku
 		{
 			auto sa = best_neutral_score();
 			auto sb = rhs.best_neutral_score();
-			return sa != sb;
+			
+			auto pa = proof();
+			auto dpa = disproof();
+			
+			auto pb = rhs.proof();
+			auto dpb = rhs.disproof();
+
+			return sa != sb || pa != pb || dpa != dpb;
 		}
 
 		if(is_win() != rhs.is_win())
