@@ -13,6 +13,8 @@ namespace Gomoku
 	void bin2points(const data_t& bin,npoints_t& pts);
 	void points2bin(const ipoints_t& pts,data_t& bin);
 	void bin2points(const data_t& bin,ipoints_t& pts);
+	void points2bin(const ppoints_t& pts,data_t& bin);
+	void bin2points(const data_t& bin,ppoints_t& pts);
 
     void hex_or_str2points(const std::string& str,steps_t& pts);
 

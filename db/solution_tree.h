@@ -13,7 +13,7 @@ namespace Gomoku
 	{
 		steps_t key;
 
-        ipoints_t neutrals;
+        ppoints_t neutrals;
         //step from state key is a win
 		npoints_t solved_wins;
         //step from state key is a fail
@@ -43,6 +43,8 @@ namespace Gomoku
 		static void unpack(const data_t& bin,npoints_t& pts,size_t& from);
 		static void pack(const ipoints_t& pts,data_t& bin);
 		static void unpack(const data_t& bin,ipoints_t& pts,size_t& from);
+		static void pack(const ppoints_t& pts,data_t& bin);
+		static void unpack(const data_t& bin,ppoints_t& pts,size_t& from);
 	};
 
 	struct sol_mark_t

@@ -50,6 +50,17 @@ namespace Gomoku
 
 	typedef std::vector<ipoint> ipoints_t;
 
+	struct ppoint : public ipoint
+	{
+		unsigned proof = 1;
+		unsigned disproof = 1;
+
+		ppoint() = default;
+		ppoint(const ipoint& rhs) : ipoint(rhs){}
+	};
+
+	typedef std::vector<ppoint> ppoints_t;
+
 	struct less_point_pr
 	{
 		inline bool operator()(const point& a,const point& b) const
@@ -249,6 +260,7 @@ namespace Gomoku
 	std::string print_points(const points_t& vals);
 	std::string print_points(const npoints_t& vals);
 	std::string print_points(const ipoints_t& vals);
+	std::string print_points(const ppoints_t& vals);
 
 	steps_t scan_steps(const std::string& str);
 

@@ -253,6 +253,21 @@ std::string to_string(Step val)
 		return ret;
 	}
 
+	std::string print_points(const ppoints_t& vals)
+	{
+		std::string ret;
+
+		for(unsigned i=0;i<vals.size();i++)
+		{
+			char tmp[256];
+			const auto& p=vals[i];
+			sprintf(tmp,"(%d,%d:%d,%u,%u)",p.x,p.y,p.i,p.proof,p.disproof);
+			ret+=tmp;
+			if(i+1!=vals.size())ret+=";";
+		}
+		return ret;
+	}
+
 	std::string print_steps(const steps_t& vals)
 	{
 		std::string ret;

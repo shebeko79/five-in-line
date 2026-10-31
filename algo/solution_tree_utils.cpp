@@ -163,7 +163,54 @@ namespace Gomoku
 		}
 	}
 
-    void hex_or_str2points(const std::string& str,steps_t& pts)
+	void points2bin(const ppoints_t& pts,data_t& bin)
+	{
+		constexpr unsigned rec_sz = 14;
+
+		bin.resize(pts.size()*rec_sz);
+		for(unsigned i=0;i<pts.size();i++)
+		{
+			const auto& p=pts[i];
+			if(p.x<=-128||p.x>127||p.y<=-128||p.y>127)
+				throw std::runtime_error("points2bin(): invalid point: ("+
+					std::to_string(p.x)+","+std::to_string(p.y)+")");
+
+			char x=p.x;
+			char y=p.y;
+
+			bin[i*rec_sz]=*reinterpret_cast<const unsigned char*>(&x);
+			bin[i*rec_sz+1]=*reinterpret_cast<const unsigned char*>(&y);
+			*reinterpret_cast<int*>(&bin[i*rec_sz+2])=p.i;
+			*reinterpret_cast<int*>(&bin[i*rec_sz+6])=p.proof;
+			*reinterpret_cast<int*>(&bin[i*rec_sz+10])=p.disproof;
+		}
+	}
+
+	void bin2points(const data_t& bin,ppoints_t& pts)
+	{
+		constexpr unsigned rec_sz = 14;
+
+		if((bin.size()%rec_sz)!=0)
+			throw std::runtime_error("bin2points(): (bin.size()%rec_sz)!=0");
+
+		pts.resize(bin.size()/rec_sz);
+
+		for(unsigned i=0;i<pts.size();i++)
+		{
+			auto& p=pts[i];
+
+			char x=*reinterpret_cast<const unsigned char*>(&bin[i*rec_sz]);
+			char y=*reinterpret_cast<const unsigned char*>(&bin[i*rec_sz+1]);
+
+			p.x=x;
+			p.y=y;
+			p.i= *reinterpret_cast<const int*>(&bin[i*rec_sz+2]);
+			p.proof= *reinterpret_cast<const int*>(&bin[i*rec_sz+6]);
+			p.disproof= *reinterpret_cast<const int*>(&bin[i*rec_sz+10]);
+		}
+	}
+
+	void hex_or_str2points(const std::string& str,steps_t& pts)
     {
 		if(str.empty())
 		{

@@ -298,7 +298,13 @@ void dump(solution_tree_t& tr, bool complete_only)
 			state_str+=str;
 			state_str+=";";
 
-			ipoints_t neutrals = val.neutrals;
+			ipoints_t neutrals;
+			
+			if (!val.neutrals.empty())
+			{
+				neutrals.resize(val.neutrals.size());
+				std::copy(val.neutrals.begin(),val.neutrals.end(),neutrals.begin());
+			}
 
 			Step move_color = next_color(val.key.size());
 

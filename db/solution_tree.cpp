@@ -43,8 +43,13 @@ namespace Gomoku
 		
 		if(get(st))
 			return;
-
-		st.neutrals=neutrals;
+		
+		if (!neutrals.empty())
+		{
+			st.neutrals.resize(neutrals.size());
+			std::copy(neutrals.begin(),neutrals.end(),st.neutrals.begin());
+		}
+		
 		st.solved_wins=win;
 		st.solved_fails=fails;
 
@@ -647,6 +652,32 @@ namespace Gomoku
 	}
 
 	void sol_state_t::unpack(const data_t& bin,ipoints_t& pts,size_t& from)
+	{
+		if(from+sizeof(size_t)>bin.size())
+			throw std::runtime_error("sol_state_t::unpack(): unpack size failed");
+
+		size_t sz=*reinterpret_cast<const size_t*>(&bin[from]);
+		from+=sizeof(size_t);
+
+		if(from+sz>bin.size())
+			throw std::runtime_error("sol_state_t::unpack(): unpack failed");
+
+		data_t d(bin.begin()+from,bin.begin()+from+sz);
+		bin2points(d,pts);
+		from+=sz;
+	}
+
+	void sol_state_t::pack(const ppoints_t& pts, data_t& bin)
+	{
+		data_t d;
+		points2bin(pts,d);
+		size_t sz=d.size();
+		const unsigned char* psz=reinterpret_cast<const unsigned char*>(&sz);
+		bin.insert(bin.end(),psz,psz+sizeof(size_t));
+		bin.insert(bin.end(),d.begin(),d.end());
+	}
+
+	void sol_state_t::unpack(const data_t& bin, ppoints_t& pts, size_t& from)
 	{
 		if(from+sizeof(size_t)>bin.size())
 			throw std::runtime_error("sol_state_t::unpack(): unpack size failed");
