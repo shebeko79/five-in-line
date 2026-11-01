@@ -14,14 +14,14 @@ span_count = 0
 
 
 def get_job():
-    params = [db, db_path, 'get_job']
+    params = [db, db_path, 'get_job', '1']
     if base_state:
         params.append(base_state)
 
     result = subprocess.run(params, capture_output=True, text=True)
     if result.returncode != 0:
         raise Exception(f'get_job(): ret={result.stdout}')
-    return result.stdout
+    return result.stdout.strip()
 
 
 def key_exists(key):

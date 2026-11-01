@@ -31,8 +31,8 @@ namespace fs=std::filesystem;
 void print_use()
 {
 	printf("USE: \n");
-	printf("db <root_dir> get_job [root_key]\n");
-	printf("db <root_dir> get_ant_job [root_key]\n");
+	printf("db <root_dir> get_job [jobs_count] [root_key]\n");
+	printf("db <root_dir> get_ant_job [jobs_count] [root_key]\n");
 	printf("db <root_dir> save_job <file_name>\n");
 	printf("db <root_dir> get <key>\n");
 	printf("db <root_dir> view [<printable_steps>]\n");
@@ -397,28 +397,57 @@ int main(int argc,char** argv)
 		{
 			tr.check_marks_timeout();
 
-			steps_t key;
+			int jobs_count=1;
+			
+			if (argc >= 4)
+			{
+				jobs_count = atoi(argv[3]);
+
+				if (jobs_count <= 0)
+				{
+					print_use();
+					return 1;
+				}
+			}
+
 			steps_t root_key;
-			if (argc <4)
+			if (argc < 5)
 				root_key = tr.get_root_key();
 			else
-				hex_or_str2points(argv[3],root_key);
-            
-            if(cmd=="get_job") key=tr.get_job(root_key);
-            else key=tr.get_ant_job(root_key);
+				hex_or_str2points(argv[4],root_key);
 
-			if(key.empty())
+			std::vector<steps_t> keys;
+
+			for (int i = 0; i < jobs_count; i++)
+			{
+				steps_t key;
+				if (cmd == "get_job") key = tr.get_job(root_key);
+				else key = tr.get_ant_job(root_key);
+
+				if(key.empty())
+					break;
+
+				if(std::find(keys.begin(),keys.end(),key) != keys.end())
+					break;
+
+				keys.push_back(key);
+			}
+
+			if(keys.empty())
 			{
 				printf("no job anymore\n");
 				return 1;
 			}
 
-			data_t bin_key;
-			points2bin(key,bin_key);
+			for (const auto& key : keys)
+			{
+				data_t bin_key;
+				points2bin(key, bin_key);
 
-			std::string ret;
-			bin2hex(bin_key,ret);
-			printf("%s",ret.c_str());
+				std::string ret;
+				bin2hex(bin_key, ret);
+				printf("%s\n", ret.c_str());
+			}
 		}
 		else if(cmd=="save_job")
 		{
