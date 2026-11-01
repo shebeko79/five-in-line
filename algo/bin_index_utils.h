@@ -62,7 +62,7 @@ void unpack(std::set<T,Pr,Alloc>& container, const data_t& bin, size_t& from)
 	container.clear();
 
 	if(from+sizeof(size_t)>bin.size())
-		throw std::runtime_error(__FUNCTION__": unpack size failed");
+		throw std::runtime_error(std::string(__func__)+": unpack size failed");
 
 	size_t cnt=*reinterpret_cast<const size_t*>(&bin[from]);
 	from+=sizeof(size_t);
