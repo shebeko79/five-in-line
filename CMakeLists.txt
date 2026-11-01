@@ -6,8 +6,8 @@ set(ENV{BOOST} C:/src/boost_1_91_0)
 
 add_subdirectory (db/cmake)
 add_subdirectory (solver/cmake)
+add_subdirectory (tests/cmake)
 
 if(WIN32)
 add_subdirectory (gui/cmake)
-add_subdirectory (tests/cmake)
 endif()
