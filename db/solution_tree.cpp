@@ -558,18 +558,19 @@ namespace Gomoku
 		return db.width_first_search_from_bottom_to_top(pr);
     }
 
-	void solution_tree_t::check_marks_timeout()
+	void solution_tree_t::check_marks_timeout(time_t timeout)
 	{
 		struct pr : public mark_visitor_pr
 		{
-			time_t t = time(0);
+			const time_t t = time(0);
 			solution_tree_t& tr;
+			const time_t timeout;
 
-			pr(solution_tree_t& _tr) : tr(_tr) {}
+			pr(solution_tree_t& _tr, time_t _timeout) : tr(_tr),timeout(_timeout) {}
 
 			bool on_enter_node(const sol_mark_t& mrk) override
 			{
-				if(t-mrk.mark_time < mark_timeout)
+				if(t-mrk.mark_time < timeout)
 					return false;
 				
 				ObjectProgress::log_generator lg(true);
@@ -584,7 +585,7 @@ namespace Gomoku
 			}
 		};
 
-		db.visit_marks(pr(*this));
+		db.visit_marks(pr(*this, timeout));
 	}
 
 	void solution_tree_t::mark(const steps_t& key)

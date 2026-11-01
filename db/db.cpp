@@ -42,6 +42,7 @@ void print_use()
 	printf("db <root_dir> relax <key>\n");
 	printf("db <root_dir> dump\n");
 	printf("db <root_dir> dump_complete\n");
+	printf("db <root_dir> reset_marks\n");
     Gomoku::print_enviropment_variables_hint();
 	printf("hint_db  path (no default)\n");
 	printf("ant_rand_factor (default: %u)\n",solution_tree_t::ant_rand_factor);
@@ -546,6 +547,10 @@ int main(int argc,char** argv)
 		else if (cmd == "dump" || cmd == "dump_complete")
 		{
 			dump(tr, cmd == "dump_complete");
+		}
+		else if (cmd == "reset_marks")
+		{
+			tr.check_marks_timeout(0);
 		}
 		else 
 		{

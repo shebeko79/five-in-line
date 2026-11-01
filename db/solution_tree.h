@@ -157,7 +157,7 @@ namespace Gomoku
 
         void width_first_search_from_bottom_to_top(sol_state_width_pr& pr);
 
-		void check_marks_timeout();
+		void check_marks_timeout(time_t timeout = mark_timeout);
 
 		inline void set_hint_tree(solution_tree_t& tr) {hint_tree = &tr;}
 	};
