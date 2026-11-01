@@ -13,20 +13,29 @@ span_count = 0
 src_name = None
 
 
-def get_job():
-    req_url = url+"?&cmd=get_job"
+def get_jobs(cnt):
+    req_url = url+"?cmd=get_job&cnt="+str(cnt)
     if src_name is not None:
         req_url += "&src_name=" + src_name
 
     result = requests.get(req_url, timeout=30)
     if result.status_code != 200:
         result.raise_for_status()
-    return result.text
+
+    content = result.text.split('\n')
+    ret = []
+
+    for c in content:
+        c = c.strip()
+        if c != '':
+            ret.append(c)
+
+    return ret
 
 
 def key_exists(key):
     for s in solvers:
-        if s['key'] == key and not s['pause']:
+        if not s['pause'] and s['key'] == key:
             return True
     return False
 
@@ -60,24 +69,29 @@ def wait_cycle():
     global solvers
     global process_count
 
+    for i in range(0, process_count):
+        solvers.append({'key': '', 'pause': True})
+
     while True:
         save_job_str = ''
         for i in range(0, len(solvers)):
             s = solvers[i]
-            if not s['pause']:
-                try:
-                    s['p'].wait(0)
-                except subprocess.TimeoutExpired as e:
-                    continue
+            if s['pause']:
+                continue
 
-                if s['p'].returncode != 0:
-                    raise Exception(f'solver failed {i=} key={s["key"]}')
-                else:
-                    solver_str = s['p'].communicate()[0].decode("utf-8")
-                    save_job_str += solver_str + "\n"
+            try:
+                s['p'].wait(0)
+            except subprocess.TimeoutExpired as e:
+                continue
 
-                s['err'].close()
-                s['pause'] = True
+            if s['p'].returncode != 0:
+                raise Exception(f'solver failed {i=} key={s["key"]}')
+            else:
+                solver_str = s['p'].communicate()[0].decode("utf-8")
+                save_job_str += solver_str + "\n"
+
+            s['err'].close()
+            s['pause'] = True
 
         if save_job_str != '':
             try:
@@ -85,34 +99,37 @@ def wait_cycle():
             except Exception as ex:
                 print(ex)
 
+        paused_count = 0
         for i in range(0, len(solvers)):
             s = solvers[i]
-            if not s['pause']:
-                continue
+            if s['pause']:
+                paused_count = paused_count + 1
 
+        if paused_count > 0:
             try:
-                hex_key = get_job()
+                hex_keys = get_jobs(paused_count)
             except Exception as ex:
                 print(ex)
                 break
 
-            if key_exists(hex_key):
-                print(f'key={hex_key} already processing')
-            else:
-                s = span_solver(hex_key, i)
+            j = 0
+            for i in range(0, len(solvers)):
+                if j >= len(hex_keys):
+                    break
 
-            solvers[i] = s
+                s = solvers[i]
+                if not s['pause']:
+                    continue
 
-        if len(solvers) < process_count:
-            try:
-                hex_key = get_job()
-            except Exception as ex:
-                print(ex)
-                continue
-            if key_exists(hex_key):
-                print(f'key={hex_key} already processing')
-            else:
-                solvers.append(span_solver(hex_key, len(solvers)))
+                hex_key = hex_keys[j]
+                j = j + 1
+
+                if key_exists(hex_key):
+                    print(f'key={hex_key} already processing')
+                else:
+                    s = span_solver(hex_key, i)
+
+                solvers[i] = s
 
         time.sleep(0.1)
 
