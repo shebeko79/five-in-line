@@ -585,7 +585,8 @@ namespace Gomoku
 			}
 		};
 
-		db.visit_marks(pr(*this, timeout));
+		pr p(*this, timeout);
+		db.visit_marks(p);
 	}
 
 	void solution_tree_t::mark(const steps_t& key)
