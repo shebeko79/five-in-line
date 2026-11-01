@@ -337,7 +337,8 @@ void dump(solution_tree_t& tr, bool complete_only)
 		}
 	};
 
-	tr.width_first_search_from_bottom_to_top(pr(complete_only));
+	pr p(complete_only);
+	tr.width_first_search_from_bottom_to_top(p);
 }
 
 int main(int argc,char** argv)
