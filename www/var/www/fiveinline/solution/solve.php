@@ -13,7 +13,7 @@ function write_result_file($file_name)
 	file_put_contents($file_name, $content);
 }
 
-function get_job_from_list()
+function get_job_from_list($CNT)
 {
 	global $EXEC_PATH,$DB_PATH,$USE_ANT;
 	
@@ -22,7 +22,7 @@ function get_job_from_list()
 	else 
 		$cmd='get_job';
 
-	$cmd=$EXEC_PATH." ".$DB_PATH." ".escapeshellarg($cmd);
+	$cmd=$EXEC_PATH." ".$DB_PATH." ".escapeshellarg($cmd)." ".$CNT;
 	$file_name=$DB_PATH."/marked.txt";
 	$lst=file_get_contents($file_name);
 
@@ -75,10 +75,16 @@ if($cmd=='get_job')
 	  $root=$HTTP_VARS["root"];
 	else if(isset($OWN_ROOT))
 	  $root=$OWN_ROOT;
+
+	$CNT=1;
+	if(array_key_exists("cnt",$HTTP_VARS))
+	  $CNT=escapeshellarg($HTTP_VARS["cnt"]);
+
+	$cmd=$cmd." ".$CNT;
 	  
     if(!$root)
 	{
-	  if(get_job_from_list())
+	  if(get_job_from_list($CNT))
 	    exit(0);
 	}
 	
