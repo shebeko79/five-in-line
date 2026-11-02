@@ -18,7 +18,7 @@ def get_jobs(cnt):
     if src_name is not None:
         req_url += "&src_name=" + src_name
 
-    result = requests.get(req_url, timeout=30)
+    result = requests.get(req_url, timeout=300)
     if result.status_code != 200:
         result.raise_for_status()
 
@@ -45,7 +45,7 @@ def save_job(hex_key, content):
     if src_name is not None:
         req_url += "&src_name=" + src_name
 
-    result = requests.post(req_url, data=content, timeout=30)
+    result = requests.post(req_url, data=content, timeout=300)
     if not result.ok:
         result.raise_for_status()
 
