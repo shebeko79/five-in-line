@@ -238,7 +238,7 @@ namespace Gomoku
 
 		unsigned v=0;
 
-		for(npoints_t::const_iterator i = pts.begin(); i != pts.end(); ++i)
+		for(auto i = pts.begin(); i != pts.end(); ++i)
         {
 			const auto& p = *i;
 			
@@ -249,6 +249,46 @@ namespace Gomoku
 
 		return pts.end();
     }
+
+	ppoints_t::iterator select_random_point(ppoints_range rng, bool greather_the_best)
+	{
+		if(rng.second == rng.first)
+			return rng.second;
+
+		if(rng.second - rng.first == 1)
+			return rng.first;
+
+		const int k = greather_the_best? 1:-1;
+
+		std::vector<int> scores(rng.second - rng.first);
+		for(size_t i = 0; i < scores.size();i++)
+			scores[i] = (rng.first + i)->i*k;
+
+		int min_scr = *std::min_element(scores.begin(),scores.end());
+
+		for(auto& s : scores)
+			s = (s-min_scr)+1;
+
+        unsigned max_rate=0;
+		for(const auto& s : scores)
+			max_rate += s;
+
+		double r=static_cast<double>(rand())/RAND_MAX;
+
+		unsigned v=0;
+
+		for(size_t i = 0; i < scores.size();i++)
+        {
+			const auto& s = scores[i];
+			
+			v+=s;
+			if(static_cast<double>(v)/max_rate >= r)
+				return rng.first + i;
+        }
+
+		return rng.second;
+	}
+
 
 	void reorder_to_proper_last_color(steps_t& steps)
 	{

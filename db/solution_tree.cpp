@@ -473,8 +473,14 @@ namespace Gomoku
 				throw std::runtime_error("get_job(): inconsistent state doesn't change: "+print_steps(root_key));
 			}
 
-			ppoint move_point = *std::min_element(base_st.neutrals.begin(),base_st.neutrals.end(),proof_pr(move_color));
+			sort(base_st.neutrals,proof_pr(move_color));
+			auto rng = std::equal_range(base_st.neutrals.begin(),base_st.neutrals.end(),base_st.neutrals.front(),proof_only_pr());
+			auto rnd_it = select_random_point(rng,move_color == st_krestik);
+			
+			if(rnd_it == rng.second)
+				throw std::runtime_error("get_job(): no random point selected");
 
+			ppoint move_point = *rnd_it;
 			steps_t child_key = root_key;
 			child_key.push_back(step_t(move_color, move_point));
 

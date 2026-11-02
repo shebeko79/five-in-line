@@ -60,6 +60,7 @@ namespace Gomoku
 	};
 
 	typedef std::vector<ppoint> ppoints_t;
+	using ppoints_range = std::pair<ppoints_t::iterator, ppoints_t::iterator>;
 
 	struct less_point_pr
 	{
@@ -139,6 +140,14 @@ namespace Gomoku
 				return pa.proof  < pb.proof;
 
 			return fscore_pr::operator()(pa,pb);
+		}
+	};
+
+	struct proof_only_pr
+	{
+		inline bool operator()(const ppoint& pa, const ppoint& pb) const
+		{
+			return pa.proof  < pb.proof;
 		}
 	};
 
