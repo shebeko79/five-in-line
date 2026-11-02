@@ -336,6 +336,17 @@ expand_bound($solved_fails);
 expand_bound($tree_wins);
 expand_bound($tree_fails);
 
+$min_proof = 0;
+if(count($neutrals)>0)
+{
+	$min_proof = $neutrals[0]->proof;
+	foreach($neutrals as $p)
+	{
+		if($p->proof<$min_proof)
+			$min_proof = $p->proof;
+	}
+}
+
 $key_steps=make_point_key_array($steps);
 $neutrals=make_point_key_array($neutrals);
 $solved_wins=make_point_key_array($solved_wins);
@@ -356,7 +367,6 @@ if(array_key_exists("godmode",$HTTP_VARS))
 $godmode_lnk='';
 if($godmode_val)
   $godmode_lnk='&godmode='.$godmode_val;
-
 
 ?>
 <table border="1" cellpadding="0" cellspacing="0" class="field-table">
@@ -428,6 +438,8 @@ for($y=$y1;$y<=$y2;$y++)
 			
 			if($p->proof >=1000000)
 				$style=$style.";border: 2px solid cyan;border-radius:16px";
+			else if($p->proof == $min_proof)
+				$style=$style.";border: 2px solid magenta;border-radius:16px";
 		}
 		else if(array_key_exists($skey,$solved_wins))
 		{
