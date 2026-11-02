@@ -145,7 +145,8 @@ namespace Gomoku
 				else
 				{
 					auto& p = prev_st.neutrals[j];
-					p.i = best_score;
+					if(child_st.calculated)
+						p.i = best_score;
 					p.proof = proof;
 					p.disproof = disproof;
 				}
@@ -578,6 +579,7 @@ namespace Gomoku
 
 				sol_state_t st;
 				st.key = mrk.key;
+				st.calculated = false;
 				st.neutrals.push_back(ppoint());
 
 				tr.relax(st);
@@ -604,6 +606,7 @@ namespace Gomoku
 
 		sol_state_t st;
 		st.key = key;
+		st.calculated = false;
 		st.neutrals.push_back(pt);
 
 		relax(st);

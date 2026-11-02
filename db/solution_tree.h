@@ -24,6 +24,8 @@ namespace Gomoku
         //step from state key is a fail
 		npoints_t tree_fails;
 
+		bool calculated = true;
+
 		void pack(data_t& bin) const;
 		void unpack(const data_t& bin);
 
