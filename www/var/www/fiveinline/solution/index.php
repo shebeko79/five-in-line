@@ -531,7 +531,10 @@ if($godmode_val)
 ?>
 <pre>
 <?php
-passthru($cmd,$r);
+$str = '';
+foreach($output as $s)
+  $str = $str.$s."\r\n";
+echo $str;
 ?>
 </pre>
 </body>
