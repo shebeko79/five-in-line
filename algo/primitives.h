@@ -16,7 +16,7 @@ struct pointT
 {
 	T x;
 	T y;
-	pointT(){}
+	pointT() = default;
 	pointT(T _x,T _y){x=_x;y=_y;}
 	inline bool operator==(const pointT& rhs) const{return x==rhs.x&&y==rhs.y;}
 	inline bool operator!=(const pointT& rhs) const{return x!=rhs.x||y!=rhs.y;}
@@ -57,7 +57,7 @@ struct rectT
 	inline const pointT<T>& p2() const{return *reinterpret_cast<const pointT<T>*>(&x2);}
 	inline pointT<T>& p2(){return *reinterpret_cast< pointT<T>* >(&x2);}
 
-	rectT(){}
+	rectT() = default;
 	rectT(T _x1,T _y1,T _x2,T _y2)
 	{
 		x1=_x1;y1=_y1;x2=_x2;y2=_y2;
