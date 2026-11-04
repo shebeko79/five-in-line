@@ -10,7 +10,7 @@ namespace Gomoku { namespace State5
 	extern unsigned common_deep;
 	extern unsigned gl_threat_deep;
 	extern unsigned lookup_threat_deep;
-	extern bool prove_mode;
+	extern Step prove_color;
 
 	extern size_t max_nodes;
 	extern size_t lookup_nodes;

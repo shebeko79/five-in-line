@@ -12,7 +12,7 @@ namespace Gomoku { namespace State5
 unsigned common_deep = 2;
 unsigned gl_threat_deep = 12;
 unsigned lookup_threat_deep = 16;
-bool prove_mode = true;
+Step prove_color = st_krestik;
 
 size_t max_nodes = 60000000;
 size_t lookup_nodes = 1000000;
@@ -301,7 +301,7 @@ void node_t::process(points_t& pts)
 		deep_limit_reached = true;
 		expect_all_fails = fails_exists() && neutrals.empty();
 	}
-	else if(prove_mode&&move_color==st_krestik)
+	else if(prove_color == move_color)
 		threat_deep = std::min(common_deep+2,threat_deep);
 
 	rng.first = rng.second;
@@ -405,7 +405,7 @@ bool node_t::make_move_find_win(const points_range& rng)
 {
 	for(auto p = rng.first; p != rng.second; ++p)
 	{
-		if (( expect_all_fails || prove_mode && move_color == st_nolik && deep >= common_deep ) 
+		if (( expect_all_fails || prove_color == prev_step.step && deep >= common_deep ) 
 			&& !neutrals.empty())
 		{
 			neutrals.emplace_back(*p, player.field5.get_score(*p, move_color));
