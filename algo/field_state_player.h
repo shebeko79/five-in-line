@@ -30,9 +30,6 @@ namespace Gomoku { namespace State5
 		field5_t field5;
 
         int thinking = 0;
-
-		void squeeze_win(node_t& root, size_t nodes_budget, unsigned from_deep, unsigned to_deep);
-		void squeeze_fail(node_t& root, size_t nodes_budget, unsigned from_deep, unsigned to_deep);
 	};
 
 	class fork_t

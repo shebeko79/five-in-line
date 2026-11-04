@@ -1,8 +1,6 @@
 #include "field_state_player.h"
 #include <stdexcept>
 
-#include "../extern/pair_comparator.h"
-#include "../extern/binary_find.h"
 #include "../extern/object_progress.hpp"
 #include "algo_utils.h"
 
@@ -51,10 +49,6 @@ node_t field_state_player_t::solve()
         throw;
 	}
 
-	auto squeeze_nodes_budget = node_t::nodes_created * 4;
-	unsigned from_squeeze = common_deep;
-	unsigned to_squeeze = gl_threat_deep;
-
 	point p=root.get_next_step();
 
 	auto nps = node_t::nodes_created/(perf.delay()/1000000.0);
@@ -71,111 +65,13 @@ node_t field_state_player_t::solve()
 		lg << "Lookup: "<< print_steps(steps_t({ {root.move_color, p} }))
 			<<": time="<<lookup_perf<<" nodes="<<node_t::nodes_created;
 		root.log_statistic();
-		
-		squeeze_nodes_budget = lookup_nodes;
-		from_squeeze = gl_threat_deep;
-		to_squeeze = lookup_threat_deep;
 	}
 
-	//lg<<"Krestik:";
-	//field5.get_field_krestik().log_statistic();
-	//lg<<"Nolik:";
-	//field5.get_field_nolik().log_statistic();
 	lg<<"empty_count="<<field5.get_empty_points().size();
-	
-	squeeze_win(root, squeeze_nodes_budget, from_squeeze, to_squeeze);
-	squeeze_fail(root, squeeze_nodes_budget, from_squeeze, to_squeeze);
 	lg<<"total_time="<<perf;
 	lg<<"";
 
 	return root;
-}
-
-void field_state_player_t::squeeze_win(node_t& root, size_t nodes_budget, unsigned from_deep, unsigned to_deep)
-{
-	const npoint* pmin_win = root.get_min_win();
-	if (!pmin_win)
-		return;
-
-	npoint min_win = *pmin_win;
-
-	ObjectProgress::log_generator lg(true);
-
-	for (unsigned td = to_deep - 1; td > from_deep; td--)
-	{
-		lg<<"Squeeze win: threat_deep="<<td;
-		ObjectProgress::perfomance perf;
-
-		node_t::nodes_created = 0;
-		node_t::max_nodes = nodes_budget;
-
-		node_t dist_root(*this, field.back(),0,td);
-
-		dist_root.process();
-
-		const npoint* dist_win = dist_root.get_min_win();
-		if (!dist_win)
-		{
-			lg<<"No win. nodes="<<node_t::nodes_created<<" time="<<perf;
-			break;
-		}
-
-		if (dist_win->n < min_win.n)
-		{
-			root.replace_shorter_wins(dist_root);
-			min_win = *dist_win;
-			lg << "Better win: " << print_points(npoints_t({ min_win}))<<" nodes="<<node_t::nodes_created<<" time="<<perf;
-		}
-		else
-			lg<<"Same win. nodes="<<node_t::nodes_created<<" time="<<perf;
-	}
-}
-
-void field_state_player_t::squeeze_fail(node_t& root, size_t nodes_budget, unsigned from_deep, unsigned to_deep)
-{
-	const npoint* pmax_fail = root.get_max_fail();
-
-	if(!pmax_fail || root.get_min_win()!= nullptr || !root.get_neutrals().empty())
-		return;
-
-	npoint max_fail = *pmax_fail;
-
-	ObjectProgress::log_generator lg(true);
-
-	for (unsigned td = to_deep - 1; td > from_deep; td--)
-	{
-		lg<<"Squeeze fail: threat_deep="<<td;
-		ObjectProgress::perfomance perf;
-
-		node_t::nodes_created = 0;
-		node_t::max_nodes = nodes_budget;
-
-		node_t dist_root(*this, field.back(),0,td);
-
-		dist_root.process();
-
-		const npoint* dist_fail = dist_root.get_max_fail();
-		if (!dist_fail)
-		{
-			lg<<"No fail. nodes="<<node_t::nodes_created<<" time="<<perf;
-			break;
-		}
-		
-		if(dist_root.get_min_win()!= nullptr)
-			throw std::runtime_error("squeeze_fail(): win found");
-		
-		if(!dist_root.get_neutrals().empty())
-			break;
-
-		if (dist_fail->n < max_fail.n)
-		{
-			root.replace_shorter_fails(dist_root);
-			max_fail = *dist_fail;
-			lg << "Better fail: " << print_points(npoints_t({ max_fail}))<<" nodes="<<node_t::nodes_created<<" time="<<perf;
-		}
-		else
-			lg<<"Same fail. nodes="<<node_t::nodes_created<<" time="<<perf;
-	}
 }
 
 
