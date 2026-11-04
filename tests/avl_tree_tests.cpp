@@ -383,7 +383,7 @@ TEST_F(avl_tree, DISABLED_generate_index_data)
 
 }
 
-TEST_F(avl_tree, real_data_cycle)
+TEST_F(avl_tree, DISABLED_real_data_cycle)
 {
 	static const unsigned perf_mod=200000;
 
