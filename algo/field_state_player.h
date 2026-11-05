@@ -9,27 +9,44 @@ namespace Gomoku { namespace State5
 
 	extern unsigned common_deep;
 	extern unsigned gl_threat_deep;
-	extern unsigned lookup_threat_deep;
-	extern Step prove_color;
+	
+	constexpr size_t thread_deep_max_nodes = 60000000;
 
-	extern size_t max_nodes;
-	extern size_t lookup_nodes;
+	struct Ctx
+	{
+		enum Flag {fl_regular,fl_all_at_once,fl_process_low};
+
+		unsigned threat_deep;
+		size_t max_nodes;
+		Step prove_color;
+		Flag flag;
+		
+		Ctx(unsigned _threat_deep, size_t _max_nodes, Step _prove_color, Flag _flag = fl_regular) :
+			threat_deep(_threat_deep), max_nodes(_max_nodes), prove_color(_prove_color), flag(_flag)
+		{
+		}
+	};
 
 	class field_state_player_t : public iplayer_t
 	{
 		friend class node_t;
 	public:
+		field_state_player_t();
 		void delegate_step() override;
         bool is_thinking() const override{return thinking>0;}
 		node_t solve();
+		inline void set_ctxs(const std::vector<Ctx>& _ctxs) {ctxs=_ctxs;}
 
         POLIMVAR_IMPLEMENT_CLONE(field_state_player_t )
 
 	private:
 		field_t field;
 		field5_t field5;
+		std::vector<Ctx> ctxs;
 
         int thinking = 0;
+
+		static std::vector<Ctx> create_ctxs();
 	};
 
 	class fork_t
@@ -102,7 +119,7 @@ namespace Gomoku { namespace State5
 		node_t(field_state_player_t& _player, const step_t& st, unsigned _deep, unsigned _threat_deep);
 
 		void process();
-		bool process_lookup();
+		void process_lookup(Ctx _ctx);
 
 		point get_next_step() const;
 
@@ -122,7 +139,7 @@ namespace Gomoku { namespace State5
 		inline const npoints_t& get_fails() const {return fails;}
 
 		static size_t nodes_created;
-		static size_t max_nodes;
+		static Ctx ctx;
 	private:
 		field_state_player_t& player;
 

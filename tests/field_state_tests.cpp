@@ -30,7 +30,7 @@ void field_state_test::set_deep(unsigned deep)
 {
 	State5::common_deep=deep;
 	State5::gl_threat_deep=deep;
-	State5::lookup_threat_deep=deep;
+	State5::node_t::ctx.threat_deep=deep;
 }
 
 State5::node_t field_state_test::solve(const std::string& steps_str)
@@ -45,6 +45,11 @@ State5::node_t field_state_test::solve(const std::string& steps_str)
 	gm.field().set_steps(init_state);
 
 	State5::field_state_player_t pl;
+
+	std::vector<State5::Ctx> ctxs;
+	ctxs.push_back(State5::Ctx(State5::gl_threat_deep,State5::thread_deep_max_nodes,st_krestik,State5::Ctx::fl_all_at_once));
+
+	pl.set_ctxs(ctxs);
 
 	pl.init(gm,other_color(last_step));
 	return pl.solve();

@@ -9,12 +9,65 @@ namespace Gomoku { namespace State5
 
 unsigned common_deep = 2;
 unsigned gl_threat_deep = 12;
-unsigned lookup_threat_deep = 16;
-Step prove_color = st_krestik;
 
-size_t max_nodes = 60000000;
-size_t lookup_nodes = 1000000;
+field_state_player_t::field_state_player_t()
+{
+	ctxs = create_ctxs();
+}
 
+std::vector<Ctx> field_state_player_t::create_ctxs()
+{
+	std::vector<Ctx> ret;
+
+	static const Ctx ctxs[] = {
+		{ 4,  10000, st_krestik},
+		{ 6,  10000, st_krestik},
+		{ 8,  10000, st_krestik},
+		{ 10, 10000, st_krestik},
+		{ 12, 10000, st_krestik},
+		{ 16, 10000, st_krestik},
+		{ 20, 10000, st_krestik},
+		{ 22, 10000, st_krestik},
+
+		{ 4,  10000, st_nolik},
+		{ 6,  10000, st_nolik},
+		{ 8,  10000, st_nolik},
+		{ 10, 10000, st_nolik},
+		{ 12, 10000, st_nolik},
+		{ 16, 10000, st_nolik},
+
+		{ 8,  500000, st_krestik},
+		{ 12, 500000, st_krestik},
+		{ 12, 500000, st_nolik},
+		{ 16, 500000, st_krestik},
+		{ 20, 500000, st_krestik},
+
+
+		{ 12, 1000000, st_krestik},
+		{ 16, 1000000, st_krestik},
+		{ 20, 1000000, st_krestik},
+
+		{ 12, 2000000, st_krestik},
+		{ 16, 2000000, st_krestik},
+	};
+
+	size_t ctx_count = sizeof(ctxs) / sizeof(Ctx);
+
+	for (size_t i = 0; i < ctx_count; i++)
+	{
+		Ctx c = ctxs[i];
+		if(c.threat_deep<=common_deep)
+			continue;
+
+		if(i+1 == ctx_count)
+			c.flag = c.fl_process_low;
+
+		ret.push_back(c);
+	}
+
+	ret.push_back(Ctx(gl_threat_deep, thread_deep_max_nodes, st_krestik, Ctx::fl_all_at_once));
+	return ret;
+}
 
 void field_state_player_t::delegate_step()
 {
@@ -26,49 +79,65 @@ void field_state_player_t::delegate_step()
 node_t field_state_player_t::solve()
 {
     incer_t<int> hld_thinking(thinking);
-	ObjectProgress::perfomance perf;
-	node_t::nodes_created=0;
+	ObjectProgress::perfomance total_perf;
+	ObjectProgress::log_generator lg(true);
 
 	field=game().field();
 	field5.set_steps(field.get_steps());
 
-	node_t::max_nodes = std::numeric_limits<size_t>::max();
-
 	node_t root(*this, field.back(),0,gl_threat_deep);
 
-	ObjectProgress::log_generator lg(true);
-
-	try
+	for (size_t i = 0; i < ctxs.size(); i++)
 	{
-		root.process();
-	}
-	catch(e_cancel&)
-	{
-		lg<<"canceled";
-        hld_thinking.reset();
-        throw;
-	}
+		const Ctx& c = ctxs[i];
 
-	point p=root.get_next_step();
+		ObjectProgress::perfomance step_perf;
 
-	auto nps = node_t::nodes_created/(perf.delay()/1000000.0);
-	lg << "#" << field.size() + 1 << " " << print_steps(steps_t({ {root.move_color, p} }))
-		<<": time="<<perf<<" nodes="<<node_t::nodes_created<<" nps="<<nps;
-	root.log_statistic();
+		try
+		{
+			if (i == 0)
+			{
+				node_t::nodes_created = 0;
+				node_t::ctx = c;
+				root.threat_deep = c.threat_deep;
+				root.process();
+			}
+			else
+			{
+				root.process_lookup(c);
+			}
+		}
+		catch (e_cancel&)
+		{
+			lg << "canceled";
+			hld_thinking.reset();
+			throw;
+		}
 
-	ObjectProgress::perfomance lookup_perf;
+		auto nps = node_t::nodes_created / (step_perf.delay() / 1000000.0);
+		
+		if (root.is_complete() || i + 1 == ctxs.size())
+		{
+			point p = root.get_next_step();
 
-	if (root.process_lookup())
-	{
-		p=root.get_next_step();
+			lg << "#" << field.size() + 1 << " " << print_steps(steps_t({ { root.move_color, p } }))
+				<< ": time=" << step_perf << " nodes=" << node_t::nodes_created << " nps=" << nps
+				<<" deep=" << c.threat_deep << " max_nodes=" << c.max_nodes;
+			root.log_statistic();
+		}
+		else
+		{
+			lg << (c.prove_color==st_krestik? "X" : "O")<< ": N="<<root.get_neutrals().size()
+				<<" time=" << step_perf << " nodes=" << node_t::nodes_created << " nps=" << nps
+				<<" deep=" << c.threat_deep << " max_nodes=" << c.max_nodes;
+		}
 
-		lg << "Lookup: "<< print_steps(steps_t({ {root.move_color, p} }))
-			<<": time="<<lookup_perf<<" nodes="<<node_t::nodes_created;
-		root.log_statistic();
+		if(root.is_complete())
+			break;
 	}
 
 	lg<<"empty_count="<<field5.get_empty_points().size();
-	lg<<"total_time="<<perf;
+	lg<<"total_time="<<total_perf;
 	lg<<"";
 
 	return root;
@@ -79,7 +148,7 @@ node_t field_state_player_t::solve()
 // node_t
 //
 size_t node_t::nodes_created=0;
-size_t node_t::max_nodes=State5::max_nodes;
+Ctx node_t::ctx(gl_threat_deep, thread_deep_max_nodes, st_krestik, Ctx::fl_all_at_once);
 
 node_t::node_t(field_state_player_t& _player, const step_t& st, unsigned _deep, unsigned _threat_deep) :
 	prev_step(st),
@@ -138,7 +207,7 @@ void node_t::process(points_t& pts)
 	}
 
 	if (deep >= threat_deep || 
-		deep >=common_deep && nodes_created>=max_nodes)
+		deep >=common_deep && nodes_created>=ctx.max_nodes)
 		deep_limit_reached = true;
 
 	scr.cnt(move_color) = kCount4*2;
@@ -197,7 +266,7 @@ void node_t::process(points_t& pts)
 		deep_limit_reached = true;
 		expect_all_fails = fails_exists() && neutrals.empty();
 	}
-	else if(prove_color == move_color)
+	else if(ctx.prove_color == move_color)
 		threat_deep = std::min(common_deep+2,threat_deep);
 
 	rng.first = rng.second;
@@ -208,10 +277,10 @@ void node_t::process(points_t& pts)
 		return;
 }
 
-bool node_t::process_lookup()
+void node_t::process_lookup(Ctx _ctx)
 {
 	if(is_complete())
-		return false;
+		return;
 
 	max_step_pr pr(player.field5.get_scores_field(), move_color);
 	//unnecessary now because they are already in sorted order, but who know
@@ -222,38 +291,46 @@ bool node_t::process_lookup()
 	scr.cnt(move_color) = kCount3*2;
 	scr.cnt(prev_step.step) = 0;
 
-	auto end_it = std::upper_bound(neutrals.begin(), neutrals.end(), scr, pr);
-
-	points_t high_pts(neutrals.begin(), end_it);
-	points_t low_pts(end_it, neutrals.end());
-
-	neutrals.clear();
-	
-	ObjectProgress::log_generator lg(true);
-
-	if (!high_pts.empty())
+	if (_ctx.flag == _ctx.fl_all_at_once)
 	{
-		lg << "High lookup";
-		threat_deep = lookup_threat_deep;
+		points_t pts(neutrals.begin(), neutrals.end());
+		neutrals.clear();
+
+		ctx = _ctx;
+		threat_deep = ctx.threat_deep;
 		nodes_created = 0;
-		max_nodes = lookup_nodes;
 		reset_intermediate_state();
-		process(high_pts);
+		process(pts);
 	}
-
-	if (!low_pts.empty())
+	else
 	{
-		lg << "Low lookup";
-		threat_deep = lookup_threat_deep;
-		nodes_created = 0;
-		max_nodes = lookup_nodes;
+		auto end_it = std::upper_bound(neutrals.begin(), neutrals.end(), scr, pr);
 
-		points_range rng(low_pts.begin(), low_pts.end());
-		std::sort(rng.first, rng.second, score_pr(player.field5, move_color));
-		make_move_find_win(rng);
+		points_t high_pts(neutrals.begin(), end_it);
+		points_t low_pts(end_it, neutrals.end());
+
+		neutrals.erase(neutrals.begin(), end_it);
+
+		if (!high_pts.empty())
+		{
+			ctx = _ctx;
+			threat_deep = ctx.threat_deep;
+			nodes_created = 0;
+			reset_intermediate_state();
+			process(high_pts);
+		}
+
+		if (_ctx.flag == _ctx.fl_process_low)
+		{
+			ctx = _ctx;
+			threat_deep = ctx.threat_deep;
+			nodes_created = 0;
+
+			points_range rng(low_pts.begin(), low_pts.end());
+			std::sort(rng.first, rng.second, score_pr(player.field5, move_color));
+			make_move_find_win(rng);
+		}
 	}
-
-	return true;
 }
 
 void node_t::reset_intermediate_state()
@@ -301,7 +378,7 @@ bool node_t::make_move_find_win(const points_range& rng)
 {
 	for(auto p = rng.first; p != rng.second; ++p)
 	{
-		if (( expect_all_fails || prove_color == prev_step.step && deep >= common_deep ) 
+		if (( expect_all_fails || ctx.prove_color == prev_step.step && deep >= common_deep ) 
 			&& !neutrals.empty())
 		{
 			neutrals.emplace_back(*p, player.field5.get_score(*p, move_color));
