@@ -118,12 +118,12 @@ namespace Gomoku
 	}
 
 
-std::string to_string(Step val)
-{
-    if(val==st_krestik)return std::string("x");
-    if(val==st_nolik)return std::string("0");
-    return std::string();
-}
+	std::string to_string(Step val, bool capitalize)
+	{
+		if(val==st_krestik)return capitalize? std::string("X") : std::string("x");
+		if(val==st_nolik)return capitalize? std::string("O") : std::string("o");
+		return std::string();
+	}
 
 	void print_field(const steps_t& val,std::string& ret, bool bound)
 	{

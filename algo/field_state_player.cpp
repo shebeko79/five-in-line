@@ -20,38 +20,32 @@ std::vector<Ctx> field_state_player_t::create_ctxs()
 	std::vector<Ctx> ret;
 
 	static const Ctx ctxs[] = {
-		{ 4,  10000, st_krestik},
-		{ 6,  10000, st_krestik},
-		{ 8,  10000, st_krestik},
-		{ 10, 10000, st_krestik},
-		{ 12, 10000, st_krestik},
-		{ 16, 10000, st_krestik},
-		{ 20, 10000, st_krestik},
-		{ 22, 10000, st_krestik},
+		{ 6,  50000, st_krestik},
+		{ 8,  50000, st_krestik},
+		{ 10, 50000, st_krestik},
+		{ 12, 50000, st_krestik},
+		{ 16, 50000, st_krestik},
+		{ 20, 50000, st_krestik},
+		{ 22, 50000, st_krestik},
 
-		{ 4,  10000, st_nolik},
-		{ 6,  10000, st_nolik},
-		{ 8,  10000, st_nolik},
-		{ 10, 10000, st_nolik},
-		{ 12, 10000, st_nolik},
-		{ 16, 10000, st_nolik},
+		{ 6,  50000, st_nolik},
+		{ 8,  50000, st_nolik},
+		{ 10, 50000, st_nolik},
+		{ 12, 50000, st_nolik},
+		{ 16, 50000, st_nolik},
 
 		{ 8,  500000, st_krestik},
 		{ 12, 500000, st_krestik},
-		{ 12, 500000, st_nolik},
 		{ 16, 500000, st_krestik},
-		{ 20, 500000, st_krestik},
 
 
 		{ 12, 1000000, st_krestik},
 		{ 16, 1000000, st_krestik},
-		{ 20, 1000000, st_krestik},
-
-		{ 12, 2000000, st_krestik},
-		{ 16, 2000000, st_krestik},
 	};
 
 	size_t ctx_count = sizeof(ctxs) / sizeof(Ctx);
+
+	unsigned last_krestik_serious_budget_deep = 0;
 
 	for (size_t i = 0; i < ctx_count; i++)
 	{
@@ -59,13 +53,23 @@ std::vector<Ctx> field_state_player_t::create_ctxs()
 		if(c.threat_deep<=common_deep)
 			continue;
 
+		if (c.max_nodes >= 1000000 && c.prove_color == st_krestik)
+		{
+			if (last_krestik_serious_budget_deep < gl_threat_deep && c.threat_deep >= gl_threat_deep)
+				ret.push_back(Ctx(gl_threat_deep, thread_deep_max_nodes, st_krestik, Ctx::fl_all_at_once));
+
+			last_krestik_serious_budget_deep = c.threat_deep;
+
+			if(c.threat_deep == gl_threat_deep)
+				continue;
+		}
+
 		if(i+1 == ctx_count)
 			c.flag = c.fl_process_low;
 
 		ret.push_back(c);
 	}
 
-	ret.push_back(Ctx(gl_threat_deep, thread_deep_max_nodes, st_krestik, Ctx::fl_all_at_once));
 	return ret;
 }
 
@@ -122,14 +126,14 @@ node_t field_state_player_t::solve()
 
 			lg << "#" << field.size() + 1 << " " << print_steps(steps_t({ { root.move_color, p } }))
 				<< ": time=" << step_perf << " nodes=" << node_t::nodes_created << " nps=" << nps
-				<<" deep=" << c.threat_deep << " max_nodes=" << c.max_nodes;
+				<<" deep=" << c.threat_deep << " max_nodes=" << c.max_nodes <<" pc="<<to_string(c.prove_color);
 			root.log_statistic();
 		}
 		else
 		{
-			lg << (c.prove_color==st_krestik? "X" : "O")<< ": N="<<root.get_neutrals().size()
+			lg << "N="<<root.get_neutrals().size()
 				<<" time=" << step_perf << " nodes=" << node_t::nodes_created << " nps=" << nps
-				<<" deep=" << c.threat_deep << " max_nodes=" << c.max_nodes;
+				<<" deep=" << c.threat_deep << " max_nodes=" << c.max_nodes <<" pc="<<to_string(c.prove_color);
 		}
 
 		if(root.is_complete())
@@ -282,15 +286,6 @@ void node_t::process_lookup(Ctx _ctx)
 	if(is_complete())
 		return;
 
-	max_step_pr pr(player.field5.get_scores_field(), move_color);
-	//unnecessary now because they are already in sorted order, but who know
-	// anyway there is no measurable performance hit by this sort
-	sort(neutrals, pr);
-
-	score_t scr;
-	scr.cnt(move_color) = kCount3*2;
-	scr.cnt(prev_step.step) = 0;
-
 	if (_ctx.flag == _ctx.fl_all_at_once)
 	{
 		points_t pts(neutrals.begin(), neutrals.end());
@@ -304,12 +299,24 @@ void node_t::process_lookup(Ctx _ctx)
 	}
 	else
 	{
+		max_step_pr pr(player.field5.get_scores_field(), move_color);
+		//unnecessary now because they are already in sorted order, but who know
+		// anyway there is no measurable performance hit by this sort
+		sort(neutrals, pr);
+
+		score_t scr;
+		scr.cnt(move_color) = kCount3*2;
+		scr.cnt(prev_step.step) = 0;
+
 		auto end_it = std::upper_bound(neutrals.begin(), neutrals.end(), scr, pr);
 
 		points_t high_pts(neutrals.begin(), end_it);
 		points_t low_pts(end_it, neutrals.end());
 
-		neutrals.erase(neutrals.begin(), end_it);
+		if (_ctx.flag == _ctx.fl_process_low)
+			neutrals.clear();
+		else
+			neutrals.erase(neutrals.begin(), end_it);
 
 		if (!high_pts.empty())
 		{

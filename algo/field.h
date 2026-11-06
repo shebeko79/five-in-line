@@ -284,7 +284,7 @@ namespace Gomoku
 		for(;i!=endi;++i)*i-=pt;
 	}
 
-	std::string to_string(Step val);
+	std::string to_string(Step val, bool capitalize = true);
 
 	void print_field(const steps_t& val, std::string& ret, bool bound=false);
 	void print_field(const steps_t& val, std::wstring& ret, bool bound=false);
