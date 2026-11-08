@@ -473,8 +473,18 @@ namespace Gomoku
 				throw std::runtime_error("get_job(): inconsistent state doesn't change: "+print_steps(root_key));
 			}
 
-			sort(base_st.neutrals,proof_pr(move_color));
-			auto rng = std::equal_range(base_st.neutrals.begin(),base_st.neutrals.end(),base_st.neutrals.front(),proof_only_pr());
+			ppoints_range rng;
+
+			if (move_color == st_krestik)
+			{
+				sort(base_st.neutrals, proof_pr(move_color));
+				rng = std::equal_range(base_st.neutrals.begin(), base_st.neutrals.end(), base_st.neutrals.front(), proof_only_pr());
+			}
+			else
+			{
+				rng = std::make_pair(base_st.neutrals.begin(), base_st.neutrals.end());
+			}
+
 			auto rnd_it = select_random_point(rng,move_color == st_krestik);
 			
 			if(rnd_it == rng.second)
