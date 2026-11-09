@@ -151,6 +151,26 @@ namespace Gomoku
 		}
 	};
 
+	struct disproof_pr : fscore_pr
+	{
+		disproof_pr(Step move_color) : fscore_pr(move_color) {}
+		inline bool operator()(const ppoint& pa, const ppoint& pb) const
+		{
+			if(pa.disproof != pb.disproof)
+				return pa.disproof < pb.disproof;
+
+			return fscore_pr::operator()(pa,pb);
+		}
+	};
+
+	struct disproof_only_pr
+	{
+		inline bool operator()(const ppoint& pa, const ppoint& pb) const
+		{
+			return pa.disproof  < pb.disproof;
+		}
+	};
+
 	class step_kind_pr
 	{
         Step cl;

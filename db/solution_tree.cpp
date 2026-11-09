@@ -482,7 +482,8 @@ namespace Gomoku
 			}
 			else
 			{
-				rng = std::make_pair(base_st.neutrals.begin(), base_st.neutrals.end());
+				sort(base_st.neutrals, disproof_pr(move_color));
+				rng = std::equal_range(base_st.neutrals.begin(), base_st.neutrals.end(), base_st.neutrals.front(), disproof_only_pr());
 			}
 
 			auto rnd_it = select_random_point(rng,move_color == st_krestik);
