@@ -337,15 +337,21 @@ expand_bound($tree_wins);
 expand_bound($tree_fails);
 
 $min_proof = 0;
+$min_disproof = 0;
 if(count($neutrals)>0)
 {
 	$min_proof = $neutrals[0]->proof;
+	$min_disproof = $neutrals[0]->disproof;
 	foreach($neutrals as $p)
 	{
 		if($p->proof<$min_proof)
 			$min_proof = $p->proof;
+
+		if($p->disproof<$min_disproof)
+			$min_disproof = $p->disproof;
 	}
 }
+echo $min_disproof;
 
 $key_steps=make_point_key_array($steps);
 $neutrals=make_point_key_array($neutrals);
@@ -436,9 +442,23 @@ for($y=$y1;$y<=$y2;$y++)
 				$style="background-color:rgb($c,255,$c)";
 			}
 			
-			if($p->proof >=1000000)
+			$solving = false;
+			$top_most = false;
+			
+			if($next_step == st_krestik)
+			{
+				if($p->proof >=1000000) $solving = true;
+				else if($p->proof == $min_proof) $top_most = true;
+			}
+			else
+			{
+				if($p->disproof >=1000000) $solving = true;
+				else if($p->disproof == $min_disproof) $top_most = true;
+			}
+			
+			if($solving)
 				$style=$style.";border: 2px solid cyan;border-radius:16px";
-			else if($p->proof == $min_proof)
+			else if($top_most)
 				$style=$style.";border: 2px solid magenta;border-radius:16px";
 		}
 		else if(array_key_exists($skey,$solved_wins))
