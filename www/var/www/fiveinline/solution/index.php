@@ -351,7 +351,6 @@ if(count($neutrals)>0)
 			$min_disproof = $p->disproof;
 	}
 }
-echo $min_disproof;
 
 $key_steps=make_point_key_array($steps);
 $neutrals=make_point_key_array($neutrals);
