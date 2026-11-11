@@ -8,7 +8,7 @@
 
 namespace Gomoku
 {
-	constexpr unsigned max_proof = 1000000;
+	constexpr unsigned max_proof = 100000;
 
 	struct sol_state_t
 	{
