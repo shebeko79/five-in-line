@@ -4,6 +4,12 @@
 <head>
 <title>Five in line solver database</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style>
+  .field-table td {
+    width: 32px;
+    height: 32px;
+  }
+</style>
 </head>
 <body>
 <!---
@@ -57,6 +63,27 @@ class npoint extends point
 	}
 };
 
+class ipoint extends point
+{
+	var $i;
+	
+	function npoint()
+	{
+		$this->i=0;
+	}
+};
+
+class ppoint extends ipoint
+{
+	var $proof;
+	var $disproof;
+	
+	function ppoint()
+	{
+		$this->proof=1;
+		$this->disproof=1;
+	}
+};
 
 function hex2steps($h)
 {
@@ -186,6 +213,39 @@ function fill_npoints_array($prefix,$s,&$arr)
 	}
 }
 
+function fill_ppoints_array($prefix,$s,&$arr)
+{
+	$ps=strpos($s,$prefix);
+	if($ps===false||$ps!=0)return;
+	
+	$s=substr($s,strlen($prefix));
+	
+	$spts=explode(";",$s);
+	
+	$arr=array();
+	
+	for($i=0;$i<count($spts);$i++)
+	{
+		$x=0;
+		$y=0;
+		$score=0;
+		$proof=0;
+		$disproof=0;
+
+		$sp=$spts[$i];
+		if(sscanf($sp,"(%d,%d:%d,%d,%d)",$x,$y,$score,$proof,$disproof)!=5)
+			continue;
+		
+		$p=new ppoint;
+		$p->x=$x;
+		$p->y=$y;
+		$p->i=$score;
+		$p->proof=$proof;
+		$p->disproof=$disproof;
+		array_push($arr,$p);
+	}
+}
+
 function expand_bound($arr)
 {
 	global $x1,$y1,$x2,$y2;
@@ -241,7 +301,7 @@ if(!$hex_state)
 {
 	$steps=Array();
 	if(isset($OWN_ROOT)) $cmd="view ".escapeshellarg($OWN_ROOT);
-	else $cmd="view_root";
+	else $cmd="view";
 }
 else
 {
@@ -262,7 +322,7 @@ foreach($output as $s)
 			$hex_state=substr($s,strlen("hex_key: "));
 	}
 
-	fill_npoints_array("neutrals: ",$s,$neutrals);
+	fill_ppoints_array("neutrals: ",$s,$neutrals);
 	fill_npoints_array("solved wins: ",$s,$solved_wins);
 	fill_npoints_array("solved fails: ",$s,$solved_fails);
 	fill_npoints_array("tree wins: ",$s,$tree_wins);
@@ -275,6 +335,22 @@ expand_bound($solved_wins);
 expand_bound($solved_fails);
 expand_bound($tree_wins);
 expand_bound($tree_fails);
+
+$min_proof = 0;
+$min_disproof = 0;
+if(count($neutrals)>0)
+{
+	$min_proof = $neutrals[0]->proof;
+	$min_disproof = $neutrals[0]->disproof;
+	foreach($neutrals as $p)
+	{
+		if($p->proof<$min_proof)
+			$min_proof = $p->proof;
+
+		if($p->disproof<$min_disproof)
+			$min_disproof = $p->disproof;
+	}
+}
 
 $key_steps=make_point_key_array($steps);
 $neutrals=make_point_key_array($neutrals);
@@ -297,9 +373,8 @@ $godmode_lnk='';
 if($godmode_val)
   $godmode_lnk='&godmode='.$godmode_val;
 
-
 ?>
-<table border="1" cellpadding="0" cellspacing="0">
+<table border="1" cellpadding="0" cellspacing="0" class="field-table">
 <?php
 $win_color='green';
 $fail_color='red';
@@ -312,7 +387,7 @@ if((count($steps)%2)!=0)
 
 for($y=$y1;$y<=$y2;$y++)
 {
-	echo '<tr height="32">';
+	echo '<tr>';
 	for($x=$x1;$x<=$x2;$x++)
 	{
 		$skey=$x."_".$y;
@@ -349,22 +424,41 @@ for($y=$y1;$y<=$y2;$y++)
 			$o->step=$next_step;
 		
 			$h=$hex_state.step2hex($o);
-			$title=sprintf("%d",$p->n);
+			$title=sprintf("score=%d\nproof=%d\ndisproof=%d",$p->i,$p->proof,$p->disproof);
 			
 			$cnt='<a href="'.$OWN_PATH.'?st='.$h;
 			$cnt=$cnt.$godmode_lnk;
 			$cnt=$cnt.'" title="'.$title.'">'.step2str($next_step,true).'</a>';
 			
-			$c = 255-min(abs($p->n)*4,255);
+			$c = 255-min(abs($p->i)*4,255);
 			
-			if($p->n<1.0)
+			if($p->i<1.0)
 			{
-				$style="background-color:rgb(255,$c,$c);";
+				$style="background-color:rgb(255,$c,$c)";
 			}
-			else if($p->n>1.0)
+			else if($p->i>1.0)
 			{
-				$style="background-color:rgb($c,255,$c);";
+				$style="background-color:rgb($c,255,$c)";
 			}
+			
+			$solving = false;
+			$top_most = false;
+			
+			if($next_step == st_krestik)
+			{
+				if($p->proof >=1000000) $solving = true;
+				else if($p->proof == $min_proof) $top_most = true;
+			}
+			else
+			{
+				if($p->disproof >=1000000) $solving = true;
+				else if($p->disproof == $min_disproof) $top_most = true;
+			}
+			
+			if($solving)
+				$style=$style.";border: 2px solid cyan;border-radius:16px";
+			else if($top_most)
+				$style=$style.";border: 2px solid magenta;border-radius:16px";
 		}
 		else if(array_key_exists($skey,$solved_wins))
 		{
@@ -468,7 +562,10 @@ if($godmode_val)
 ?>
 <pre>
 <?php
-passthru($cmd,$r);
+$str = '';
+foreach($output as $s)
+  $str = $str.$s."\r\n";
+echo $str;
 ?>
 </pre>
 </body>
