@@ -446,12 +446,12 @@ for($y=$y1;$y<=$y2;$y++)
 			
 			if($next_step == st_krestik)
 			{
-				if($p->proof >=1000000) $solving = true;
+				if($p->proof >=100000) $solving = true;
 				else if($p->proof == $min_proof) $top_most = true;
 			}
 			else
 			{
-				if($p->disproof >=1000000) $solving = true;
+				if($p->disproof >=100000) $solving = true;
 				else if($p->disproof == $min_disproof) $top_most = true;
 			}
 			
