@@ -417,21 +417,37 @@ int main(int argc,char** argv)
 			else
 				hex_or_str2points(argv[4],root_key);
 
-			std::vector<steps_t> keys;
+			solution_tree_t::jobs_t keys;
 
-			for (int i = 0; i < jobs_count; i++)
+			while (keys.size() < jobs_count)
 			{
-				steps_t key;
-				if (cmd == "get_job") key = tr.get_job(root_key);
-				else key = tr.get_ant_job(root_key);
+				solution_tree_t::jobs_t jbs;
+				if (cmd == "get_job") jbs = tr.get_jobs(root_key, jobs_count - keys.size());
+				else
+				{
+					steps_t key = tr.get_ant_job(root_key);
+					if(!key.empty())
+						jbs.push_back(tr.get_ant_job(root_key));
+				}
 
-				if(key.empty())
+				if(jbs.empty())
 					break;
 
-				if(std::find(keys.begin(),keys.end(),key) != keys.end())
-					break;
+				bool duplicate_exists = false;
 
-				keys.push_back(key);
+				for (const steps_t& key : jbs)
+				{
+					if (key.empty())
+						break;
+
+					if (std::find(keys.begin(), keys.end(), key) != keys.end())
+						duplicate_exists = true;
+					else
+						keys.push_back(key);
+				}
+
+				if(duplicate_exists)
+					break;
 			}
 
 			if(keys.empty())

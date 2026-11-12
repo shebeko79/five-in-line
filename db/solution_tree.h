@@ -139,12 +139,15 @@ namespace Gomoku
 		void mark(const steps_t& key);
 
 	public:
+		using jobs_t = std::vector<steps_t>;
+
 		static unsigned ant_rand_factor;
 		static constexpr time_t mark_timeout = 300;
 		
 		solution_tree_t(const isolution_tree_base_ptr _db_ptr) : db_ptr(_db_ptr),db(*_db_ptr){}
 
 		steps_t get_job(const steps_t& root_key);
+		jobs_t get_jobs(const steps_t& root_key, unsigned jobs_count);
         steps_t get_ant_job(const steps_t& root_key);
 		void save_job(const steps_t& key,const ipoints_t& neutrals,const npoints_t& win,const npoints_t& fails);
 

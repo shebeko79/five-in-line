@@ -57,6 +57,9 @@ namespace Gomoku
 
 		ppoint() = default;
 		ppoint(const ipoint& rhs) : ipoint(rhs){}
+
+		inline unsigned& pn(Step move_color) {return move_color==st_krestik? proof : disproof;}
+		inline unsigned pn(Step move_color) const {return move_color==st_krestik? proof : disproof;}
 	};
 
 	typedef std::vector<ppoint> ppoints_t;

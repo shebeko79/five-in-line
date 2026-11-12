@@ -448,70 +448,79 @@ namespace Gomoku
     
 	steps_t solution_tree_t::get_job(const steps_t& root_key)
 	{
-		size_t old_neutrals_size = 0;
-		ObjectProgress::log_generator lg(true);
+		jobs_t jbs = get_jobs(root_key, 1);
+		if (jbs.empty())return {};
+		return jbs.front();
+	}
+
+	solution_tree_t::jobs_t solution_tree_t::get_jobs(const steps_t& root_key, unsigned jobs_count)
+	{
 		Step move_color = next_color(root_key.size());
 
-		while (true)
+		sol_state_t base_st;
+		base_st.key = root_key;
+
+		if (!get(base_st))
 		{
-			sol_state_t base_st;
-			base_st.key = root_key;
+			mark(root_key);
+			return { root_key };
+		}
 
-			if (!get(base_st))
+		if (base_st.is_completed())
+			return {};
+
+		ppoints_range rng;
+
+		if (move_color == st_krestik)
+		{
+			sort(base_st.neutrals, proof_pr(move_color));
+			rng = std::equal_range(base_st.neutrals.begin(), base_st.neutrals.end(), base_st.neutrals.front(), proof_only_pr());
+		}
+		else
+		{
+			sort(base_st.neutrals, disproof_pr(move_color));
+			rng = std::equal_range(base_st.neutrals.begin(), base_st.neutrals.end(), base_st.neutrals.front(), disproof_only_pr());
+		}
+
+		if(rng.first == rng.second)
+			throw std::runtime_error("get_job(): empty range");
+
+		steps_t child_key = root_key;
+		child_key.push_back(step_t(move_color, point(0,0) ));
+
+		jobs_t ret;
+
+		if (rng.first->pn(move_color) == 1)
+		{
+			if(jobs_count > rng.second - rng.first)
+				jobs_count = rng.second - rng.first;
+
+			ret.resize(jobs_count);
+
+			for (unsigned i = 0; i < jobs_count; i++)
 			{
-				mark(root_key);
-				return root_key;
+				const ppoint& move_point = *(rng.first + i);
+				static_cast<point&>(child_key.back()) = move_point;
+				ret[i] = child_key;
+				mark(child_key);
 			}
+		}
+		else
+		{
+			auto rnd_it = select_random_point(rng, move_color == st_krestik);
 
-			if (base_st.is_completed())
-				return steps_t();
-
-			if (old_neutrals_size != 0 && base_st.neutrals.size() >= old_neutrals_size)
-			{
-				lg<<"get_job(): inconsistent state doesn't change: old_neutrals_size="<<old_neutrals_size
-					<<"neutrals_size"<<base_st.neutrals.size();
-				throw std::runtime_error("get_job(): inconsistent state doesn't change: "+print_steps(root_key));
-			}
-
-			ppoints_range rng;
-
-			if (move_color == st_krestik)
-			{
-				sort(base_st.neutrals, proof_pr(move_color));
-				rng = std::equal_range(base_st.neutrals.begin(), base_st.neutrals.end(), base_st.neutrals.front(), proof_only_pr());
-			}
-			else
-			{
-				sort(base_st.neutrals, disproof_pr(move_color));
-				rng = std::equal_range(base_st.neutrals.begin(), base_st.neutrals.end(), base_st.neutrals.front(), disproof_only_pr());
-			}
-
-			auto rnd_it = select_random_point(rng,move_color == st_krestik);
-			
-			if(rnd_it == rng.second)
+			if (rnd_it == rng.second)
 				throw std::runtime_error("get_job(): no random point selected");
 
 			ppoint move_point = *rnd_it;
-			steps_t child_key = root_key;
-			child_key.push_back(step_t(move_color, move_point));
+			static_cast<point&>(child_key.back()) = move_point;
 
-			auto ret = get_job(child_key);
-			if (!ret.empty())
-				return ret;
-
-			lg << "get_job(): unexpected complete state: child=" << print_steps(child_key)
-				<< " root=" << print_steps(root_key);
-
-			old_neutrals_size = base_st.neutrals.size();
-
-			sol_state_t child_st;
-			child_st.key = child_key;
-
-			if (!get(child_st))
-				throw std::runtime_error("get_job(): can't load child to fix: "+print_steps(child_key));
-
-			relax(child_st);
+			ret = get_jobs(child_key, jobs_count);
+			if (ret.empty())
+				throw std::runtime_error("get_job(): unexpected empty state: child="+print_steps(child_key));
 		}
+
+		return ret;
 	}
 
     void solution_tree_t::depth_first_search(sol_state_visitor_pr& pr)
