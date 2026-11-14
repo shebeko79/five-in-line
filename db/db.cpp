@@ -8,6 +8,7 @@
 #  include <signal.h>
 #endif
 
+#include <fstream>
 #include <chrono>
 #include <boost/algorithm/string.hpp>
 #include "solution_tree.h"
@@ -226,17 +227,13 @@ bool show_state(solution_tree_t& tr,steps_t req)
 
 void save_job(solution_tree_t& tr,const std::string& file_name)
 {
-	data_t file_content;
-	Gomoku::load_file(file_name,file_content);
+	std::ifstream f(file_name);
+	if (!f.is_open())
+		throw std::runtime_error("Can't open "+file_name);
 
-	std::string content(file_content.begin(),file_content.end());
-
-    std::vector< std::string > lines;
-	boost::split( lines, content, boost::is_any_of("\n"));
-
-	for(size_t i=0;i<lines.size();i++)
+	std::string s;
+	while (std::getline(f, s))
 	{
-		std::string& s=lines[i];
 		boost::trim(s);
 
 		if(s.empty())
