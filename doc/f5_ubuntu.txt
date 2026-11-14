@@ -62,6 +62,8 @@ pip install joblib && pip install requests
 
 wget -q http://93.127.143.124/solver.tar.gz && tar -pxzf solver.tar.gz -C . && cd solver
 
+python solver_web.py
+python solver_web.py >spawn_out.log 2>spawn_err.log
 
 ##############################
 #misc
