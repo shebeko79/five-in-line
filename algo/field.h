@@ -4,6 +4,7 @@
 #include "step.h"
 #include <vector>
 #include <string>
+#include <array>
 #include "primitives.h"
 #include <algorithm>
 #include <map>
@@ -186,24 +187,18 @@ namespace Gomoku
 		}
 	};
 
-    template<class Value>
+    template<class Value, int Radius = 40>
 	class matrix
 	{
 	public:
 		typedef std::map<point,Value,less_point_pr> point2val;
-		typedef std::vector<Value> fld_t;
+		typedef std::array<Value, (Radius*2+1)*(Radius*2+1)> fld_t;
 	private:
-		rect max_bound;
-		fld_t fld;
+		static constexpr size_t width = Radius*2 + 1;
+		static constexpr rect max_bound = { -Radius,-Radius,Radius,Radius };
+		fld_t fld = {};
 		point2val outbound;
-		size_t width;
 	public:
-		matrix(const rect& _max_bound=rect(-40,-40,40,40)) : 
-		  max_bound(_max_bound),
-		  width(_max_bound.width()+1),
-		  fld((_max_bound.width()+1)*(_max_bound.height()+1),Value())
-		{
-		}
 
         Value get(const point& pt) const
 		{

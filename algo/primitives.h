@@ -58,9 +58,12 @@ struct rectT
 	inline pointT<T>& p2(){return *reinterpret_cast< pointT<T>* >(&x2);}
 
 	rectT() = default;
-	rectT(T _x1,T _y1,T _x2,T _y2)
+	constexpr rectT(T _x1,T _y1,T _x2,T _y2) :
+		x1(_x1),
+		y1(_y1),
+		x2(_x2),
+		y2(_y2)
 	{
-		x1=_x1;y1=_y1;x2=_x2;y2=_y2;
 	}
 
 	rectT(const pointT<T>& _p1,const pointT<T>& _p2)
