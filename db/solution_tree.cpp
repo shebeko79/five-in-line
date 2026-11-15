@@ -39,9 +39,10 @@ namespace Gomoku
 		st.key=key;
 
 		reorder_state_to_game_order(st.key);
+
+		sol_state_t db_st = st;
 		
-		if(get(st))
-			return;
+		bool already_exists = get(db_st);
 		
 		if (!neutrals.empty())
 		{
@@ -52,12 +53,18 @@ namespace Gomoku
 		st.solved_wins=win;
 		st.solved_fails=fails;
 
-        scan_already_solved_neutrals(st);
+		if(already_exists)
+			db_st.merge(st);
+		else
+			db_st = st;
 
-		set(st);
 
-		db.unmark(sol_mark_t(st.key));
-		relax(st);
+		scan_already_solved_neutrals(db_st);
+
+		set(db_st);
+
+		db.unmark(sol_mark_t(db_st.key));
+		relax(db_st);
 	}
 
 	void solution_tree_t::relax(const sol_state_t& child_st)
@@ -250,6 +257,8 @@ namespace Gomoku
 			else
 			{
 				p.i = st.best_neutral_score();
+				p.proof = st.proof();
+				p.disproof = st.disproof();
 			}
 		}
     }
@@ -869,7 +878,7 @@ namespace Gomoku
 		return std::min_element(neutrals.begin(), neutrals.end(), fscore_pr(move_color))->i;
 	}
 
-	bool sol_state_t::state_changed(sol_state_t& rhs) const
+	bool sol_state_t::state_changed(const sol_state_t& rhs) const
 	{
 		if(is_completed() != rhs.is_completed())
 			return true;
@@ -896,6 +905,68 @@ namespace Gomoku
 		else
 			return max_fail_chain() != rhs.max_fail_chain();
 	}
+
+	void sol_state_t::merge(const sol_state_t& st)
+	{
+		for (auto& np : st.solved_wins)
+		{
+			const point& p = np;
+
+			auto win_it = std::find(solved_wins.begin(), solved_wins.end(), p);
+			auto fail_it = std::find(solved_fails.begin(), solved_fails.end(), p);
+			auto n_it = std::find(neutrals.begin(), neutrals.end(), p);
+
+			if(fail_it != solved_fails.end())
+				throw std::runtime_error("sol_state_t::merge("+print_steps(st.key)+"): win in fails");
+
+			if (win_it == solved_wins.end())
+				solved_wins.push_back(np);
+			else if (np.n < win_it->n)
+				*win_it = np;
+
+			if(n_it != neutrals.end())
+				neutrals.erase(n_it);
+		}
+
+		for (auto& np : st.solved_fails)
+		{
+			const point& p = np;
+
+			auto win_it = std::find(solved_wins.begin(), solved_wins.end(), p);
+			auto fail_it = std::find(solved_fails.begin(), solved_fails.end(), p);
+			auto n_it = std::find(neutrals.begin(), neutrals.end(), p);
+
+			if(win_it != solved_wins.end())
+				throw std::runtime_error("sol_state_t::merge("+print_steps(st.key)+"): fail in wins");
+
+			if (fail_it == solved_fails.end())
+				solved_fails.push_back(np);
+			else if (np.n < fail_it->n)
+				*fail_it = np;
+
+			if(n_it != neutrals.end())
+				neutrals.erase(n_it);
+		}
+
+		for (auto& pp : st.neutrals)
+		{
+			const point& p = pp;
+
+			auto swin_it = std::find(solved_wins.begin(), solved_wins.end(), p);
+			auto sfail_it = std::find(solved_fails.begin(), solved_fails.end(), p);
+			auto twin_it = std::find(tree_wins.begin(), tree_wins.end(), p);
+			auto tfail_it = std::find(tree_fails.begin(), tree_fails.end(), p);
+			auto n_it = std::find(neutrals.begin(), neutrals.end(), p);
+
+			if( swin_it != solved_wins.end() || sfail_it != solved_fails.end() ||
+				twin_it != tree_wins.end() || tfail_it != tree_fails.end())
+				continue;
+
+			if(n_it == neutrals.end())
+				neutrals.push_back(pp);
+		}
+	}
+
 
 	unsigned sol_state_t::proof() const
 	{

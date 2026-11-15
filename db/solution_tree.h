@@ -34,8 +34,9 @@ namespace Gomoku
 		unsigned min_win_chain() const;
 		unsigned max_fail_chain() const;
 		int best_neutral_score() const;
+		void merge(const sol_state_t& st);
 
-		bool state_changed(sol_state_t& rhs) const;
+		bool state_changed(const sol_state_t& rhs) const;
 
 		unsigned proof() const;
 		unsigned disproof() const;
