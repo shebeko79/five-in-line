@@ -982,14 +982,14 @@ namespace Gomoku
 			return std::min_element(neutrals.begin(), neutrals.end(), [](const ppoint& a, const ppoint& b)
 				{
 					return a.proof < b.proof;
-				})->proof + 1;
+				})->proof;
 		}
 		else
 		{
 			return std::accumulate(neutrals.begin(), neutrals.end(), 0u, [](unsigned a, const ppoint& b)
 				{
 					return a+b.proof;
-				}) + 1;
+				});
 		}
 	}
 
@@ -1007,14 +1007,14 @@ namespace Gomoku
 			return std::accumulate(neutrals.begin(), neutrals.end(), 0u, [](unsigned a, const ppoint& b)
 				{
 					return a+b.disproof;
-				}) + 1;
+				});
 		}
 		else
 		{
 			return std::min_element(neutrals.begin(), neutrals.end(), [](const ppoint& a, const ppoint& b)
 				{
 					return a.disproof < b.disproof;
-				})->disproof + 1;
+				})->disproof;
 		}
 	}
 
