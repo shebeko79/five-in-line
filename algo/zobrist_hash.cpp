@@ -10,11 +10,11 @@ zobrist_hash::val_t::val_t() :
 {
 }
 
-uint64_t zobrist_hash::get_random_uint64()
+hash_t zobrist_hash::get_random_uint64()
 {
 	static std::random_device rd;
 	static std::mt19937_64 gen(rd());
-	static std::uniform_int_distribution<uint64_t> dis;
+	static std::uniform_int_distribution<hash_t> dis;
 
 	return dis(gen);
 }

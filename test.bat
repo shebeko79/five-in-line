@@ -1,10 +1,12 @@
 @echo off
 chcp 65001 > nul
 
+echo %time%
 for /f "tokens=1-4 delims=:.," %%a in ("%time%") do (
     set /a "start_h=%%a", "start_m=%%b", "start_s=%%c"
 )
 set /a "start_total=(start_h * 3600) + (start_m * 60) + start_s"
+echo %start_total%
 
 set solver=solver\cmake\Release\solver.exe
 
@@ -38,10 +40,12 @@ set solver=solver\cmake\Release\solver.exe
 %solver% 000001ff0102ffff01fefe0200ff0100fe02fffe01feff02fffd01fffc02fefd01010002fcfd0100fd02fcfb01fdfc02fbfd01fdfd02fcfc01fcfe02fdfb01fefa02fefb01fbfb02fcf901fcfa02fdf901
 %solver% 000001ffff02ff0101fe0202000101000202ff0201fe0102ff0301ff0402fe0301010002fc0301000302fb0301fd0302fc0501fd0402fc0401fc0202fd0501fe0602fa0201f90102fc0601fc0702fe0401fb0702050001
 
+echo %time%
 for /f "tokens=1-4 delims=:.," %%a in ("%time%") do (
     set /a "end_h=%%a", "end_m=%%b", "end_s=%%c"
 )
 set /a "end_total=(end_h * 3600) + (end_m * 60) + end_s"
+echo %end_total%
 
 set /a "duration=end_total - start_total"
 if %duration% lss 0 set /a "duration+=86400"

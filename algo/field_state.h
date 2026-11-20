@@ -4,7 +4,7 @@
 #include <functional>
 #include "field.h"
 #include <array>
-#include "../extern/binary_find.h"
+#include "zobrist_hash.h"
 
 namespace Gomoku { namespace State5
 {
@@ -18,6 +18,9 @@ namespace Gomoku { namespace State5
 	constexpr Score kScore3 = 6;
 	constexpr Score kScore4 = 17;
 	constexpr Score kScore5 = 33;
+
+	extern zobrist_hash zhash;
+	extern zobrist_hash zhash_crc;
 
 	unsigned max_step(Score score);
 	Score prev_cnt(Score score);
@@ -93,13 +96,18 @@ namespace Gomoku { namespace State5
 		lines_count_t field_krestik;
 		lines_count_t field_nolik;
 
+		hash_t hash;
+		hash_t hash_crc;
+
 		snapshot_t() = default;
 		snapshot_t(const step_t& _st, const matrix<lines5_t>& lines_field, const matrix<score_t>& scores_field, 
-			const lines_count_t& _field_krestik, const lines_count_t& _field_nolik) : 
+			const lines_count_t& _field_krestik, const lines_count_t& _field_nolik, hash_t _hash, hash_t _hash_crc) : 
 			st(_st),
 			central_s(scores_field.get(_st)),
 			field_krestik(_field_krestik),
-			field_nolik(_field_nolik)
+			field_nolik(_field_nolik),
+			hash(_hash),
+			hash_crc(_hash_crc)
 		{
 			fill(lines_field); 
 			fill(scores_field); 
@@ -124,7 +132,7 @@ namespace Gomoku { namespace State5
 	public:
 		using line_visitor = std::function<void (const point& line_point,const line5_t& line, int dx, int dy)>;
 
-		snapshot_t make_snapshot(const step_t& st) const { return snapshot_t(st, lines_field, scores_field, field_krestik, field_nolik); }
+		snapshot_t make_snapshot(const step_t& st) const { return snapshot_t(st, lines_field, scores_field, field_krestik, field_nolik, hash, hash_crc); }
 		void apply_shapshot(const snapshot_t& snapshot);
 		
 		void change_state(const field_t& field);
@@ -133,6 +141,8 @@ namespace Gomoku { namespace State5
 		inline const points_set_t& get_empty_points() const {return empty_points;}
 		inline const lines_count_t& get_field_krestik() const {return field_krestik;}
 		inline const lines_count_t& get_field_nolik() const {return field_nolik;}
+		inline hash_t get_hash() const {return hash;}
+		inline hash_t get_hash_crc() const {return hash_crc;}
 
 		void iterate_involved_lines(const point& pt, const line_visitor& visitor);
 		
@@ -143,6 +153,8 @@ namespace Gomoku { namespace State5
 		points_set_t empty_points;
 		lines_count_t field_krestik;
 		lines_count_t field_nolik;
+		hash_t hash = 0;
+		hash_t hash_crc = 0;
 		
 		void change_state(const field_t& field, int dx, int dy);
 		void change_line(const field_t& field,Step color, const point& line_point, int dx, int dy);

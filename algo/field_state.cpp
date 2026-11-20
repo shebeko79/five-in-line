@@ -6,6 +6,9 @@
 
 namespace Gomoku { namespace State5
 {
+	zobrist_hash zhash;
+	zobrist_hash zhash_crc;
+
 	lines_count_t::lines_count_t(Score cnt)
 	{
 		l5 = cnt/kCount5;
@@ -241,6 +244,8 @@ namespace Gomoku { namespace State5
 	void field5_t::change_state(const field_t& field)
 	{
 		set_score(field.back(), score_t(0,0));
+		hash ^= zhash.get(field.back());
+		hash_crc ^= zhash_crc.get(field.back());
 
 		change_state(field,1,0);
 		change_state(field,0,1);
@@ -256,6 +261,8 @@ namespace Gomoku { namespace State5
 		empty_points.clear();
 		field_krestik = lines_count_t();
 		field_nolik = lines_count_t();
+		hash = 0;
+		hash_crc = 0;
 
 		field_t field;
 		for (const auto& st : steps)
@@ -344,6 +351,8 @@ namespace Gomoku { namespace State5
 		snapshot.apply(lines_field, [this](const point& pt,const score_t& scr) {set_score(pt,scr);});
 		field_krestik = snapshot.field_krestik;
 		field_nolik = snapshot.field_nolik;
+		hash = snapshot.hash;
+		hash_crc = snapshot.hash_crc;
 	}
 
 	void field5_t::iterate_involved_lines(const point& pt, const line_visitor& visitor)

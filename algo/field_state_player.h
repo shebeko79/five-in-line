@@ -27,6 +27,19 @@ namespace Gomoku { namespace State5
 		}
 	};
 
+	struct node_res_t
+	{
+		enum Outcome {neutral, win, fail};
+		Outcome outcome = neutral;
+		hash_t crc = 0;
+		union
+		{
+			int i = 0;
+			unsigned n;
+		};
+	};
+
+
 	class field_state_player_t : public iplayer_t
 	{
 		friend class node_t;
@@ -43,6 +56,7 @@ namespace Gomoku { namespace State5
 		field_t field;
 		field5_t field5;
 		std::vector<Ctx> ctxs;
+		std::unordered_map<hash_t, node_res_t> hashed;
 
         int thinking = 0;
 
@@ -158,6 +172,7 @@ namespace Gomoku { namespace State5
 		bool mark_unchecked_make_move(const points_range& rng);
 		bool make_move_find_win(const points_range& rng);
 		void make_move(const point& p);
+		node_res_t calc_move(const step_t& new_step);
 
 		void limit_to_p4_fork(const points_t& other_p4h);
 		void process_oposite_forked(points_range& rng);

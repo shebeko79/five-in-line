@@ -104,6 +104,7 @@ node_t field_state_player_t::solve()
 				node_t::nodes_created = 0;
 				node_t::ctx = c;
 				root.threat_deep = c.threat_deep;
+				hashed.clear();
 				root.process();
 			}
 			else
@@ -294,6 +295,7 @@ void node_t::process_lookup(Ctx _ctx)
 		ctx = _ctx;
 		threat_deep = ctx.threat_deep;
 		nodes_created = 0;
+		player.hashed.clear();
 		reset_intermediate_state();
 		process(pts);
 	}
@@ -323,6 +325,7 @@ void node_t::process_lookup(Ctx _ctx)
 			ctx = _ctx;
 			threat_deep = ctx.threat_deep;
 			nodes_created = 0;
+			player.hashed.clear();
 			reset_intermediate_state();
 			process(high_pts);
 		}
@@ -332,6 +335,7 @@ void node_t::process_lookup(Ctx _ctx)
 			ctx = _ctx;
 			threat_deep = ctx.threat_deep;
 			nodes_created = 0;
+			player.hashed.clear();
 
 			points_range rng(low_pts.begin(), low_pts.end());
 			std::sort(rng.first, rng.second, score_pr(player.field5, move_color));
@@ -404,6 +408,44 @@ void node_t::make_move(const point& p)
 {
 	step_t new_step(move_color, p.x, p.y);
 
+	node_res_t res;
+
+	hash_t hash = player.field5.get_hash();
+	hash ^= zhash.get(new_step);
+
+	hash_t hash_crc = player.field5.get_hash_crc();
+	hash_crc ^= zhash_crc.get(new_step);
+
+	auto it = player.hashed.find(hash);
+	if (it != player.hashed.end())
+	{
+		res = it->second;
+		if(res.crc != hash_crc)
+			throw std::runtime_error("make_move(): crc doesn't match");
+	}
+	else
+	{
+		res = calc_move(new_step);
+		res.crc = hash_crc;
+		player.hashed[hash] = res;
+	}
+
+	switch (res.outcome)
+	{
+	case node_res_t::neutral:
+		neutrals.push_back(ipoint(new_step,res.i));
+		break;
+	case node_res_t::win:
+		fails.emplace_back(npoint(new_step,res.n+1));
+		break;
+	default:
+		wins.emplace_back(npoint(new_step,res.n+1));
+		break;
+	}
+}
+
+node_res_t node_t::calc_move(const step_t& new_step)
+{
 	rect old_bound = player.field.get_bound();
 	player.field.add(new_step,new_step.step);
 
@@ -413,27 +455,35 @@ void node_t::make_move(const point& p)
 	node_t sub(player, new_step, deep+1, threat_deep);
 	sub.process();
 
+	node_res_t res;
+
 	auto* win = sub.get_min_win();
 	if (win)
 	{
-		fails.emplace_back(npoint(new_step,win->n+1));
+		res.n = win->n;
+		res.outcome = res.win;
 	}
 	else if (!sub.neutrals.empty())
 	{
-		neutrals.push_back(ipoint(new_step,sub.best_neutral_score()));
+		res.i = sub.best_neutral_score();
+		res.outcome = res.neutral;
 	}
 	else
 	{
+		res.outcome = res.fail;
+
 		if(auto* fail = sub.get_max_fail()) 
-			wins.emplace_back(npoint(new_step,std::max(fail->n,sub.forced_max_fail)+1));
+			res.n = std::max(fail->n,sub.forced_max_fail);
 		else if(sub.forced_max_fail>0)
-			wins.emplace_back(npoint(new_step,sub.forced_max_fail+1));
+			res.n = sub.forced_max_fail;
 		else
 			throw std::runtime_error("node_t::make_move(): invalid state");
 	}
-	
+
 	player.field5.apply_shapshot(snapshot);
 	player.field.pop(old_bound);
+
+	return res;
 }
 
 void node_t::limit_to_p4_fork(const points_t& other_p4h)
