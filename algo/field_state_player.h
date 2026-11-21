@@ -138,6 +138,7 @@ namespace Gomoku { namespace State5
 		point get_next_step() const;
 
 		void log_statistic() const;
+		void reset_ctx(const Ctx& c);
 
 		inline bool is_complete() const {return !wins.empty() || neutrals.empty();}
 		inline bool fails_exists() const {return !fails.empty() || forced_max_fail != 0 ;}

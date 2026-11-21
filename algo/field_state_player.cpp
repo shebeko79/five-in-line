@@ -101,10 +101,7 @@ node_t field_state_player_t::solve()
 		{
 			if (i == 0)
 			{
-				node_t::nodes_created = 0;
-				node_t::ctx = c;
-				root.threat_deep = c.threat_deep;
-				hashed.clear();
+				root.reset_ctx(c);
 				root.process();
 			}
 			else
@@ -292,10 +289,7 @@ void node_t::process_lookup(Ctx _ctx)
 		points_t pts(neutrals.begin(), neutrals.end());
 		neutrals.clear();
 
-		ctx = _ctx;
-		threat_deep = ctx.threat_deep;
-		nodes_created = 0;
-		player.hashed.clear();
+		reset_ctx(_ctx);
 		reset_intermediate_state();
 		process(pts);
 	}
@@ -322,20 +316,14 @@ void node_t::process_lookup(Ctx _ctx)
 
 		if (!high_pts.empty())
 		{
-			ctx = _ctx;
-			threat_deep = ctx.threat_deep;
-			nodes_created = 0;
-			player.hashed.clear();
+			reset_ctx(_ctx);
 			reset_intermediate_state();
 			process(high_pts);
 		}
 
 		if (_ctx.flag == _ctx.fl_process_low)
 		{
-			ctx = _ctx;
-			threat_deep = ctx.threat_deep;
-			nodes_created = 0;
-			player.hashed.clear();
+			reset_ctx(_ctx);
 
 			points_range rng(low_pts.begin(), low_pts.end());
 			std::sort(rng.first, rng.second, score_pr(player.field5, move_color));
@@ -351,6 +339,13 @@ void node_t::reset_intermediate_state()
 	expect_all_fails = false;
 }
 
+void node_t::reset_ctx(const Ctx& c)
+{
+	ctx = c;
+	threat_deep = c.threat_deep;
+	nodes_created = 0;
+	player.hashed.clear();
+}
 
 void node_t::process_oposite_forked(points_range& rng)
 {
@@ -416,14 +411,29 @@ void node_t::make_move(const point& p)
 	hash_t hash_crc = player.field5.get_hash_crc();
 	hash_crc ^= zhash_crc.get(new_step);
 
+	bool hash_found = false;
+
 	auto it = player.hashed.find(hash);
 	if (it != player.hashed.end())
 	{
 		res = it->second;
-		if(res.crc != hash_crc)
-			throw std::runtime_error("make_move(): crc doesn't match");
+		if (res.crc == hash_crc)
+			hash_found = true;
+		else
+		{
+			steps_t steps = player.field.get_steps();
+			steps.push_back(new_step);
+
+			ObjectProgress::log_generator lg(true);
+			lg << "node_t::make_move() hash collision: "
+			   << "hash="<<hash
+			   << " hash_crc="<<hash_crc
+			   << " res.crc="<<res.crc
+			   << " steps="<<print_steps(steps);
+		}
 	}
-	else
+
+	if(!hash_found)
 	{
 		res = calc_move(new_step);
 		res.crc = hash_crc;
