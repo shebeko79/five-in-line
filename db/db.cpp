@@ -37,7 +37,7 @@ void print_use()
 	printf("db <root_dir> save_job <file_name>\n");
 	printf("db <root_dir> get <key>\n");
 	printf("db <root_dir> view [<printable_steps>]\n");
-	printf("db <root_dir> solve_level [root_key] [iteration_count]\n");
+	printf("db <root_dir> solve [root_key] [iteration_count]\n");
 	printf("db <root_dir> solve_ant [root_key] [iteration_count]\n");
 	printf("db <root_dir> fix_zero_fails\n");
 	printf("db <root_dir> relax <key>\n");
@@ -202,8 +202,13 @@ bool show_state(solution_tree_t& tr,steps_t req)
 
 		return false;
 	}
-	
-	sort(st.neutrals,proof_pr(next_color(st.key.size())));
+
+	Step move_color = next_color(st.key.size());
+
+	if(move_color == st_krestik)
+		sort(st.neutrals,proof_pr(move_color));
+	else
+		sort(st.neutrals,disproof_pr(move_color));
 
 	sort(st.solved_wins,less_n_pr());
 	sort(st.solved_fails,greater_n_pr());
@@ -550,7 +555,7 @@ int main(int argc,char** argv)
 			if(!show_state(tr,req))
 				return 1;
 		}
-		else if (cmd=="solve_level" || cmd=="solve_ant")
+		else if (cmd=="solve" || cmd=="solve_ant")
 		{
 			tr.check_marks_timeout();
 

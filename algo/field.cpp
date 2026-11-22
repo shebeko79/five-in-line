@@ -261,7 +261,7 @@ namespace Gomoku
 		{
 			char tmp[256];
 			const auto& p=vals[i];
-			sprintf(tmp,"(%d,%d:%d,%u,%u)",p.x,p.y,p.i,p.proof,p.disproof);
+			sprintf(tmp,"(%d,%d:%d,%u,%u,%u)",p.x,p.y,p.i,p.proof,p.disproof,(unsigned)p.flags);
 			ret+=tmp;
 			if(i+1!=vals.size())ret+=";";
 		}

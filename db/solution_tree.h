@@ -40,6 +40,7 @@ namespace Gomoku
 
 		unsigned proof() const;
 		unsigned disproof() const;
+		bool busy() const;
 
 		ppoints_t get_closest_neutrals() const;
 

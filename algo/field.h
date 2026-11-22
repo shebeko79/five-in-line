@@ -53,14 +53,25 @@ namespace Gomoku
 
 	struct ppoint : public ipoint
 	{
+		static constexpr unsigned char fl_busy=1;
+
 		unsigned proof = 1;
 		unsigned disproof = 1;
+		unsigned char flags = 0;
 
 		ppoint() = default;
 		ppoint(const ipoint& rhs) : ipoint(rhs){}
 
 		inline unsigned& pn(Step move_color) {return move_color==st_krestik? proof : disproof;}
 		inline unsigned pn(Step move_color) const {return move_color==st_krestik? proof : disproof;}
+		inline bool is_busy() const {return (flags & fl_busy) != 0;}
+		inline void mark_busy(bool busy)
+		{
+			if(busy)
+				flags |= fl_busy;
+			else
+				flags &= ~fl_busy;
+		}
 	};
 
 	typedef std::vector<ppoint> ppoints_t;
@@ -140,6 +151,9 @@ namespace Gomoku
 		proof_pr(Step move_color) : fscore_pr(move_color) {}
 		inline bool operator()(const ppoint& pa, const ppoint& pb) const
 		{
+			if(pa.is_busy() != pb.is_busy())
+				return !pa.is_busy();
+
 			if(pa.proof != pb.proof)
 				return pa.proof  < pb.proof;
 
@@ -151,6 +165,9 @@ namespace Gomoku
 	{
 		inline bool operator()(const ppoint& pa, const ppoint& pb) const
 		{
+			if(pa.is_busy() != pb.is_busy())
+				return !pa.is_busy();
+
 			return pa.proof  < pb.proof;
 		}
 	};
@@ -160,6 +177,9 @@ namespace Gomoku
 		disproof_pr(Step move_color) : fscore_pr(move_color) {}
 		inline bool operator()(const ppoint& pa, const ppoint& pb) const
 		{
+			if(pa.is_busy() != pb.is_busy())
+				return !pa.is_busy();
+
 			if(pa.disproof != pb.disproof)
 				return pa.disproof < pb.disproof;
 
@@ -171,6 +191,9 @@ namespace Gomoku
 	{
 		inline bool operator()(const ppoint& pa, const ppoint& pb) const
 		{
+			if(pa.is_busy() != pb.is_busy())
+				return !pa.is_busy();
+
 			return pa.disproof  < pb.disproof;
 		}
 	};

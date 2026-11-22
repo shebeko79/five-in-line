@@ -165,7 +165,7 @@ namespace Gomoku
 
 	void points2bin(const ppoints_t& pts,data_t& bin)
 	{
-		constexpr unsigned rec_sz = 14;
+		constexpr unsigned rec_sz = 15;
 
 		bin.resize(pts.size()*rec_sz);
 		for(unsigned i=0;i<pts.size();i++)
@@ -183,12 +183,13 @@ namespace Gomoku
 			*reinterpret_cast<int*>(&bin[i*rec_sz+2])=p.i;
 			*reinterpret_cast<int*>(&bin[i*rec_sz+6])=p.proof;
 			*reinterpret_cast<int*>(&bin[i*rec_sz+10])=p.disproof;
+			bin[i*rec_sz+14]=p.flags;
 		}
 	}
 
 	void bin2points(const data_t& bin,ppoints_t& pts)
 	{
-		constexpr unsigned rec_sz = 14;
+		constexpr unsigned rec_sz = 15;
 
 		if((bin.size()%rec_sz)!=0)
 			throw std::runtime_error("bin2points(): (bin.size()%rec_sz)!=0");
@@ -207,6 +208,7 @@ namespace Gomoku
 			p.i= *reinterpret_cast<const int*>(&bin[i*rec_sz+2]);
 			p.proof= *reinterpret_cast<const int*>(&bin[i*rec_sz+6]);
 			p.disproof= *reinterpret_cast<const int*>(&bin[i*rec_sz+10]);
+			p.flags = bin[i*rec_sz+14];
 		}
 	}
 

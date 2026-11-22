@@ -78,6 +78,7 @@ namespace Gomoku
 		int best_score = 0;
 		unsigned proof = 1;
 		unsigned disproof = 1;
+		bool busy = false;
 
 		if (child_st.is_completed())
 		{
@@ -89,6 +90,7 @@ namespace Gomoku
 			best_score = child_st.best_neutral_score();
 			proof = child_st.proof();
 			disproof = child_st.disproof();
+			busy = child_st.busy();
 		}
 
 		steps_t min_child_key = child_st.key;
@@ -157,6 +159,7 @@ namespace Gomoku
 						p.i = best_score;
 					p.proof = proof;
 					p.disproof = disproof;
+					p.mark_busy(busy);
 				}
 			}
 
@@ -260,6 +263,7 @@ namespace Gomoku
 				p.i = st.best_neutral_score();
 				p.proof = st.proof();
 				p.disproof = st.disproof();
+				p.mark_busy(st.busy());
 			}
 		}
     }
@@ -645,8 +649,7 @@ namespace Gomoku
 		db.mark(mrk);
 
 		ppoint pt;
-		pt.proof = max_proof;
-		pt.disproof = max_proof;
+		pt.mark_busy(true);
 
 		sol_state_t st;
 		st.key = key;
@@ -899,11 +902,13 @@ namespace Gomoku
 			
 			auto pa = proof();
 			auto dpa = disproof();
+			auto busya = busy();
 			
 			auto pb = rhs.proof();
 			auto dpb = rhs.disproof();
+			auto busyb = rhs.busy();
 
-			return sa != sb || pa != pb || dpa != dpb;
+			return sa != sb || pa != pb || dpa != dpb || busya != busyb;
 		}
 
 		if(is_win() != rhs.is_win())
@@ -1029,6 +1034,20 @@ namespace Gomoku
 					return a.disproof < b.disproof;
 				})->disproof;
 		}
+	}
+
+	bool sol_state_t::busy() const
+	{
+		if(is_completed())
+			return false;
+
+		Step move_color = next_color(key.size());
+
+		ppoints_t neutrals = (move_color == st_krestik)? get_closest_neutrals() : this->neutrals;
+		for(const auto& p : neutrals)
+			if(!p.is_busy())
+				return false;
+		return true;
 	}
 
 	ppoints_t sol_state_t::get_closest_neutrals() const
