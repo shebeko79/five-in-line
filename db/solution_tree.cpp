@@ -506,17 +506,21 @@ namespace Gomoku
 
 		if (rng.first->pn(move_color) == 1)
 		{
-			if(jobs_count > rng.second - rng.first)
-				jobs_count = rng.second - rng.first;
+			static_cast<point&>(child_key.back()) = static_cast<const point&>(*rng.first);
 
-			ret.resize(jobs_count);
+			ret = get_jobs(child_key, jobs_count);
+			if (ret.empty())
+				throw std::runtime_error("get_job(): unexpected empty state: child="+print_steps(child_key));
 
-			for (unsigned i = 0; i < jobs_count; i++)
+			for (++rng.first; ret.size() < jobs_count && rng.first != rng.second; ++rng.first)
 			{
-				const ppoint& move_point = *(rng.first + i);
-				static_cast<point&>(child_key.back()) = move_point;
-				ret[i] = child_key;
-				mark(child_key);
+				static_cast<point&>(child_key.back()) = static_cast<const point&>(*rng.first);
+				
+				jobs_t sub = get_jobs(child_key, jobs_count-ret.size());
+				if (sub.empty())
+					throw std::runtime_error("get_job(): unexpected empty state: child="+print_steps(child_key));
+
+				ret.insert(ret.end(), sub.begin(), sub.end());
 			}
 		}
 		else
