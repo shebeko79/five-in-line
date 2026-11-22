@@ -12,6 +12,7 @@ namespace fs=std::filesystem;
 namespace Gomoku
 {
 	unsigned solution_tree_t::ant_rand_factor = 20;
+	int solution_tree_t::krestik_distance = 4;
 
 
 	bool solution_tree_t::get(sol_state_t& res) const
@@ -480,10 +481,14 @@ namespace Gomoku
 
 		ppoints_range rng;
 
+		ppoints_t selected_neutrals;
+
 		if (move_color == st_krestik)
 		{
-			sort(base_st.neutrals, proof_pr(move_color));
-			rng = std::equal_range(base_st.neutrals.begin(), base_st.neutrals.end(), base_st.neutrals.front(), proof_only_pr());
+			selected_neutrals = base_st.get_closest_neutrals();
+
+			sort(selected_neutrals, proof_pr(move_color));
+			rng = std::equal_range(selected_neutrals.begin(), selected_neutrals.end(), selected_neutrals.front(), proof_only_pr());
 		}
 		else
 		{
@@ -979,6 +984,8 @@ namespace Gomoku
 
 		if (move_color == st_krestik)
 		{
+			auto neutrals = get_closest_neutrals();
+
 			return std::min_element(neutrals.begin(), neutrals.end(), [](const ppoint& a, const ppoint& b)
 				{
 					return a.proof < b.proof;
@@ -1004,6 +1011,8 @@ namespace Gomoku
 
 		if (move_color == st_krestik)
 		{
+			auto neutrals = get_closest_neutrals();
+
 			return std::accumulate(neutrals.begin(), neutrals.end(), 0u, [](unsigned a, const ppoint& b)
 				{
 					return a+b.disproof;
@@ -1016,6 +1025,33 @@ namespace Gomoku
 					return a.disproof < b.disproof;
 				})->disproof;
 		}
+	}
+
+	ppoints_t sol_state_t::get_closest_neutrals() const
+	{
+		const auto distance = solution_tree_t::krestik_distance;
+
+		if(neutrals.empty() || distance >= 4)
+			return neutrals;
+
+		std::set<point, less_point_pr> pts;
+		for (const auto& p : key)
+		for (int x = -distance; x <= distance; x++)
+		for (int y = -distance; y <= distance; y++)
+			pts.insert(point(p.x + x, p.y + y));
+
+		ppoints_t ret;
+
+		for (const auto& p : neutrals)
+		{
+			if(pts.find(p) != pts.end())
+				ret.push_back(p);
+		}
+
+		if(!ret.empty())
+			return  ret;
+
+		return neutrals;
 	}
 
 

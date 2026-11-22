@@ -41,6 +41,8 @@ namespace Gomoku
 		unsigned proof() const;
 		unsigned disproof() const;
 
+		ppoints_t get_closest_neutrals() const;
+
 	public:
 		static void pack(const points_t& pts,data_t& bin);
 		static void unpack(const data_t& bin,points_t& pts,size_t& from);
@@ -143,6 +145,7 @@ namespace Gomoku
 		using jobs_t = std::vector<steps_t>;
 
 		static unsigned ant_rand_factor;
+		static int krestik_distance;
 		static constexpr time_t mark_timeout = 300;
 		
 		solution_tree_t(const isolution_tree_base_ptr _db_ptr) : db_ptr(_db_ptr),db(*_db_ptr){}

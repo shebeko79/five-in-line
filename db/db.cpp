@@ -47,6 +47,7 @@ void print_use()
     Gomoku::print_enviropment_variables_hint();
 	printf("hint_db  path (no default)\n");
 	printf("ant_rand_factor (default: %u)\n",solution_tree_t::ant_rand_factor);
+	printf("krestik_distance (default: %u)\n",solution_tree_t::krestik_distance);
 }
 
 void self_solve(solution_tree_t& tr,const steps_t& key)
@@ -388,6 +389,18 @@ int main(int argc,char** argv)
 		{
 			solution_tree_t::ant_rand_factor = atol(sval);
 			lg <<"ant_rand_factor="<<solution_tree_t::ant_rand_factor;
+		}
+
+		sval=getenv("krestik_distance");
+		if (sval != 0 && (*sval) != 0)
+		{
+			solution_tree_t::krestik_distance = atol(sval);
+			lg <<"krestik_distance="<<solution_tree_t::krestik_distance;
+			if (solution_tree_t::krestik_distance <= 0 || solution_tree_t::krestik_distance > 4)
+			{
+				print_use();
+				return 1;
+			}
 		}
 
 
