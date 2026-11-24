@@ -77,11 +77,13 @@ class ppoint extends ipoint
 {
 	var $proof;
 	var $disproof;
+	var $flags;
 	
 	function ppoint()
 	{
 		$this->proof=1;
 		$this->disproof=1;
+		$this->flags=0;
 	}
 };
 
@@ -231,9 +233,10 @@ function fill_ppoints_array($prefix,$s,&$arr)
 		$score=0;
 		$proof=0;
 		$disproof=0;
+		$flags=0;
 
 		$sp=$spts[$i];
-		if(sscanf($sp,"(%d,%d:%d,%d,%d)",$x,$y,$score,$proof,$disproof)!=5)
+		if(sscanf($sp,"(%d,%d:%d,%d,%d,%d)",$x,$y,$score,$proof,$disproof,$flags)!=6)
 			continue;
 		
 		$p=new ppoint;
@@ -242,6 +245,7 @@ function fill_ppoints_array($prefix,$s,&$arr)
 		$p->i=$score;
 		$p->proof=$proof;
 		$p->disproof=$disproof;
+		$p->flags=$flags;
 		array_push($arr,$p);
 	}
 }
@@ -424,7 +428,7 @@ for($y=$y1;$y<=$y2;$y++)
 			$o->step=$next_step;
 		
 			$h=$hex_state.step2hex($o);
-			$title=sprintf("score=%d\nproof=%d\ndisproof=%d",$p->i,$p->proof,$p->disproof);
+			$title=sprintf("score=%d\nproof=%d\ndisproof=%d\nflags=%d",$p->i,$p->proof,$p->disproof,$p->flags);
 			
 			$cnt='<a href="'.$OWN_PATH.'?st='.$h;
 			$cnt=$cnt.$godmode_lnk;
@@ -444,7 +448,7 @@ for($y=$y1;$y<=$y2;$y++)
 			$solving = false;
 			$top_most = false;
 			
-			if($p->proof >=100000 || $p->disproof >=100000) $solving = true;
+			if(($p->flags & 1) != 0) $solving = true;
 			
 			if($next_step == st_krestik)
 			{
