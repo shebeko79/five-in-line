@@ -11,7 +11,7 @@ namespace fs=std::filesystem;
 
 namespace Gomoku
 {
-	unsigned solution_tree_t::ant_rand_factor = 20;
+	unsigned solution_tree_t::rand_factor = 20;
 	int solution_tree_t::krestik_distance = 4;
 
 
@@ -374,11 +374,11 @@ namespace Gomoku
 		Step move_color = next_color(root_key.size());
 		bool point_selected = false;
 
-		if (ant_rand_factor > 0)
+		if (rand_factor > 0)
 		{
 			auto rnd = rand();
 
-			if (rnd % ant_rand_factor == 0)
+			if (rnd % rand_factor == 0)
 			{
 				npoints_t close_points(base_st.neutrals.begin(), base_st.neutrals.end());
 				remove_if(close_points, [](const point& p) {return !(small_bound & p); });
@@ -403,7 +403,7 @@ namespace Gomoku
 					}
 				}
 			}
-			else if (rnd % ant_rand_factor == 1)
+			else if (rnd % rand_factor == 1)
 			{
 				npoints_t sublings_wins = get_sublings_wins(root_key);
 
@@ -492,7 +492,8 @@ namespace Gomoku
 			selected_neutrals = base_st.get_closest_neutrals();
 
 			sort(selected_neutrals, proof_pr(move_color));
-			rng = std::equal_range(selected_neutrals.begin(), selected_neutrals.end(), selected_neutrals.front(), proof_only_pr());
+			//rng = std::equal_range(selected_neutrals.begin(), selected_neutrals.end(), selected_neutrals.front(), proof_only_pr());
+			rng = select_random_proof_range(std::make_pair(selected_neutrals.begin(), selected_neutrals.end()));
 		}
 		else
 		{

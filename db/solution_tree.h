@@ -145,7 +145,7 @@ namespace Gomoku
 	public:
 		using jobs_t = std::vector<steps_t>;
 
-		static unsigned ant_rand_factor;
+		static unsigned rand_factor;
 		static int krestik_distance;
 		static constexpr time_t mark_timeout = 300;
 		

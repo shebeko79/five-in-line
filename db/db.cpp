@@ -46,7 +46,7 @@ void print_use()
 	printf("db <root_dir> reset_marks\n");
     Gomoku::print_enviropment_variables_hint();
 	printf("hint_db  path (no default)\n");
-	printf("ant_rand_factor (default: %u)\n",solution_tree_t::ant_rand_factor);
+	printf("rand_factor (default: %u)\n",solution_tree_t::rand_factor);
 	printf("krestik_distance (default: %u)\n",solution_tree_t::krestik_distance);
 }
 
@@ -149,19 +149,6 @@ void self_solve(solution_tree_t& tr,size_t iteration_count,const steps_t& root_k
 			return;
 		}
 
-        if(!use_ant)
-        {
-		    if(key_len==0)key_len=key.size();
-		    else if(key.size()!=key_len)
-		    {
-#ifdef _WIN32
-			    printf("level %llu succesefully solved\n",key_len);
-#else
-			    printf("level %lu succesefully solved\n",key_len);
-#endif
-			    return;
-		    }
-        }
 		lg<<"";
 		lg<<"self_solve(): i="<<i<<" iteration_count="<<iteration_count;
 		self_solve(tr,key);
@@ -389,11 +376,11 @@ int main(int argc,char** argv)
 			tr.set_hint_tree(*hint_tr);
 		}
 
-		const char* sval=getenv("ant_rand_factor");
+		const char* sval=getenv("rand_factor");
 		if (sval != 0 && (*sval) != 0)
 		{
-			solution_tree_t::ant_rand_factor = atol(sval);
-			lg <<"ant_rand_factor="<<solution_tree_t::ant_rand_factor;
+			solution_tree_t::rand_factor = atol(sval);
+			lg <<"rand_factor="<<solution_tree_t::rand_factor;
 		}
 
 		sval=getenv("krestik_distance");

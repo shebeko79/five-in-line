@@ -291,6 +291,69 @@ namespace Gomoku
 		return rng.second;
 	}
 
+	ppoints_range select_random_proof_range(ppoints_range rng)
+	{
+		if(rng.second == rng.first)
+			return rng;
+
+		if(rng.second - rng.first == 1)
+			return rng;
+
+		bool busy = rng.first->is_busy();
+
+		std::vector<unsigned> proofs;
+		for(auto i = rng.first; i != rng.second; ++i)
+			if(i->is_busy() == busy)
+				proofs.push_back( i->proof );
+
+		proofs.erase(std::unique(proofs.begin(),proofs.end()),proofs.end());
+
+		std::vector<double> scores(proofs.begin(),proofs.end());
+		auto max_scr = *std::max_element(scores.begin(),scores.end());
+
+		for (size_t i = 0; i < scores.size(); i++)
+		{
+			auto& s = scores[i];
+			s = (max_scr - s) + 1;
+		}
+
+        auto sum = std::accumulate(scores.begin(),scores.end(),0.0);
+		auto avg = sum/scores.size();
+
+		const double k=0.8;
+		double rest = 1.0;
+		for (size_t i = 0; i < scores.size(); i++)
+		{
+			if(i+1 == scores.size())
+				scores[i] = rest;
+			else
+			{
+				scores[i] = scores[i] / avg * rest * k;
+				rest = (1.0 - k)*rest;
+			}
+		}
+
+		sum = std::accumulate(scores.begin(),scores.end(),0.0);
+		double r=static_cast<double>(rand())/RAND_MAX;
+		double v=0;
+
+		size_t pos = 0;
+		for (; pos+1 < scores.size(); pos++)
+        {
+			auto& s = scores[pos];
+			v+=s;
+			if (v / sum >= r)
+				break;
+        }
+
+		ppoint p;
+		p.proof = proofs[pos];
+		p.mark_busy(busy);
+
+		return std::equal_range(rng.first, rng.second, p, proof_only_pr());
+	}
+
+
 
 	void reorder_to_proper_last_color(steps_t& steps)
 	{

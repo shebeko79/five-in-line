@@ -20,6 +20,7 @@ namespace Gomoku
 
 	npoints_t::const_iterator select_random_point(npoints_t& pts);
 	ppoints_t::iterator select_random_point(ppoints_range rng, bool greather_the_best);
+	ppoints_range select_random_proof_range(ppoints_range rng);
 
 	void reorder_to_proper_last_color(steps_t& steps);
 }//namespace
