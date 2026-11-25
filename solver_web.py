@@ -18,7 +18,15 @@ def get_jobs(cnt):
     if src_name is not None:
         req_url += "&src_name=" + src_name
 
-    result = requests.get(req_url, timeout=300)
+    for i in range(0, 3):
+        try:
+            result = requests.get(req_url, timeout=300)
+        except requests.exceptions.RequestException as ex:
+            print(f'get_jobs(): {i=} {ex=}')
+            time.sleep(5)
+            continue
+        break
+
     if result.status_code != 200:
         result.raise_for_status()
 
